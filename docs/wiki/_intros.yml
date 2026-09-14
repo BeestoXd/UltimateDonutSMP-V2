@@ -1,0 +1,512 @@
+# Hand-written context for each generated Config-<file>.yml.md page.
+#
+#   intro      prose paragraph(s) placed under the page title
+#   manager    Java class that consumes the file
+#   commands   commands driven by the file
+#   localized  language-file root that overlays this file's text, or omitted
+#   reload     command/method that reloads it
+#   keys       description overrides, keyed by full path, `PARENT.*.CHILD`, or bare key name
+#
+# Everything else on the generated pages (paths, types, defaults, entry lists) comes
+# straight out of src/main/resources and must not be hand-edited.
+
+amethyst-tools.yml:
+  manager: '`AmethystToolsManager`, `AmethystToolsListener`, `AmethystToolsTask`'
+  commands: '`/amethysttool give <player> <type> [duration]`, `/amethysttool reload`'
+  localized: CONFIG.AMETHYST_TOOLS
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    Amethyst Tools are the timed premium tools sold in the Shard Shop: a drill that breaks a
+    3x3 face at once, a chopper that fells a whole tree, and the other variants defined here.
+    Each tool is handed out with a lifetime attached, and `AmethystToolsTask` removes it from
+    the player's inventory when that timer runs out — which is why every tool has a `DURATION`
+    as well as the usual enchantment and behaviour settings.
+
+    `AMETHYST-TOOLS` defines the tools themselves; `AMETHYST-MESSAGES` holds the chat and
+    action-bar strings the feature sends. Tools are granted by `/amethysttool` or by a Shard
+    Shop entry in `shop.yml` that sets `AMETHYST-TOOL` and `AMETHYST-DURATION`.
+
+anvil-moderation.yml:
+  manager: '`AnvilModerationManager`, `AnvilModerationListener`'
+  commands: '`/amod`'
+  reload: '`/amod reload` or `/ultimatedonutsmp2 reload`'
+  intro: |
+    Blocks players from renaming items to slurs or advertising through an anvil. The listener
+    checks the requested name against `banned-words`, and repeat offenders escalate through
+    `punishments`.
+
+    Unlike most files here this one is written back to disk at runtime: `players` is the
+    plugin's own record of who has tripped the filter and how often, so treat it as state
+    rather than configuration. Edit `banned-words` and `punishments`, and leave `players`
+    alone unless you are deliberately clearing someone's history.
+
+auction-house.yml:
+  manager: '`AuctionHouseManager`, `AuctionOrderBotManager`, `AuctionHouseExpiryTask`'
+  commands: '`/auctionhouse` (`/ah`) with `sell`, `my`, `claims`, `cancel`, `limit`, `fastbuy`, `fastsell`, `reload`'
+  localized: CONFIG.AUCTION_HOUSE
+  reload: '`/auctionhouse reload` or `/ultimatedonutsmp2 reload`'
+  intro: |
+    The player-to-player marketplace behind `/ah`. Listings live in the database, so this file
+    controls the rules around them rather than the listings themselves: how long a listing
+    lasts, what it may cost, what may be sold, how unclaimed items come back to their owner,
+    and how the browse GUI is laid out.
+
+    Two things are worth calling out. `RESTRICTIONS` is the safety net that stops players
+    listing items you never intended to be tradable, and `BOTS` generates synthetic listings
+    so a quiet server still looks alive — turn it off if you want a purely player-driven
+    economy. Listing limits are also permission-tiered through
+    `ultimatedonutsmp2.auctionhouse.limit.<N>`, which overrides the default limit set here.
+
+config.yml:
+  manager: '`ConfigManager`, `FeatureManager`, and most managers in the plugin'
+  commands: '`/ultimatedonutsmp2 reload`, `/ultimatedonutsmp2 features`, `/ultimatedonutsmp2 setup`'
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    The main configuration file, and the one you will spend the most time in. It carries the
+    server-wide settings that do not deserve a file of their own: language selection, stored
+    locations, the feature toggle table, chat, combat and crystal behaviour, teleport
+    cooldowns, currency formatting, the tab list, performance tuning, and much more.
+
+    Two sections deserve attention before you change anything else:
+
+    - **`LANGUAGE`** picks the active locale from `languages/`. `LANGUAGE.ACTIVE` selects the
+      file, `LANGUAGE.FALLBACK` is used for any key the active locale is missing.
+    - **`FEATURES`** / **`FEATURES_SETTINGS`** switch whole subsystems on and off.
+      `FeatureManager` reads `FEATURES.<KEY>.ENABLED` first and falls back to the older
+      `COMMANDS.<KEY>` boolean, so both styles work. `FEATURES_SETTINGS.DISABLED_COMMAND_ACTION`
+      decides what a disabled command does: send a `MESSAGE`, pretend it is `UNKNOWN`, or
+      `UNREGISTER` it from the server entirely.
+
+    On reload the plugin merges any keys that are new in the jar into your file rather than
+    overwriting it, and drops a copy of the previous version into `config-backups/<timestamp>/`.
+
+crates.yml:
+  manager: '`CrateManager`, `CrateVisualManager`, `CrateChestListener`'
+  commands: '`/crate` (including `/crate keyall`), `/crates`, `/keys`'
+  localized: CONFIG.CRATES
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    Defines every crate on the server: the key that opens it, the animation played, the reward
+    pool and the odds attached to each reward. Crates work both virtually (through `/crate`)
+    and physically, by binding a crate to a chest in the world.
+
+    Rewards are weighted rather than percentage-based — a reward's chance is its weight divided
+    by the total weight of the pool — so adding a new reward dilutes everything else in that
+    crate unless you rebalance. The `CRATES` subtree is treated as yours: config merging on
+    startup will add missing top-level defaults but will never rewrite crates you have defined.
+
+database.yml:
+  manager: '`DatabaseManager`, `RedisManager`'
+  commands: '`/ultimatedonutsmp2 reload`'
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    Chooses where player data is stored, and optionally connects the server to Redis.
+
+    `DATABASE.TYPE` picks one of three backends. `SQLITE` is the default and needs no setup —
+    everything lands in a single file under the plugin folder. `MYSQL` is the right choice when
+    several servers must share one set of balances, homes and punishments. `MONGODB` is
+    supported as well, backed by a local cache file so the server survives a brief outage.
+
+    `REDIS` is separate from your database choice and purely for cross-server messaging:
+    staff chat, network alerts, maintenance state, cross-server duels and order syncing all
+    ride on it. Leave `REDIS.ENABLED` off on a single server; nothing else depends on it.
+  keys:
+    DATABASE.TYPE: 'Storage backend. `SQLITE` (default, zero setup), `MYSQL` (shared across a network), or `MONGODB`.'
+    DATABASE.SQLITE.FILE: 'Path to the SQLite file, relative to the plugin folder.'
+    DATABASE.MYSQL.CREATE-DATABASE: 'Issue `CREATE DATABASE IF NOT EXISTS` on connect. Requires a MySQL user with create rights.'
+    DATABASE.MYSQL.PARAMETERS: 'JDBC query string appended to the connection URL.'
+    DATABASE.MONGODB.CACHE-FILE: 'Local cache used to keep serving reads while MongoDB is unreachable.'
+    DATABASE.MONGODB.SYNC-ON-AUTOSAVE: 'Flush the local cache to MongoDB on every autosave rather than only on shutdown.'
+    REDIS.ENABLED: 'Enable Redis. Required for cross-server staff chat, alerts, maintenance sync, cross-server duels and order syncing.'
+    REDIS.DATABASE: 'Redis logical database index. Use a different index per network if several plugins share the server.'
+    REDIS.RECONNECT-DELAY-MS: 'Delay before retrying a dropped Redis connection, in milliseconds.'
+
+death-messages.yml:
+  manager: '`PlayerDeathListener`'
+  localized: DEATH_MESSAGES
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    Replaces vanilla death messages with the plugin's own wording, keyed by damage cause.
+    Because the text is localized, translating these is usually better done under
+    `DEATH_MESSAGES` in `languages/<locale>.yml` than by editing this file directly.
+
+    Whether a player actually sees another player's death message is a per-player choice —
+    the `deathmessages` player setting can limit them to friends only, or turn them off.
+
+dialog.yml:
+  manager: '`DialogManager`, `DialogListener`, `dialogs/screens/*`'
+  localized: DIALOG
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    Configures the native dialog screens — the server-driven UI introduced in Minecraft 1.21.6,
+    used here for the pause-screen entries, the pay flow, homes, stats, teleport and the rest
+    of the `*_DIALOG` screens listed below.
+
+    This is a client-capability feature. `DialogManager` only initialises when the running
+    server exposes the Paper dialog API; on older servers, or on Spigot, the plugin quietly
+    falls back to the chest-based menus in `menus.yml`. Setting `ENABLED` to `false` forces
+    that fallback everywhere.
+
+    `PAUSE-SCREEN` is written out as a datapack during `onLoad()`, before worlds load, so
+    changes there need a full server restart rather than a reload.
+
+discord.yml:
+  manager: '`DiscordWebhookManager`'
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    Sends punishment and staff events to Discord through incoming webhooks. There is no bot
+    and no JDA dependency — the plugin posts JSON over HTTPS, so all you need is a webhook URL
+    from a channel's integration settings.
+
+    Message templates accept `%player%`, `%uuid%`, `%staff%`, `%reason%`, `%duration%`,
+    `%date%`, `%id%`, `%server%`, `%scope%` and `%type%`. Leaving a webhook URL empty disables
+    that notification silently.
+
+duels.yml:
+  manager: '`DuelManager`, `DuelWorldManager`, `DuelListener`, `DuelMatchTask`'
+  commands: '`/duel`, `/queue`, `/arena`, `/create`, `/draw`, `/leave`'
+  localized: CONFIG.DUELS
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    Runs the 1v1 duel system: the queue players join, the arenas matches are played in, the
+    countdown and result titles, and the rollback that restores an arena afterwards.
+
+    `MAP_SOURCES` is the piece that decides how arenas are produced — duels run in managed
+    worlds so that damage from one match never leaks into the next. `CROSS_SERVER` lets a
+    queue span several backend servers, which requires Redis to be enabled in `database.yml`.
+    `COMMAND_BLOCK` is the list of commands players may not run mid-match, and is your main
+    defence against someone escaping a losing duel.
+
+enchantments.yml:
+  manager: '`EnchantmentsManager`, `EnchantSelectMenu`'
+  commands: 'Opened from the Orders flow when a listed item accepts enchantments'
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    Backs the enchantment picker GUI. When a player creates an order for an enchantable item,
+    this file decides which enchantments they may ask for, and where each one sits in the menu.
+
+    The layout is one section per item type (`helmet`, `sword`, `pickaxe`, and so on), and one
+    entry per selectable enchantment level. Each entry maps an `enchantment` string in
+    `name;level` form to a `slot` and a `page`, so a full set of five Protection levels is five
+    separate entries. There is no standalone command for this GUI — it is reached through
+    Orders, not from a `/enchant`-style command.
+
+    Note that although the language files carry a `CONFIG.ENCHANTMENTS` block, this file is
+    read raw and is **not** overlaid per locale, so translate the `messages` section here
+    rather than in `languages/`.
+
+ender-chest.yml:
+  manager: '`EnderChestManager`, `EnderChestListener`'
+  commands: '`/enderchest` (`/ec`), `/ecsee`'
+  localized: CONFIG.ENDER_CHEST
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    Replaces the vanilla ender chest with a plugin-managed one stored in the database, which is
+    what makes it work across a network and lets staff inspect it with `/ecsee`.
+
+    Row count is permission-tiered: `ultimatedonutsmp2.enderchest.rows.<N>` overrides the
+    default size configured here, so donor ranks can be given a larger chest without a separate
+    feature. Editing another player's chest through `/ecsee` additionally requires
+    `ultimatedonutsmp2.admin.ecsee.edit`.
+
+ffa.yml:
+  manager: '`FfaManager`, `FfaListener`, `FfaMatchTask`'
+  commands: '`/ffa`, `/ffaarena`, `/ffastats`'
+  localized: CONFIG.FFA
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    Instanced free-for-all arenas. Unlike the ranked arena in `pvp.yml`, FFA arenas are
+    disposable: players drop into an instance, fight, and the arena is rolled back afterwards.
+
+    `ROLLBACK` controls that restoration, `PLAYER_STATE` decides what players arrive with and
+    what they get back on leaving, and `RULES` holds the in-arena restrictions. Keep
+    `PLAYER_STATE` in mind when changing anything else here — it is what guarantees a player's
+    survival inventory is not affected by what happens inside the arena.
+
+filter.yml:
+  manager: '`FilterManager`, consumed by `OrdersManager` and the marketplace menus'
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    Item category definitions for the marketplace browse filters — the Blocks / Tools / Food /
+    Combat buttons players use to narrow down Orders and Auction House listings.
+
+    Despite the name this is **not** a chat filter; profanity and advertising handling lives in
+    `config.yml` under `CHAT` and in `anvil-moderation.yml`. The structure here is deliberately
+    plain: every top-level key becomes a category, and its value is the list of Bukkit
+    `Material` names that belong to it. Add a key and it becomes a new category; names that do
+    not resolve to a real material are skipped silently, which is worth remembering after a
+    Minecraft update renames an item.
+
+freeze.yml:
+  manager: '`FreezeManager`, `FreezeListener`'
+  commands: '`/freeze`'
+  localized: CONFIG.FREEZE
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    Freezes a suspected cheater in place while staff talk to them. The listener blocks
+    movement, interaction and most commands, and this file decides how obvious that is to the
+    player: the on-screen messaging, the effects applied, and what happens if they log out
+    while frozen.
+
+    The logout rule is the important one — without it, disconnecting is a free escape.
+
+hide.yml:
+  manager: '`HideManager`, `HideProtocolLibBridge`, `HideExpansion`'
+  commands: '`/hide`, `/disguise`'
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    Lets a player appear under a different name and skin. `SCRAMBLE` generates a randomised
+    name, while `ALIASES` and `SKINS` supply the pool of hand-picked identities `/disguise`
+    can draw from. Name changes are applied at the packet level through ProtocolLib; skins
+    resolve through SkinsRestorer when it is installed, and fall back to Mojang profile
+    lookups otherwise.
+
+    Access is split across several permissions rather than one: `ultimatedonutsmp2.hide.scramble`,
+    `.disguise`, `.admin` and `.bypass` (the last letting staff see through other players'
+    disguises). The `hide` PlaceholderAPI expansion exposes the current alias and mode for use
+    in chat and tab list formats.
+
+invsee.yml:
+  manager: '`InvseeManager`, `InvseeListener`'
+  commands: '`/invsee`'
+  localized: CONFIG.INVSEE
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    The staff inventory inspector. `LAYOUT` maps the target's inventory, armour and offhand
+    onto the slots of the viewing GUI, and `INVSEE` decides whether staff may edit what they
+    see or only look.
+
+    Sessions are live: changes made in the GUI apply to the target player immediately, so
+    read-only mode is the safer default for junior staff.
+
+menus.yml:
+  manager: '`BaseMenu` subclasses, `InventoryClickListener`, `MenuNavigationTracker`'
+  commands: '`/menu`, `/settings`, `/rules`, `/ranks`, `/stats`, `/leaderboard`, and most GUI commands'
+  localized: MENUS
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    The layout file for every chest-style GUI in the plugin — roughly forty menus, from the
+    settings screen to the leaderboards, bounty board, profile viewer and confirmation
+    dialogs. Each menu section defines its title, size and the items placed in it, with slot
+    numbers counted from `0` in the top-left.
+
+    Text here is localized. If you only want to translate a menu, edit `MENUS` in
+    `languages/<locale>.yml` instead — that overlay is applied on top of this file, so your
+    layout survives a plugin update while the wording stays translated.
+
+    `GLOBAL` holds the shared filler, navigation and close-button definitions that individual
+    menus inherit, so a change there is felt everywhere. Note also that the plugin will reset a
+    menu layout it recognises as a stale pre-update version, so keep a copy of heavy
+    customisations.
+
+network.yml:
+  manager: '`NetworkStatusManager`, `NetworkStaffChatManager`, `NetworkStaffAlertManager`, `MaintenanceManager`'
+  commands: '`/servers`, `/staffchat`, `/helpop`, `/report`, `/maintenance`'
+  localized: CONFIG.NETWORK
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    Ties several backend servers together. `NETWORK` identifies this server and lists its
+    siblings, `NETWORK-STATUS` drives the `/servers` menu and its player counts, and
+    `MAINTENANCE` configures the lock-down mode that keeps everyone but staff out.
+
+    Almost everything here depends on Redis being enabled in `database.yml`; without it the
+    plugin still runs, but staff chat, alerts and maintenance stay local to this server.
+    Player transfers use BungeeCord plugin messaging, so the names configured here must match
+    the server names in your proxy configuration exactly.
+
+offenses.yml:
+  manager: '`OffenseManager`'
+  commands: '`/offend`'
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    The preset punishments staff pick from with `/offend`, and the escalating tiers each one
+    runs through. Rather than asking staff to judge a duration, they choose the offence and the
+    plugin applies the right tier based on how many times that player has done it before.
+
+    `durations` is that ladder: the first entry is the first offence, the second the second,
+    and the last entry repeats for every offence after it. A tier of `perm` never expires, and
+    a tier of `0s` is issued as a warning instead of a ban.
+
+    Treat `wipe: true` with care. It only fires when the offence actually bans someone, and it
+    clears that player's stats, balance, homes, ender chest, keys, auctions and orders — the
+    same thing `/playerwipe` does, with no undo. Punishment history, IP history and placed
+    spawners are kept.
+  keys:
+    'offenses.*.name': 'Display name shown to staff in `/offend` and in punishment messages.'
+    'offenses.*.type': 'Punishment applied: `BAN`, `MUTE`, `WARN` or `KICK`.'
+    'offenses.*.durations': 'Escalation ladder, one duration per prior offence. Accepts `30d`, `24h`, `perm`, and `0s` for a warning. The final entry repeats for all later offences.'
+    'offenses.*.wipe': 'Also wipe the player''s progress when this offence results in a ban. Irreversible; ignored for `MUTE`, `WARN`, `KICK` and `0s` tiers.'
+
+orders.yml:
+  manager: '`OrdersManager`, `OrdersBedrockManager`, `OrdersExpiryTask`, `AuctionOrderBotManager`'
+  commands: '`/orders`'
+  localized: CONFIG.ORDERS
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    The buy-orders board: the mirror image of the auction house, where players post what they
+    want to buy and at what price, and anyone holding that item can fill the order.
+
+    `MATCHING` and `DELIVERY` are the heart of it — how a held item is matched against an open
+    order, and how the goods and money change hands afterwards. `CATEGORY_FILTERS` draws its
+    category buttons from `filter.yml`. The `*_SIGN` sections configure the sign-based text
+    prompts used for search, amount and price entry, and `BEDROCK` swaps those for native
+    Bedrock forms when Floodgate is installed. `NETWORK` syncs orders between servers over
+    Redis.
+
+pvp.yml:
+  manager: '`PvpManager`, `PvpMatchManager`, `PvpListener`, `PvpArenaTask`'
+  commands: '`/pvp`'
+  localized: CONFIG.PVP
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    The persistent ranked arena — the one players queue into repeatedly to climb a ladder,
+    as opposed to the throwaway instances in `ffa.yml`.
+
+    It is the largest PvP file because it carries several systems at once: `ELO` for rating,
+    `RANKS` for the LT/HT ladder those ratings map onto, `LEVELS` for the parallel progression
+    track, `KITS` for the editable loadouts, `ANTI_KILL_FARMING` to stop two accounts trading
+    kills, and its own `SCOREBOARD` shown only inside the arena.
+
+    `RESET` schedules arena regeneration by pasting a schematic through WorldEdit or FAWE via
+    console commands — if neither is installed the reset is skipped, so verify one is present
+    before relying on it. `ARENA` and `KITS` are treated as your data and are never overwritten
+    by config merging on update.
+
+rtp.yml:
+  manager: '`RTPManager`, `RTPQueueManager`, `RTPZoneManager`, `RespawnRtpManager`, `RTPCacheTask`'
+  commands: '`/rtp`, `/rtpq`'
+  localized: CONFIG.RTP
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    Random teleport. The interesting part is that destinations are found ahead of time rather
+    than on demand: `RTPCacheTask` pre-scans and caches safe locations so `/rtp` can hand one
+    out instantly instead of freezing the server while it looks for solid ground.
+
+    `WORLD-SETTINGS` sets the search area and rules per world, `DENIED-WORLDS` blocks the rest,
+    and `QUEUE` handles the case where several players ask at once. Two permission families
+    modify behaviour per rank: `ultimatedonutsmp2.rtp.cooldown.<seconds>` shortens the wait and
+    `ultimatedonutsmp2.rtp.priority.<N>` moves a player up the queue.
+
+scoreboard.yml:
+  manager: '`ScoreboardManager`, `ScoreboardTask`'
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    The sidebar scoreboard. Two layouts ship side by side — `MODERN`, which labels each
+    statistic, and `LEGACY`, which shows icons and values only — and players pick between them
+    in `/settings`, with the choice saved per player. Cycling past `LEGACY` hides the sidebar
+    entirely.
+
+    Lines accept `%economy_*%` placeholders (see [Placeholders & Integrations](Placeholders-and-Integrations))
+    plus a few tokens specific to this file: `{team}`, `{shard_booster}` and `{shard_cuboid}`
+    expand to their line or vanish when not applicable, and `{money_icon}`, `{shards_icon}` and
+    `{sb_icon:<glyph>}` handle the aligned icon column.
+
+    Leave `TITLE-UPDATE-TICKS` at `20` unless the title itself is an animation. Statistics such
+    as ping and playtime do not need to refresh ten times a second, and this task runs for
+    every online player.
+
+server-wipe.yml:
+  manager: '`ServerWipeManager`'
+  commands: '`/serverwipe`'
+  localized: CONFIG.SERVER_WIPE
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    Configuration for a full season reset. `/serverwipe` deletes and regenerates the worlds
+    listed in `RESET-WORLDS` and clears plugin data, which is exactly as final as it sounds.
+
+    The safety mechanisms are the part to understand before enabling this. `PROTECTED-WORLDS`
+    can never be wiped regardless of the rest of the file, and `TOKEN-TTL-SECONDS` bounds the
+    confirmation token the command issues, so a wipe cannot be triggered by a stray command
+    days later. A wipe also suppresses the normal shutdown save so that in-memory data is not
+    written back over the fresh state, and progress is tracked in `server-wipe-pending.yml` so
+    an interrupted wipe resumes on the next boot.
+
+shop.yml:
+  manager: '`ShopManager`, `PurchaseShopMenu`, `SellMenu`, `QuickBuyItemDialog`'
+  commands: '`/shop`, `/shardshop`, `/sell`'
+  localized: CONFIG.SHOP
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    The server shop, in two halves. `SHOP-GUI` and `QUICK-BUY` are the DonutSMP-style quick buy
+    flow, which fills orders straight from the Auction House rather than from an infinite admin
+    stock. `SHARD-MENU` is the separate premium shop bought with Shards.
+
+    Shard shop entries can do more than give an item: `COMMAND` runs a console command,
+    `AMETHYST-TOOL` together with `AMETHYST-DURATION` grants one of the timed tools from
+    `amethyst-tools.yml`, and the quantity keys control how many a player may buy in one go.
+    Sell prices are not set here — they come from `worth.yml`.
+
+sounds.yml:
+  manager: '`ConfigManager.getSound()`, called throughout the menus and managers'
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    One place to change every sound the plugin plays, grouped by the feature that triggers it.
+    Values are Bukkit `Sound` enum names; setting one to an empty string silences that
+    particular cue without affecting the rest.
+
+    Players can mute the lot for themselves with the `serversounds` toggle in `/settings`.
+
+    One caveat: the `BILLFORD` group is left over from a feature that is not implemented in
+    this build, and nothing reads it. See [FAQ](FAQ) for the details.
+
+spawn-stash.yml:
+  manager: '`SpawnStashManager`, `SpawnStashListener`'
+  commands: '`/spawnstash`'
+  localized: CONFIG.SPAWN_STASH
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    Bait for catching players who steal from containers they should not touch. Staff place a
+    stash of tempting items, and taking from it raises a staff alert naming the player.
+
+    `TYPES` defines the different stashes and what each one contains. Alerts go to holders of
+    `ultimatedonutsmp2.staff.spawnstash.alert`, staff who should not trip their own trap need
+    `ultimatedonutsmp2.staff.spawnstash.bypass`, and placing or removing stashes needs
+    `ultimatedonutsmp2.staff.spawnstash`.
+
+spawners.yml:
+  manager: '`SpawnerManager`, `SpawnerBlockListener`, `SpawnerInteractListener`, `SpawnerGenerationTask`'
+  commands: '`/spawner`'
+  localized: CONFIG.SPAWNERS
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    DonutSMP-style stacked spawners. Instead of a vanilla spawner spitting out mobs, a managed
+    spawner accumulates its drops over time and hands them over when the player collects, which
+    is far cheaper than keeping hundreds of entities alive.
+
+    `TYPES` defines one entry per mob: what it produces, how fast, and what stacking it allows.
+    `SETTINGS` holds the global limits and `GUI` the management panel opened by right-clicking
+    a placed spawner. Placed spawners are stored in the database and survive restarts; note
+    that they are deliberately preserved by the offence `wipe` flag when a player is banned.
+
+staff-mode.yml:
+  manager: '`StaffModeManager`, `StaffModeListener`, `FakePlayerManager`'
+  commands: '`/staffmode`, `/vanish`, `/stafflist`, `/fakeplayer`'
+  localized: CONFIG.STAFF_MODE
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    Staff mode and vanish. Entering staff mode stores the player's survival inventory, swaps in
+    the tool bar defined by `ITEMS` and `CUSTOM-ITEMS`, and restores everything on exit — so a
+    crash mid-session should not cost anyone their gear.
+
+    `FAKE-PLAYER` belongs to a related trick: `/fakeplayer` spawns a convincing decoy to draw
+    out players who behave differently when they think no staff are online. Note that the
+    fake player feature checks the legacy permission prefix `ultimatedonutsmp.staff.fakeplayer`
+    — without the `2` — which is easy to miss when setting up permissions.
+
+worth.yml:
+  manager: '`WorthManager`, `BalancedPriceManager`, `FarmingMetaManager`'
+  commands: '`/worth`, `/sell`, `/sellhand`, `/sellall`, `/meta`'
+  localized: CONFIG.WORTH
+  reload: '`/ultimatedonutsmp2 reload`'
+  intro: |
+    The master price list. Every sell command and every worth tooltip in the plugin resolves
+    through this file, which makes it the single biggest lever on your economy.
+
+    `TYPE` holds the prices themselves, grouped into the categories the `/worth` browser sorts
+    by. `CONTAINER` decides whether a shulker box is valued as the sum of its contents — and
+    `MAX-CONTAINER-DEPTH` stops someone nesting containers to inflate a sale. `DISPLAY` and the
+    `WORTH-LORE` section of `config.yml` control the tooltip players see while holding an item;
+    they can turn that off individually with the `worthdisplay` setting.
+
+    `META` drives the rotating farming meta, which temporarily boosts a chosen crop's value;
+    its live state is kept separately in `farming-meta-data.yml`.

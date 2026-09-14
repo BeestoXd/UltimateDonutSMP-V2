@@ -1,0 +1,72 @@
+package com.bx.ultimateDonutSmp2.models;
+
+import org.bukkit.inventory.ItemStack;
+
+import java.util.UUID;
+
+public record Order(
+        long id,
+        UUID ownerUuid,
+        String ownerName,
+        ItemStack requestedItem,
+        String requestedMaterialKey,
+        String categoryKey,
+        OrderStatus status,
+        int requestedQuantity,
+        int deliveredQuantity,
+        int collectedQuantity,
+        double priceEach,
+        double totalBudget,
+        double paidAmount,
+        double escrowRemaining,
+        long createdAt,
+        long expiresAt,
+        long closedAt
+) {
+
+    public boolean active() {
+        return status == OrderStatus.ACTIVE;
+    }
+
+    public boolean filled() {
+        return status == OrderStatus.FILLED;
+    }
+
+    public boolean expired() {
+        return status == OrderStatus.EXPIRED;
+    }
+
+    public boolean cancelled() {
+        return status == OrderStatus.CANCELLED;
+    }
+
+    public boolean closed() {
+        return status != OrderStatus.ACTIVE;
+    }
+
+    public int remainingQuantity() {
+        return Math.max(0, requestedQuantity - deliveredQuantity);
+    }
+
+    /**
+     * Your Orders lists open buy orders and closed/filled orders that still have items to collect.
+     * After Collect, a fully delivered order with no remaining item claims is hidden.
+     */
+    public boolean visibleInYourOrders(boolean hasUnclaimedItemClaims) {
+        if (hasUnclaimedItemClaims) {
+            return true;
+        }
+        return active() && remainingQuantity() > 0;
+    }
+
+    public long secondsRemaining(long nowMillis) {
+        return Math.max(0L, (expiresAt - nowMillis) / 1000L);
+    }
+
+    public double progressPercent() {
+        if (requestedQuantity <= 0) {
+            return 0D;
+        }
+        return Math.min(100D, (deliveredQuantity * 100D) / requestedQuantity);
+    }
+}

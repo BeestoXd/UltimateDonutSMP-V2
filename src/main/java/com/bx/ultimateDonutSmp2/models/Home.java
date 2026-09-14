@@ -1,0 +1,42 @@
+package com.bx.ultimateDonutSmp2.models;
+
+import org.bukkit.Location;
+
+import java.util.UUID;
+
+public class Home {
+
+    private final UUID ownerUuid;
+    private String name;
+    private Location location;
+    private long createdAt;
+    /** Material name shown for this home in menus, or blank for the default bed. */
+    private String icon = "";
+
+    public Home(UUID ownerUuid, String name, Location location) {
+        this(ownerUuid, name, location, System.currentTimeMillis());
+    }
+
+    public Home(UUID ownerUuid, String name, Location location, long createdAt) {
+        this.ownerUuid = ownerUuid;
+        this.name = name;
+        this.location = location;
+        this.createdAt = createdAt;
+    }
+
+    public UUID getOwnerUuid() { return ownerUuid; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public Location getLocation() { return location; }
+    public void setLocation(Location location) { this.location = location; }
+
+    public long getCreatedAt() { return createdAt; }
+    public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
+
+    public String getIcon() { return icon == null ? "" : icon; }
+    public void setIcon(String icon) { this.icon = icon == null ? "" : icon; }
+
+    public boolean hasIcon() { return icon != null && !icon.isBlank(); }
+}

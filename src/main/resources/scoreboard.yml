@@ -1,0 +1,86 @@
+# ==============================================================================
+# UltimateDonutSMP2 - Scoreboard Configuration
+# ==============================================================================
+
+SCOREBOARD:
+  # Enable or disable the animated sidebar scoreboard (true / false)
+  ENABLED: true
+
+  # Scoreboard layout mode: MODERN or LEGACY
+  MODE: LEGACY
+
+  # Ticks between sidebar updates (20 ticks = 1 second). Keep this at 20 unless the title
+  # itself is an animation that must cycle faster; stats such as ping and playtime do not
+  # need to refresh ten times a second.
+  TITLE-UPDATE-TICKS: 20
+
+  # Enable column alignment for icons on the left side of scoreboard lines (true / false)
+  ALIGN-ICON-COLUMN: true
+
+  # Column width in pixels for icon alignment padding
+  ICON-COLUMN-WIDTH: 10
+
+  # Players pick between the two layouts below in /settings > Scoreboard, and the choice is
+  # saved per player. Cycling past LEGACY hides the sidebar entirely; the next press brings it
+  # back on MODERN.
+  #
+  # A scoreboard.yml written before the split can leave MODERN and LEGACY out and keep using the
+  # flat TITLE / LINES / TEAM / SHARD-BOOSTER / SHARD-CUBOID keys — both styles fall back to
+  # them. Anything a style leaves unset falls back the same way.
+
+  # Labelled layout: an animated server name over one line per statistic.
+  MODERN:
+    TITLE:
+      - '&#0069d6&lE&#0374da&lc&#067fdf&lo&#0a8be3&ln&#0d96e7&lo&#10a1ec&lm&#13acf0&ly&#17b8f4&lS&#1ac3f9&lM&#1dcefd&lP'
+    LINES:
+      - ''
+      - '&#00FC00&l$ &fMoney &#00FC00%economy_nicestMoney%     '
+      - '&#A303F9★ &fShards &#A303F9%economy_nicestShards%     '
+      - '&#FC0000🗡 &fKills &#FC0000%economy_kills%      '
+      - '&#F97603☠ &fDeaths &#F97603%economy_deaths%   '
+      - '&#00A4FC⌛ &fKeyall &#00A4FC%economy_keyall_countdown%'
+      - '&#FCE300⌚ &fPlaytime &#FCE300%economy_playtime%   '
+      - '{team}'
+      - '{shard_cuboid}'
+      - '{shard_booster}'
+      - ''
+      - '&7NA East &7(&#0069D6%economy_ping%ms&7)'
+    TEAM: '&#00A4FC🪓 &fTeam &#00A4FC%economy_team%     '
+    SHARD-BOOSTER: '&#A303F9⚡ &fBooster &#A303F9%economy_booster_countdown%     '
+    SHARD-CUBOID: '&#A303F9⌛ &fShards &#A303F9%economy_shard_cuboid_display%     '
+
+  # Compact layout: the player's own name in the title, icons and values only.
+  LEGACY:
+    TITLE:
+      - '&f%economy_username%'
+    LINES:
+      - '&#00FC00$ &f%economy_nicestMoney%'
+      - '&#A303F9★ &f%economy_nicestShards%'
+      - '&#FC0000🗡 &f%economy_kills%'
+      - '&#F97603☠ &f%economy_deaths%'
+      - '&#FCE300⌚ &f%economy_playtime%'
+      - '{team}'
+      - '{shard_booster}'
+    TEAM: '&6Team: &f%economy_team%'
+    SHARD-BOOSTER: '&e⚡ Booster: &f%economy_booster_countdown%'
+    SHARD-CUBOID: '&#A303F9⌛ &f%economy_shard_cuboid_display%'
+
+  # Fallback used by both styles for anything they leave unset.
+  TITLE:
+    - '&#0069d6&lE&#0374da&lc&#067fdf&lo&#0a8be3&ln&#0d96e7&lo&#10a1ec&lm&#13acf0&ly&#17b8f4&lS&#1ac3f9&lM&#1dcefd&lP'
+  LINES:
+    - ''
+    - '&#00FC00&l$ &fMoney &#00FC00%economy_nicestMoney%     '
+    - '&#A303F9★ &fShards &#A303F9%economy_shards%     '
+    - '&#FC0000🗡 &fKills &#FC0000%economy_kills%      '
+    - '&#F97603☠ &fDeaths &#F97603%economy_deaths%   '
+    - '&#00A4FC⌛ &fKeyall &#00A4FC%economy_keyall_countdown%'
+    - '&#FCE300⌚ &fPlaytime &#FCE300%economy_playtime%   '
+    - '{team}'
+    - '{shard_cuboid}'
+    - '{shard_booster}'
+    - ''
+    - '&7NA East &7(&#0069D6%economy_ping%ms&7)'
+  TEAM: '&#00A4FC🪓 &fTeam &#00A4FC%economy_team%     '
+  SHARD-BOOSTER: '&#A303F9⚡ &fBooster &#A303F9%economy_booster_countdown%     '
+  SHARD-CUBOID: '&#A303F9⌛ &fShards &#A303F9%economy_shard_cuboid_display%     '
