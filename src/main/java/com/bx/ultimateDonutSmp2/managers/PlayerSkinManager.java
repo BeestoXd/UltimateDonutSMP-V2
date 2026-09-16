@@ -154,7 +154,7 @@ public class PlayerSkinManager {
             return;
         }
         saveScheduled = true;
-        plugin.getSpigotScheduler().runGlobalLater(() -> {
+        plugin.getSpigotScheduler().runAsyncLater(() -> {
             synchronized (this) {
                 saveScheduled = false;
                 if (dirty.get()) {
@@ -453,9 +453,10 @@ public class PlayerSkinManager {
         }
 
         if (name != null && !name.isBlank()) {
+            HttpURLConnection conn = null;
             try {
                 URI uri = URI.create("https://api.mojang.com/users/profiles/minecraft/" + name);
-                HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection();
+                conn = (HttpURLConnection) uri.toURL().openConnection();
                 conn.setConnectTimeout(3000);
                 conn.setReadTimeout(3000);
                 if (conn.getResponseCode() == 200) {
@@ -468,6 +469,10 @@ public class PlayerSkinManager {
                     }
                 }
             } catch (Throwable ignored) {
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
             }
         }
 
@@ -475,9 +480,10 @@ public class PlayerSkinManager {
     }
 
     private SkinTexture fetchMojangSessionTexture(String urlString) {
+        HttpURLConnection conn = null;
         try {
             URI uri = URI.create(urlString);
-            HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection();
+            conn = (HttpURLConnection) uri.toURL().openConnection();
             conn.setConnectTimeout(3000);
             conn.setReadTimeout(3000);
             if (conn.getResponseCode() == 200) {
@@ -502,6 +508,10 @@ public class PlayerSkinManager {
                 }
             }
         } catch (Throwable ignored) {
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
         return null;
     }
