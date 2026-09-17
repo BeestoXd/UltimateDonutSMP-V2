@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="images/mainn.png" alt="UltimateDonutSmp2" width="720">
+  <img src="images/mainn.png" alt="UltimateDonutSmp V2" width="720">
 </p>
 
-<h1 align="center">UltimateDonutSmp2</h1>
+<h1 align="center">UltimateDonutSmp V2</h1>
 
 <p align="center">
   Free Paper, Purpur, Pufferfish, Spigot, and Folia plugin for DonutSMP-style Minecraft servers.
@@ -18,7 +18,7 @@
 
 ## Overview
 
-UltimateDonutSmp2 is a complete Paper Minecraft server plugin built for DonutSMP-style survival networks. It combines player economy, teams, homes, warps, random teleport, shop, sell, worth, crates, shards, PvP systems, staff utilities, network communication, and GUI-driven workflows into one plugin.
+UltimateDonutSmp V2 is a complete Paper Minecraft server plugin built for DonutSMP-style survival networks. It combines player economy, teams, homes, warps, random teleport, shop, sell, worth, crates, shards, PvP systems, staff utilities, network communication, and GUI-driven workflows into one plugin.
 
 The goal is to reduce the number of separate plugins required for a modern SMP server while keeping configuration, player data, permissions, placeholders, and staff operations consistent across the entire server experience.
 
@@ -62,25 +62,48 @@ This README is the quick reference. The full documentation set lives in [`docs/w
 
 ## Screenshots
 
+Feature comparisons (UltimateDonutSMP V2 vs Original DonutSMP):
+
+| UltimateDonutSMP V2 | Original DonutSMP |
+| :---: | :---: |
+| <img src="images/1.png" alt="TAB - UltimateDonutSMP V2" width="420"> | <img src="images/2.png" alt="TAB - Original DonutSMP" width="420"> |
+| <img src="images/3.png" alt="Scoreboards - UltimateDonutSMP V2" width="420"> | <img src="images/4.png" alt="Scoreboards - Original DonutSMP" width="420"> |
+| <img src="images/5.png" alt="Dialogues - UltimateDonutSMP V2" width="420"> | <img src="images/6.png" alt="Dialogues - Original DonutSMP" width="420"> |
+| <img src="images/7.png" alt="Auction House - UltimateDonutSMP V2" width="420"> | <img src="images/8.png" alt="Auction House - Original DonutSMP" width="420"> |
+| <img src="images/9.png" alt="Bounty - UltimateDonutSMP V2" width="420"> | <img src="images/10.png" alt="Bounty - Original DonutSMP" width="420"> |
+| <img src="images/11.png" alt="Friends - UltimateDonutSMP V2" width="420"> | <img src="images/12.png" alt="Friends - Original DonutSMP" width="420"> |
+| <img src="images/13.png" alt="Homes - UltimateDonutSMP V2" width="420"> | <img src="images/14.png" alt="Homes - Original DonutSMP" width="420"> |
+| <img src="images/15.png" alt="Leaderboards - UltimateDonutSMP V2" width="420"> | <img src="images/16.png" alt="Leaderboards - Original DonutSMP" width="420"> |
+| <img src="images/17.png" alt="Orders - UltimateDonutSMP V2" width="420"> | <img src="images/18.png" alt="Orders - Original DonutSMP" width="420"> |
+| <img src="images/19.png" alt="Pay - UltimateDonutSMP V2" width="420"> | <img src="images/20.png" alt="Pay - Original DonutSMP" width="420"> |
+| <img src="images/21.png" alt="Quick Buy - UltimateDonutSMP V2" width="420"> | <img src="images/22.png" alt="Quick Buy - Original DonutSMP" width="420"> |
+| <img src="images/23.png" alt="Rank Menu - UltimateDonutSMP V2" width="420"> | <img src="images/24.png" alt="Rank Menu - Original DonutSMP" width="420"> |
+| <img src="images/25.png" alt="RTP Queue - UltimateDonutSMP V2" width="420"> | <img src="images/26.png" alt="RTP Queue - Original DonutSMP" width="420"> |
+| <img src="images/27.png" alt="Sell - UltimateDonutSMP V2" width="420"> | <img src="images/28.png" alt="Sell - Original DonutSMP" width="420"> |
+| <img src="images/29.png" alt="Settings - UltimateDonutSMP V2" width="420"> | <img src="images/30.png" alt="Settings - Original DonutSMP" width="420"> |
+| <img src="images/31.png" alt="Shard Shop - UltimateDonutSMP V2" width="420"> | <img src="images/32.png" alt="Shard Shop - Original DonutSMP" width="420"> |
+| <img src="images/33.png" alt="Spawners - UltimateDonutSMP V2" width="420"> | <img src="images/34.png" alt="Spawners - Original DonutSMP" width="420"> |
+| <img src="images/35.png" alt="Stats - UltimateDonutSMP V2" width="420"> | <img src="images/36.png" alt="Stats - Original DonutSMP" width="420"> |
+| <img src="images/37.png" alt="Teleport - UltimateDonutSMP V2" width="420"> | <img src="images/38.png" alt="Teleport - Original DonutSMP" width="420"> |
+
 Feature panels and in-game menus:
 
 |   |   |   |
 | :---: | :---: | :---: |
-| <img src="images/uds1.png" alt="Offend staff moderation command and Topsell web analytics" width="270"> | <img src="images/uds2.png" alt="UltimateDonutSmp2 feature panel 2" width="270"> | <img src="images/uds3.png" alt="UltimateDonutSmp2 feature panel 3" width="270"> |
-| <img src="images/uds4.png" alt="UltimateDonutSmp2 feature panel 4" width="270"> | <img src="images/uds5.png" alt="UltimateDonutSmp2 feature panel 5" width="270"> | <img src="images/uds6.png" alt="UltimateDonutSmp2 feature panel 6" width="270"> |
-| <img src="images/uds7.png" alt="UltimateDonutSmp2 feature panel 7" width="270"> | <img src="images/uds8.png" alt="UltimateDonutSmp2 feature panel 8" width="270"> | <img src="images/uds9.png" alt="UltimateDonutSmp2 feature panel 9" width="270"> |
-| <img src="images/uds10.png" alt="UltimateDonutSmp2 feature panel 10" width="270"> | <img src="images/uds11.png" alt="UltimateDonutSmp2 feature panel 11" width="270"> | <img src="images/uds12.png" alt="UltimateDonutSmp2 feature panel 12" width="270"> |
-| <img src="images/uds13.png" alt="UltimateDonutSmp2 feature panel 13" width="270"> | <img src="images/uds14.png" alt="UltimateDonutSmp2 feature panel 14" width="270"> | <img src="images/uds15.png" alt="UltimateDonutSmp2 feature panel 15" width="270"> |
-| <img src="images/uds16.png" alt="UltimateDonutSmp2 feature panel 16" width="270"> | <img src="images/uds17.png" alt="UltimateDonutSmp2 feature panel 17" width="270"> | <img src="images/uds18.png" alt="UltimateDonutSmp2 feature panel 18" width="270"> |
-| <img src="images/uds19.png" alt="UltimateDonutSmp2 feature panel 19" width="270"> |   |   |
+| <img src="images/uds2.png" alt="UltimateDonutSmp V2 feature panel 2" width="270"> | <img src="images/uds3.png" alt="UltimateDonutSmp V2 feature panel 3" width="270"> | <img src="images/uds4.png" alt="UltimateDonutSmp V2 feature panel 4" width="270"> |
+| <img src="images/uds5.png" alt="UltimateDonutSmp V2 feature panel 5" width="270"> | <img src="images/uds6.png" alt="UltimateDonutSmp V2 feature panel 6" width="270"> | <img src="images/uds7.png" alt="UltimateDonutSmp V2 feature panel 7" width="270"> |
+| <img src="images/uds8.png" alt="UltimateDonutSmp V2 feature panel 8" width="270"> | <img src="images/uds9.png" alt="UltimateDonutSmp V2 feature panel 9" width="270"> | <img src="images/uds10.png" alt="UltimateDonutSmp V2 feature panel 10" width="270"> |
+| <img src="images/uds11.png" alt="UltimateDonutSmp V2 feature panel 11" width="270"> | <img src="images/uds12.png" alt="UltimateDonutSmp V2 feature panel 12" width="270"> | <img src="images/uds13.png" alt="UltimateDonutSmp V2 feature panel 13" width="270"> |
+| <img src="images/uds14.png" alt="UltimateDonutSmp V2 feature panel 14" width="270"> | <img src="images/uds15.png" alt="UltimateDonutSmp V2 feature panel 15" width="270"> | <img src="images/uds16.png" alt="UltimateDonutSmp V2 feature panel 16" width="270"> |
+| <img src="images/uds17.png" alt="UltimateDonutSmp V2 feature panel 17" width="270"> | <img src="images/uds18.png" alt="UltimateDonutSmp V2 feature panel 18" width="270"> | <img src="images/uds19.png" alt="UltimateDonutSmp V2 feature panel 19" width="270"> |
 
 Gameplay clips:
 
 |   |   |
 | :---: | :---: |
-| <img src="images/gif1.gif" alt="UltimateDonutSmp2 gameplay clip 1" width="420"> | <img src="images/gif2.gif" alt="UltimateDonutSmp2 gameplay clip 2" width="420"> |
-| <img src="images/gif3.gif" alt="UltimateDonutSmp2 gameplay clip 3" width="420"> | <img src="images/gif4.gif" alt="UltimateDonutSmp2 gameplay clip 4" width="420"> |
-| <img src="images/gif5.gif" alt="UltimateDonutSmp2 gameplay clip 5" width="420"> | <img src="images/gif6.gif" alt="UltimateDonutSmp2 gameplay clip 6" width="420"> |
+| <img src="images/gif1.gif" alt="UltimateDonutSmp V2 gameplay clip 1" width="420"> | <img src="images/gif2.gif" alt="UltimateDonutSmp V2 gameplay clip 2" width="420"> |
+| <img src="images/gif3.gif" alt="UltimateDonutSmp V2 gameplay clip 3" width="420"> | <img src="images/gif4.gif" alt="UltimateDonutSmp V2 gameplay clip 4" width="420"> |
+| <img src="images/gif5.gif" alt="UltimateDonutSmp V2 gameplay clip 5" width="420"> | <img src="images/gif6.gif" alt="UltimateDonutSmp V2 gameplay clip 6" width="420"> |
 
 ## Requirements
 
@@ -96,7 +119,7 @@ Gameplay clips:
 | Optional network layer | Redis for cross-server staff chat, alerts, maintenance, reports, helpop, and server status |
 | Build environment | Maven available as `mvn`, internet access, and a JDK 21 or newer toolchain (CI builds on JDK 25) |
 
-Required plugins (the server will not enable UltimateDonutSmp2 without them):
+Required plugins (the server will not enable UltimateDonutSmp V2 without them):
 
 - PlaceholderAPI
 - ProtocolLib
@@ -131,7 +154,7 @@ The build compiles the codebase against the target API and packages a single uni
 
 Generated artifact is saved to the `target/` directory:
 
-- `UltimateDonutSmp2-1.0.jar` (shaded JAR)
+- `UltimateDonutSmp V2-1.0.jar` (shaded JAR)
 
 ## Installation
 
@@ -360,7 +383,7 @@ Running `/baltop` with no arguments opens the money leaderboard directly instead
 | Permission Node | Default | Description |
 | --- | --- | --- |
 | `ultimatedonutsmp2.admin` | `op` | Main admin parent node giving access to administrative commands, reload, wipe, and management systems |
-| `ultimatedonutsmp2.command.*` | `op` | Grants access to execute all UltimateDonutSmp2 commands |
+| `ultimatedonutsmp2.command.*` | `op` | Grants access to execute all UltimateDonutSmp V2 commands |
 | `ultimatedonutsmp2.staff.mode` | `op` | Staff moderation mode parent node (vanish, betterview, randomtp, staff list, tools) |
 | `ultimatedonutsmp2.staff.alerts.receive` | `op` | Parent node for receiving staff alerts (`helpop` and `report`) |
 | `ultimatedonutsmp2.staff.punishments.create` | `op` | Parent node for issuing punishments (`warn`, `kick`, `ban`, `mute`, `blacklist`) |
@@ -402,7 +425,7 @@ Running `/baltop` with no arguments opens the money leaderboard directly instead
 | `ultimatedonutsmp2.admin.punishments.exempt` | `op` | Cannot be punished by staff who lack the exempt bypass |
 | `ultimatedonutsmp2.admin.punishments.exempt.bypass` | `op` | Punish players who are exempt from being punished |
 | `ultimatedonutsmp2.admin.pvp` | `op` | Manage the ranked PvP arena and its kits |
-| `ultimatedonutsmp2.admin.reload` | `op` | Reload all UltimateDonutSmp2 configurations |
+| `ultimatedonutsmp2.admin.reload` | `op` | Reload all UltimateDonutSmp V2 configurations |
 | `ultimatedonutsmp2.admin.removemoney` | `op` | Remove money from player balances |
 | `ultimatedonutsmp2.admin.sellstats` | `op` | View top sell statistics and economy metrics |
 | `ultimatedonutsmp2.admin.serverwipe` | `op` | Execute guarded server wipe operations |
@@ -518,7 +541,7 @@ Running `/baltop` with no arguments opens the money leaderboard directly instead
 
 ## Placeholders
 
-UltimateDonutSmp2 includes built-in [PlaceholderAPI](https://placeholderapi.com/) expansion modules for player economy, statistics, locations, countdowns, leaderboards, player ranks, and disguise states.
+UltimateDonutSmp V2 includes built-in [PlaceholderAPI](https://placeholderapi.com/) expansion modules for player economy, statistics, locations, countdowns, leaderboards, player ranks, and disguise states.
 
 Placeholder expansion identifiers supported: `%economy_*%`, `%uds_*%`, `%ultimatedonutsmp2_*%`, `%economylb_*%`, `%economyrank_*%`, and `%hide_*%`.
 
@@ -613,7 +636,7 @@ Syntax: `%hide_<property>%`
 
 ## License and Terms
 
-UltimateDonutSmp2 is free, proprietary software.
+UltimateDonutSmp V2 is free, proprietary software.
 
 - The plugin is free to use but remains under a proprietary license.
 - Redistribution, resale, sublicensing, public mirroring, or unauthorized sharing is not permitted without written permission.
@@ -622,7 +645,7 @@ UltimateDonutSmp2 is free, proprietary software.
 - For full licensing terms, see [LICENSE.md](LICENSE.md).
 - For contribution guidelines and rules, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Copyright (c) 2026 UltimateDonutSmp2. All rights reserved.
+Copyright (c) 2026 UltimateDonutSmp V2. All rights reserved.
 
 ## Support
 
