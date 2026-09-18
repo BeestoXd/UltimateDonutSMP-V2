@@ -31,7 +31,7 @@ class PlayerSkinManagerBlockingIoAndConnectionLeakTest {
 
     @Test
     void mojangHttpConnectionsAreClosedInFinallyBlock() throws Exception {
-        String source = Files.readString(SOURCE);
+        String source = Files.readString(SOURCE).replace("\r\n", "\n");
         int fetchMethodIndex = source.indexOf("private SkinTexture fetchMojangSessionTexture(");
         assertTrue(fetchMethodIndex >= 0, "fetchMojangSessionTexture should exist");
         int fetchMethodEnd = source.indexOf("return null;\n    }", fetchMethodIndex);
