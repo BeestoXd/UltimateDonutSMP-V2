@@ -322,7 +322,7 @@ Configuration:
 - `BACKUP-DIRECTORY` (default `server-wipe-backups`) is where the pre-wipe copies are written, relative to the plugin folder unless you give an absolute path.
 - `MESSAGES.MAINTENANCE` and `MESSAGES.KICK` are what players see while the wipe is being prepared and when the sequence starts.
 
-When `confirm` runs, everyone online is kicked with `MESSAGES.KICK`, the database commit is made, a `server-wipe-pending.yml` marker is written, the normal shutdown saves are suppressed so nothing writes the old data back, and the server is shut down. On the next boot `ServerWipeManager.recoverOrRecreatePendingWorlds()` runs early in startup and completes or recreates the worlds from that marker, so the wipe finishes across the restart rather than in one tick. If a step fails before the database commit, the staged filesystem data is restored; if it fails after the commit, the reset files are preserved and shutdown is forced anyway.
+When `confirm` runs, everyone online is kicked with `MESSAGES.KICK`, the database commit is made, a `server-wipe-pending.yml` marker is written, the normal shutdown saves are suppressed so nothing writes the old data back, and the server is shut down. Worlds that can be unloaded are moved immediately. The overworld usually cannot, so those folders are moved on the next start before Minecraft loads them, then the worlds come back empty. If a step fails before the database commit, the staged filesystem data is restored; if it fails after the commit, the reset files are preserved and shutdown is forced anyway.
 
 Full key reference: [server-wipe.yml](Config-server-wipe.yml).
 

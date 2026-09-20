@@ -290,6 +290,8 @@ public class ServerWipeManager {
             DatabaseManager.ServerWipeResult result = plugin.getDatabaseManager()
                     .resetForServerWipe(startingMoney, new LinkedHashSet<>(validation.worlds()), wipeId);
             databaseCommitted = true;
+            markPendingCommitted(pendingFile);
+            registerWorldMoveShutdownHook();
 
             try {
                 clearRuntimeAfterCommit();
@@ -517,9 +519,23 @@ public class ServerWipeManager {
             World loaded = Bukkit.getWorld(worldName);
             World.Environment environment = validation.environments().getOrDefault(worldName, inferEnvironment(worldName));
             if (loaded != null) {
+                for (Player leftover : List.copyOf(loaded.getPlayers())) {
+                    leftover.kickPlayer(ColorUtils.toComponent(
+                            config().getString(
+                                    "MESSAGES.KICK",
+                                    "&cA season reset is starting. The server will restart shortly."
+                            )
+                    ));
+                }
+                loaded.setKeepSpawnInMemory(false);
                 loaded.save();
-                if (!Bukkit.unloadWorld(loaded, true)) {
-                    throw new IOException("Failed to unload world " + worldName + ".");
+                if (shouldDeferWorldMove(true, Bukkit.unloadWorld(loaded, false))) {
+                    plugin.getLogger().warning(
+                            "World " + worldName
+                                    + " could not be unloaded while the server is running; "
+                                    + "it will be moved during the next startup."
+                    );
+                    continue;
                 }
             }
 
@@ -578,7 +594,94 @@ public class ServerWipeManager {
             relativePlayerData.add(worldContainer.relativize(path).toString().replace('\\', '/'));
         }
         pending.set("PLAYERDATA-PATHS", relativePlayerData);
+        pending.set("COMMITTED", false);
         pending.save(pendingFile.toFile());
+    }
+
+    private void markPendingCommitted(Path pendingFile) throws IOException {
+        YamlConfiguration pending = YamlConfiguration.loadConfiguration(pendingFile.toFile());
+        pending.set("COMMITTED", true);
+        pending.save(pendingFile.toFile());
+    }
+
+    private void registerWorldMoveShutdownHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread(
+                () -> {
+                    try {
+                        moveCommittedWorldsBeforeWorldLoad(plugin);
+                    } catch (Throwable throwable) {
+                        System.err.println(
+                                "[UltimateDonutSmp2] Failed to move server-wipe worlds during shutdown: "
+                                        + throwable.getMessage()
+                        );
+                    }
+                },
+                "uds-server-wipe-move-worlds"
+        ));
+    }
+
+    public static void moveCommittedWorldsBeforeWorldLoad(org.bukkit.plugin.Plugin plugin) {
+        Path pendingFile = plugin.getDataFolder().toPath().resolve(PENDING_FILE_NAME).toAbsolutePath().normalize();
+        if (!Files.isRegularFile(pendingFile)) {
+            return;
+        }
+
+        YamlConfiguration pending = YamlConfiguration.loadConfiguration(pendingFile.toFile());
+        if (!pending.getBoolean("COMMITTED", false)) {
+            return;
+        }
+
+        Path backupDirectory = readAbsolutePathStatic(pending.getString("BACKUP-DIRECTORY", ""));
+        if (backupDirectory == null) {
+            plugin.getLogger().severe("Server wipe pending marker has no valid backup directory.");
+            return;
+        }
+
+        Path worldContainer = Bukkit.getWorldContainer().toPath().toAbsolutePath().normalize();
+        Path worldsBackupRoot = backupDirectory.resolve("worlds").normalize();
+        for (String worldName : normalizeWorldNames(pending.getStringList("WORLDS"))) {
+            if (!isSafeWorldName(worldName)) {
+                continue;
+            }
+            Path original = worldContainer.resolve(worldName).normalize();
+            if (!original.getParent().equals(worldContainer)) {
+                continue;
+            }
+            Path backup = worldsBackupRoot.resolve(worldName).normalize();
+            if (!backup.startsWith(worldsBackupRoot)) {
+                continue;
+            }
+            if (!shouldMoveWorldFolder(Files.isDirectory(original), Files.exists(backup))) {
+                continue;
+            }
+            try {
+                Files.deleteIfExists(original.resolve("session.lock"));
+                Files.createDirectories(backup.getParent());
+                try {
+                    Files.move(original, backup, StandardCopyOption.ATOMIC_MOVE);
+                } catch (AtomicMoveNotSupportedException ignored) {
+                    Files.move(original, backup);
+                }
+                plugin.getLogger().info("Moved server-wipe world " + worldName + " out of the way for reset.");
+            } catch (IOException exception) {
+                plugin.getLogger().log(
+                        Level.SEVERE,
+                        "Could not move server-wipe world " + worldName + " before world load",
+                        exception
+                );
+            }
+        }
+    }
+
+    private static Path readAbsolutePathStatic(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            return Path.of(value).toAbsolutePath().normalize();
+        } catch (RuntimeException ignored) {
+            return null;
+        }
     }
 
     private void restoreStagedFiles(YamlConfiguration pending, Path backupDirectory) throws IOException {
@@ -651,14 +754,7 @@ public class ServerWipeManager {
     }
 
     private Path readAbsolutePath(String value) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-        try {
-            return Path.of(value).toAbsolutePath().normalize();
-        } catch (RuntimeException ignored) {
-            return null;
-        }
+        return readAbsolutePathStatic(value);
     }
 
     private FileConfiguration config() {
@@ -676,6 +772,14 @@ public class ServerWipeManager {
 
     private String generateToken() {
         return String.format(Locale.ROOT, "%06d", RANDOM.nextInt(1_000_000));
+    }
+
+    static boolean shouldDeferWorldMove(boolean currentlyLoaded, boolean unloadSucceeded) {
+        return currentlyLoaded && !unloadSucceeded;
+    }
+
+    static boolean shouldMoveWorldFolder(boolean originalExists, boolean backupExists) {
+        return originalExists && !backupExists;
     }
 
     static Set<String> configuredProtectedWorlds(Collection<String> values) {

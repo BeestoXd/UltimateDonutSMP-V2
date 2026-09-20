@@ -49,4 +49,19 @@ class ServerWipeManagerTest {
         assertFalse(empty.contains("world_nether"));
         assertFalse(empty.contains("world_the_end"));
     }
+
+    @Test
+    void defersMoveWhenALoadedWorldCannotUnload() {
+        assertTrue(ServerWipeManager.shouldDeferWorldMove(true, false));
+        assertFalse(ServerWipeManager.shouldDeferWorldMove(true, true));
+        assertFalse(ServerWipeManager.shouldDeferWorldMove(false, false));
+    }
+
+    @Test
+    void movesWorldFolderOnlyWhenTheOriginalIsStillInPlace() {
+        assertTrue(ServerWipeManager.shouldMoveWorldFolder(true, false));
+        assertFalse(ServerWipeManager.shouldMoveWorldFolder(true, true));
+        assertFalse(ServerWipeManager.shouldMoveWorldFolder(false, false));
+        assertFalse(ServerWipeManager.shouldMoveWorldFolder(false, true));
+    }
 }
