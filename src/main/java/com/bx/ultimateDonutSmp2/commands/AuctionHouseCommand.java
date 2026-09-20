@@ -4,6 +4,7 @@ import com.bx.ultimateDonutSmp2.UltimateDonutSmp2;
 import com.bx.ultimateDonutSmp2.managers.AuctionHouseManager;
 import com.bx.ultimateDonutSmp2.models.PlayerPreference;
 import com.bx.ultimateDonutSmp2.menus.AuctionHouseBrowseMenu;
+import com.bx.ultimateDonutSmp2.menus.AuctionHouseClaimsMenu;
 import com.bx.ultimateDonutSmp2.menus.AuctionHouseSounds;
 import com.bx.ultimateDonutSmp2.menus.AuctionYourItemsMenu;
 import com.bx.ultimateDonutSmp2.menus.QuickBuyConfirmListingMenu;
@@ -78,7 +79,8 @@ public final class AuctionHouseCommand implements CommandExecutor, TabCompleter 
                     manager.processAutoClaims(player);
                     send(player, "AUCTION_HOUSE.CLAIMS_AUTOMATIC", "&eClaims are collected automatically.");
                 } else {
-                    openPlayerItems(player);
+                    AuctionHouseSounds.play(player, plugin, AuctionHouseSounds.OPEN);
+                    new AuctionHouseClaimsMenu(plugin, 1).open(player);
                 }
             }
             case "cancel" -> {

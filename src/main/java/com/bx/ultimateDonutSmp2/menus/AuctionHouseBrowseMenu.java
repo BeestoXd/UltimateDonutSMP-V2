@@ -45,7 +45,7 @@ public final class AuctionHouseBrowseMenu extends BaseMenu {
             AuctionHouseManager.AuctionSort sort,
             String category
     ) {
-        super(plugin, plugin.getAuctionHouseManager().getBrowseTitle(page), 54);
+        super(plugin, plugin.getAuctionHouseManager().getBrowseTitle(page), plugin.getAuctionHouseManager().getBrowseSize());
         this.request = new AuctionBrowseRequest(page, sort, AuctionCategory.from(category), "");
     }
 
@@ -56,12 +56,12 @@ public final class AuctionHouseBrowseMenu extends BaseMenu {
             String category,
             String search
     ) {
-        super(plugin, plugin.getAuctionHouseManager().getBrowseTitle(page), 54);
+        super(plugin, plugin.getAuctionHouseManager().getBrowseTitle(page), plugin.getAuctionHouseManager().getBrowseSize());
         this.request = new AuctionBrowseRequest(page, sort, AuctionCategory.from(category), search == null ? "" : search);
     }
 
     public AuctionHouseBrowseMenu(UltimateDonutSmp2 plugin, AuctionBrowseRequest request) {
-        super(plugin, plugin.getAuctionHouseManager().getBrowseTitle(request.page()), 54);
+        super(plugin, plugin.getAuctionHouseManager().getBrowseTitle(request.page()), plugin.getAuctionHouseManager().getBrowseSize());
         this.request = request;
     }
 

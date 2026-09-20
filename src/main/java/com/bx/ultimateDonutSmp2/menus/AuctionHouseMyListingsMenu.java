@@ -13,7 +13,7 @@ public final class AuctionHouseMyListingsMenu extends BaseMenu {
             int page,
             AuctionHouseManager.AuctionSort ignoredSort
     ) {
-        super(plugin, plugin.getAuctionHouseManager().getMyListingsTitle(), 54);
+        super(plugin, plugin.getAuctionHouseManager().getMyListingsTitle(), plugin.getAuctionHouseManager().getMyListingsSize());
         this.page = Math.max(1, page);
     }
 
@@ -23,6 +23,6 @@ public final class AuctionHouseMyListingsMenu extends BaseMenu {
 
     @Override
     public void open(Player player) {
-        new AuctionYourItemsMenu(plugin, AuctionYourItemsMenu.Origin.AUCTION).open(player);
+        new PlayerAuctionGui(plugin, page).open(player);
     }
 }
