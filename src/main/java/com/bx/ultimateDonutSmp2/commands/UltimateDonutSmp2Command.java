@@ -9,6 +9,7 @@ import com.bx.ultimateDonutSmp2.managers.SpawnManager;
 import com.bx.ultimateDonutSmp2.managers.StatsWipeManager;
 import com.bx.ultimateDonutSmp2.menus.FeatureToggleMenu;
 import com.bx.ultimateDonutSmp2.menus.StatsWipeMenu;
+import com.bx.ultimateDonutSmp2.migration.UdsV1Importer;
 import com.bx.ultimateDonutSmp2.utils.ColorUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -21,8 +22,12 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,7 +46,10 @@ public class UltimateDonutSmp2Command implements CommandExecutor, TabCompleter {
     private static final String DEFAULT_WEBHOOK_PLACEHOLDER = "https://discord.com/api/webhooks/your_webhook_here";
     private static final int COMMANDS_PER_PAGE = 8;
 
-    private static final List<String> ROOT_COMPLETIONS = List.of("reload", "statswipe", "optimize", "setup", "features", "maintenance");
+    private static final List<String> ROOT_COMPLETIONS = List.of(
+            "reload", "statswipe", "optimize", "setup", "features", "maintenance", "import");
+    private static final DateTimeFormatter IMPORT_BACKUP_FORMAT =
+            DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss-SSS");
     private static final List<String> SETUP_COMPLETIONS = List.of("status", "apply", "setspawn", "setafk", "commands");
     private static final List<String> COMMAND_CATEGORIES = List.of("all", "starter", "economy", "market", "pvp", "staff", "admin", "setup");
 
@@ -65,6 +73,7 @@ public class UltimateDonutSmp2Command implements CommandExecutor, TabCompleter {
             case "setup" -> handleSetup(sender, label, args);
             case "features" -> handleFeatures(sender, label, args);
             case "maintenance" -> handleMaintenance(sender, label, args);
+            case "import" -> handleImport(sender, label, args);
             default -> sendUsage(sender, label);
         }
         return true;
@@ -644,7 +653,84 @@ public class UltimateDonutSmp2Command implements CommandExecutor, TabCompleter {
     }
 
     private void sendUsage(CommandSender sender, String label) {
-        sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " <reload|statswipe|optimize|setup|features>"));
+        sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " <reload|statswipe|optimize|setup|features|import>"));
+    }
+
+    private void handleImport(CommandSender sender, String label, String[] args) {
+        if (!PermissionUtils.has(sender, RELOAD_PERMISSION) && !PermissionUtils.has(sender, SETUP_PERMISSION)) {
+            sender.sendMessage(ColorUtils.toComponent("&cYou do not have permission to import UltimateDonutSMP v1 data."));
+            return;
+        }
+        if (args.length < 2 || !args[1].equalsIgnoreCase("v1")) {
+            sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " import v1 [path] [confirm]"));
+            return;
+        }
+
+        String pathArg = null;
+        boolean confirm = false;
+        for (int index = 2; index < args.length; index++) {
+            if (args[index].equalsIgnoreCase("confirm")) {
+                confirm = true;
+            } else {
+                pathArg = args[index];
+            }
+        }
+
+        Path v2Folder = plugin.getDataFolder().toPath();
+        Path v1Folder = UdsV1Importer.resolveV1Folder(v2Folder, pathArg);
+        if (!Files.isDirectory(v1Folder)) {
+            sender.sendMessage(ColorUtils.toComponent("&cNo UltimateDonutSMP v1 folder at &f" + v1Folder
+                    + "&c. Pass the path after v1, or keep it next to this plugin as &fplugins/UltimateDonutSmp&c."));
+            return;
+        }
+
+        Path sqlite = UdsV1Importer.resolveSqliteFile(v1Folder);
+        sender.sendMessage(ColorUtils.toComponent("&8&m---------- &bUDS v1 import &8&m----------"));
+        sender.sendMessage(ColorUtils.toComponent("&7Folder: &f" + v1Folder));
+        if (sqlite == null) {
+            sender.sendMessage(ColorUtils.toComponent("&7SQLite: &cskipped &7(v1 database.yml is not SQLITE)"));
+        } else if (Files.isRegularFile(sqlite)) {
+            sender.sendMessage(ColorUtils.toComponent("&7SQLite: &f" + sqlite));
+        } else {
+            sender.sendMessage(ColorUtils.toComponent("&7SQLite: &cmissing &f" + sqlite));
+        }
+        sender.sendMessage(ColorUtils.toComponent("&7Yaml: matching keys from v1 overlay onto v2. Extra crates and shard regions are added. database.yml is left alone."));
+        sender.sendMessage(ColorUtils.toComponent("&7Existing v2 database rows stay put (insert-ignore). Permission nodes &fultimatedonutsmp.&7 become &fultimatedonutsmp2.&7."));
+
+        if (!confirm) {
+            sender.sendMessage(ColorUtils.toComponent("&eRun &f/" + label + " import v1"
+                    + (pathArg == null ? "" : " " + pathArg)
+                    + " confirm &eto write. A yaml backup goes to config-backups/uds-v1-import-<time>/"));
+            return;
+        }
+
+        try {
+            Path backup = v2Folder.resolve("config-backups")
+                    .resolve("uds-v1-import-" + IMPORT_BACKUP_FORMAT.format(LocalDateTime.now()));
+            UdsV1Importer.ImportResult result = UdsV1Importer.ImportResult.empty();
+            if (sqlite != null && Files.isRegularFile(sqlite)) {
+                Connection connection = plugin.getDatabaseManager().getConnection();
+                if (connection == null || connection.isClosed()) {
+                    sender.sendMessage(ColorUtils.toComponent("&cDatabase is not connected; yaml will still import."));
+                } else {
+                    result = result.plus(UdsV1Importer.importSqlite(sqlite, connection));
+                }
+            }
+            result = result.plus(UdsV1Importer.importYaml(v1Folder, v2Folder, backup));
+            plugin.reloadAllPluginConfigurations();
+            sender.sendMessage(ColorUtils.toComponent("&aImported &f" + result.rows() + " &arow(s) across &f"
+                    + result.tables() + " &atable(s), and &f" + result.yamlKeys() + " &ayaml key(s) in &f"
+                    + result.yamlFiles() + " &afile(s)."));
+            if (Files.isDirectory(backup)) {
+                sender.sendMessage(ColorUtils.toComponent("&7Yaml backup: &f" + backup));
+            }
+            for (String note : result.notes()) {
+                sender.sendMessage(ColorUtils.toComponent("&7" + note));
+            }
+        } catch (Exception exception) {
+            plugin.getLogger().log(Level.SEVERE, "failed to import ultimatedonutsmp v1 data.", exception);
+            sender.sendMessage(ColorUtils.toComponent("&cImport failed. Check console for details."));
+        }
     }
 
     private void sendSetupUsage(CommandSender sender, String label) {
@@ -699,6 +785,16 @@ public class UltimateDonutSmp2Command implements CommandExecutor, TabCompleter {
                     servers.addAll(sec.getKeys(false));
                 }
                 return partialMatches(args[2], servers);
+            }
+            return List.of();
+        }
+
+        if (root.equals("import")) {
+            if (args.length == 2) {
+                return partialMatches(args[1], List.of("v1"));
+            }
+            if (args.length == 3) {
+                return partialMatches(args[2], List.of("confirm"));
             }
             return List.of();
         }

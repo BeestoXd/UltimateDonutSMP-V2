@@ -11,7 +11,8 @@ Jump: [won't start](#the-plugin-disabled-itself-on-startup) ·
 [spawners](#managed-spawners-drop-as-pig-spawners) ·
 [crystals](#end-crystals-place-at-vanilla-speed) ·
 [messages.yml](#editing-messagesyml-does-nothing) ·
-[billford](#billford-and-billfordyml)
+[billford](#billford-and-billfordyml) ·
+[v1 import](#migrating-from-ultimatedonutsmp-v1)
 
 ---
 
@@ -175,6 +176,21 @@ Chat and tab prefixes come from LuckPerms via `%luckperms_prefix%` when LuckPerm
 Stop both servers. Copy `plugins/UltimateDonutSmp2/data/data.db` (SQLite) or point
 [database.yml](Config-database.yml) at the same MySQL / MongoDB instance. There is no built-in
 EssentialsX importer — homes live in the plugin database.
+
+---
+
+## Migrating from UltimateDonutSMP (v1)
+
+Keep the old `plugins/UltimateDonutSmp` folder next to v2, then from console:
+
+```
+/uds import v1
+/uds import v1 confirm
+```
+
+A custom path works too: `/uds import v1 C:/servers/plugins/UltimateDonutSmp confirm`. Preview prints what it found; `confirm` writes.
+
+SQLite rows that v2 does not already have are inserted; existing v2 rows stay. Yaml keys that exist in both files are overwritten from v1, extra crate ids and shard regions are added, and `ultimatedonutsmp.` permission nodes become `ultimatedonutsmp2.`. `database.yml` is not touched. Overwritten yaml is copied first to `plugins/UltimateDonutSmp2/config-backups/uds-v1-import-<timestamp>/`. LuckPerms groups are not part of this.
 
 ---
 

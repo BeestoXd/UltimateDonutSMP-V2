@@ -59,7 +59,7 @@ auction-house.yml:
 
 config.yml:
   manager: '`ConfigManager`, `FeatureManager`, and most managers in the plugin'
-  commands: '`/ultimatedonutsmp2 reload`, `/ultimatedonutsmp2 features`, `/ultimatedonutsmp2 setup`'
+  commands: '`/ultimatedonutsmp2 reload`, `/ultimatedonutsmp2 features`, `/ultimatedonutsmp2 setup`, `/ultimatedonutsmp2 import v1`'
   reload: '`/ultimatedonutsmp2 reload`'
   intro: |
     The main configuration file, and the one you will spend the most time in. It carries the

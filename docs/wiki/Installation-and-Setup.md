@@ -75,6 +75,10 @@ Then:
 
 `/ultimatedonutsmp2` is also `/uds` and `/udsmp`.
 
+Coming from UltimateDonutSMP v1, leave `plugins/UltimateDonutSmp` in place and run
+`/uds import v1` then `/uds import v1 confirm`. Details:
+[Migrating from UltimateDonutSMP (v1)](FAQ#migrating-from-ultimatedonutsmp-v1).
+
 ---
 
 ## Storage (`database.yml`)

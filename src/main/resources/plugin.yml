@@ -691,7 +691,7 @@ commands:
     permission-message: "&cYou do not have permission to use /amethysttool."
   ultimatedonutsmp2:
     description: UltimateDonutSmp2 admin command
-    usage: /ultimatedonutsmp2 <reload|statswipe|optimize>
+    usage: /ultimatedonutsmp2 <reload|statswipe|optimize|setup|features|import>
     aliases:
     - uds
     - udsmp
