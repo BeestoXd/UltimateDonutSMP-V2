@@ -147,6 +147,13 @@ dialog.yml:
     falls back to the chest-based menus in `menus.yml`. Setting `ENABLED` to `false` forces
     that fallback everywhere.
 
+    That fallback is **server-wide**, not per player. A current Paper server still sends native
+    dialogs to everyone. Players on **Minecraft 1.21.5 or older** (ViaVersion / ViaBackwards)
+    cannot render those screens — menus look broken, and commands such as `/ah` will not present
+    a usable UI. Mojang added the Dialog API in 1.21.6; the old client has no renderer, so this
+    cannot be patched in the plugin. Require Java clients 1.21.6+ and block older protocol
+    versions on the proxy. Full write-up: [Dialog API & older clients](Dialog-API-and-Older-Clients).
+
     `PAUSE-SCREEN` is written out as a datapack during `onLoad()`, before worlds load, so
     changes there need a full server restart rather than a reload.
 

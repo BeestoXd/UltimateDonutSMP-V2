@@ -41,6 +41,7 @@ This README is the quick reference. The full documentation set lives in [`docs/w
 | [Placeholders & Integrations](docs/wiki/Placeholders-and-Integrations.md) | PlaceholderAPI expansions and third-party plugin support |
 | [Localization & Messages](docs/wiki/Localization-and-Messages.md) | 8-language translations, language selection, and message keys |
 | [FAQ](docs/wiki/FAQ.md) | Common questions and troubleshooting |
+| [Dialog API & older clients](docs/wiki/Dialog-API-and-Older-Clients.md) | Why 1.21.5-and-older Java clients cannot use the menus |
 
 ## Highlights
 
@@ -113,6 +114,7 @@ Gameplay clips:
 | Java | Bytecode targets Java 21. The supported Minecraft versions (26.1.2 and newer) require a Java 25 server runtime. |
 | Paper / Purpur / Pufferfish / Spigot | Minecraft `26.1.2` through `26.2` |
 | Folia | Minecraft `26.1.2` through `26.2` |
+| Java client | **1.21.6 or newer.** 1.21.5 and older cannot render Dialog API menus. Block those versions on the proxy or ViaVersion. See [Dialog API & older clients](docs/wiki/Dialog-API-and-Older-Clients.md). |
 | Hard dependencies | PlaceholderAPI and ProtocolLib (declared under `depend` in `plugin.yml`; the plugin will not load without them) |
 | Default storage | SQLite, bundled through the shaded JDBC driver |
 | Alternative storage | MySQL or MongoDB |
@@ -135,6 +137,13 @@ Optional integrations:
 - Simple Voice Chat (`voicechat`)
 
 The plugin starts without the optional integrations. Their related permission, economy, client, skin, world, voice chat, and Bedrock features activate only when the corresponding plugin is installed.
+
+> [!WARNING]
+> **Minecraft 1.21.5 and older clients cannot use this plugin's menus.** UltimateDonutSMP V2 uses Mojang's native [Dialog API](https://minecraft.wiki/w/Dialog), added in Java Edition 1.21.6. Those screens are drawn by the Minecraft client itself. A 1.21.5 (or older) client — typically joining through ViaVersion or ViaBackwards — shows a broken, unusable layout. Commands such as `/ah`, `/menu`, `/homes`, `/pay`, and `/settings` will not present a working screen.
+>
+> This is not a plugin bug and cannot be fixed here. Other plugins that use Dialog API behave the same way. The chest-menu fallback in `menus.yml` only applies when the **server** lacks Paper's Dialog API (Spigot, or Paper older than 1.21.6). On the Paper versions this plugin supports, dialogs are sent to every player; there is no per-client switch to chest GUIs.
+>
+> **Require Java clients 1.21.6 or newer.** Block 1.21.5 and below on Velocity, BungeeCord, or ViaVersion. Full write-up: [Dialog API & older clients](docs/wiki/Dialog-API-and-Older-Clients.md).
 
 ## Building
 

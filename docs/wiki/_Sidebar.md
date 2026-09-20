@@ -3,6 +3,7 @@
 - [Home](Home)
 - [Installation & Setup](Installation-and-Setup)
 - [FAQ](FAQ)
+- [Dialog API & older clients](Dialog-API-and-Older-Clients)
 
 ### Guides
 

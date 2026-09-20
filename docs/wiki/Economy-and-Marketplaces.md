@@ -163,7 +163,9 @@ change.
 ## The Auction House
 
 `/auctionhouse` (`/ah`) is the player-to-player marketplace: a seller sets a fixed price and the first
-buyer takes the item. It is configured in [auction-house.yml](Config-auction-house.yml) and is the
+buyer takes the item. The browser uses native Dialog API screens, so Java clients older than 1.21.6
+cannot open it — see [Dialog API & older clients](Dialog-API-and-Older-Clients). It is configured in
+[auction-house.yml](Config-auction-house.yml) and is the
 price source Quick Buy reads from, so its health directly affects what `/shop` costs.
 
 | Command | Purpose |

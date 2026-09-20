@@ -1,4 +1,4 @@
-# UltimateDonutSMP2
+# UltimateDonutSMP V2
 
 One plugin for a DonutSMP-style survival network: money and shards, shops and auctions, homes
 and RTP, duels / FFA / ranked PvP, crates, spawners, and staff tools — one database, one
@@ -7,6 +7,11 @@ config set.
 **Must install first:** [ProtocolLib](https://www.spigotmc.org/resources/protocollib.1997/) and
 [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/). Without either, the
 plugin disables itself.
+
+**Java clients must be 1.21.6 or newer.** Minecraft 1.21.5 and older cannot render the Dialog API
+menus (broken `/ah`, `/menu`, `/homes`, and similar). That is a Mojang client limit, not a plugin
+bug — block those versions on the proxy or ViaVersion. See
+[Dialog API & older clients](Dialog-API-and-Older-Clients).
 
 ---
 
@@ -19,7 +24,8 @@ plugin disables itself.
 | 3. Grant commands | [Commands & Permissions](Commands-and-Permissions) |
 | 4. Learn one feature | The six pages under **Features** in the sidebar |
 
-Stuck? Start at the [FAQ](FAQ).
+Stuck? Start at the [FAQ](FAQ). If menus look broken on an older client, read
+[Dialog API & older clients](Dialog-API-and-Older-Clients).
 
 ---
 
@@ -38,6 +44,7 @@ Stuck? Start at the [FAQ](FAQ).
 
 - [Placeholders & Integrations](Placeholders-and-Integrations) — `%economy_*%`, Vault, Redis, Discord
 - [Localization & Messages](Localization-and-Messages) — 8 languages; there is no `messages.yml`
+- [Dialog API & older clients](Dialog-API-and-Older-Clients) — why 1.21.5-and-older Java clients cannot use the menus
 
 `/billford` is listed in the jar but does nothing. Do not configure it. Details in the [FAQ](FAQ).
 
@@ -49,7 +56,7 @@ Stuck? Start at the [FAQ](FAQ).
 | :--- | :--- |
 | Version | `1.0` |
 | Servers | Paper, Purpur, Pufferfish, Spigot, Folia |
-| Minecraft | `26.1.2`–`26.2` (checked on startup) |
+| Minecraft | Server `26.1.2`–`26.2` (checked on startup). Java **clients 1.21.6+** — see [Dialog API & older clients](Dialog-API-and-Older-Clients) |
 | Java | Compiled for 21. Use the JDK your server build needs. |
 | Storage | SQLite (default), MySQL, or MongoDB |
 | Network | Redis, optional |

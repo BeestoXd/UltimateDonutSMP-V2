@@ -3,6 +3,7 @@
 Reload is `/ultimatedonutsmp2 reload` (`/uds reload`, `/udsmp reload`).
 
 Jump: [won't start](#the-plugin-disabled-itself-on-startup) ·
+[old clients](#menus-are-broken-on-1215-or-older) ·
 [placeholders](#economy_money-shows-as-raw-text) ·
 [Vault](#another-plugin-cannot-see-money-balances) ·
 [data reset](#balances-homes-or-keys-reset-after-a-restart) ·
@@ -21,6 +22,23 @@ error and disables the plugin. Install both jars and restart.
 
 The other startup abort is an unsupported Minecraft version. The allowed range is `26.1.2` to
 `26.2` on Paper, Purpur, Pufferfish, Spigot and Folia.
+
+---
+
+## Menus are broken on 1.21.5 or older
+
+That is expected. UltimateDonutSMP V2 uses Mojang's native **Dialog API**, added in Java Edition
+**1.21.6**. The Minecraft client draws those screens. A 1.21.5 (or older) client — almost always
+joining through ViaVersion or ViaBackwards — has no renderer for the packet, so `/ah`, `/menu`,
+`/homes`, `/pay`, `/settings`, and similar look broken or do nothing useful.
+
+This cannot be fixed in the plugin. Other plugins that use Dialog API have the same limit. The
+chest-menu fallback in `menus.yml` only applies when the **server** itself lacks Paper's Dialog
+API (Spigot, or Paper older than 1.21.6). On the Paper versions this plugin supports, every player
+gets dialogs. There is no per-client switch to chest GUIs.
+
+**Block Java clients below 1.21.6** on the proxy or ViaVersion. Do not allow 1.21.5-and-older
+players onto a live network. Full write-up: [Dialog API & older clients](Dialog-API-and-Older-Clients).
 
 ---
 
@@ -48,7 +66,7 @@ there is no player context. See [Placeholders & Integrations](Placeholders-and-I
 
 ## Another plugin cannot see money balances
 
-Install Vault. UltimateDonutSMP2 **registers** a Vault economy provider; it does not consume one.
+Install Vault. UltimateDonutSMP V2 **registers** a Vault economy provider; it does not consume one.
 Without Vault, other plugins have nothing to talk to. The internal `/balance` and `/pay` commands
 still work.
 

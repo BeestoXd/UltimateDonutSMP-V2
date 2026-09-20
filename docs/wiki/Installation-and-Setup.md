@@ -14,13 +14,26 @@ Reload later with `/uds reload`. [config.yml](Config-config.yml) ·
 | Requirement | Supported | Notes |
 | :--- | :--- | :--- |
 | **Minecraft** | `26.1.2` – `26.2` | Checked in `onEnable()`. Outside this range the plugin disables itself. |
+| **Java client** | **1.21.6 or newer** | 1.21.5 and older cannot render Dialog API menus. Block them on the proxy or ViaVersion. See [Dialog API & older clients](Dialog-API-and-Older-Clients). |
 | **Server** | Paper, Purpur, Pufferfish, Spigot, Folia | Folia uses the plugin's own scheduler abstraction; everything else uses Bukkit's. |
 | **Java** | Java 21+ | The plugin is compiled with `--release 21`. Use the JDK your Paper or Folia build requires. `/ultimatedonutsmp2 setup` reports the running Java version. |
-| **Required plugins** | ProtocolLib, PlaceholderAPI | Both are hard dependencies. Missing either one disables UltimateDonutSMP2. |
+| **Required plugins** | ProtocolLib, PlaceholderAPI | Both are hard dependencies. Missing either one disables UltimateDonutSMP V2. |
 | **Optional plugins** | Vault, LuckPerms, SkinsRestorer, Apollo, Floodgate, Geyser, Simple Voice Chat, WorldEdit or FAWE | See [Placeholders & Integrations](Placeholders-and-Integrations). |
 
 Install ProtocolLib and PlaceholderAPI in `plugins/` **before** the first boot. The plugin does not
 soft-fail and wait for them later.
+
+### Client version (Dialog API)
+
+Menus use Mojang's native Dialog API, added in Java Edition **1.21.6**. A player on **1.21.5 or
+older** (ViaVersion, ViaBackwards, or an old jar) sees broken, unusable screens. `/ah`, `/menu`,
+`/homes`, `/pay`, and similar will not work for that player. This cannot be fixed in the plugin —
+the old client has no dialog renderer.
+
+The chest-menu fallback in `menus.yml` is **server-wide**: it only runs when this server lacks
+Paper's Dialog API. It does not switch per player. Require 1.21.6+ and block older protocol
+versions on Velocity, BungeeCord, or ViaVersion. Full detail:
+[Dialog API & older clients](Dialog-API-and-Older-Clients).
 
 ---
 

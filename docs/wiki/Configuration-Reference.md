@@ -9,6 +9,8 @@ key, type, and shipped default. `plugin.yml` is not listed — edit commands thr
 - Use spaces, never tabs.
 - `/ultimatedonutsmp2 reload` (also `/uds reload`) picks up most edits. `dialog.yml` →
   `PAUSE-SCREEN` needs a full restart.
+- Dialog screens need a **Java client 1.21.6 or newer**. 1.21.5 and older render a broken UI.
+  See [Dialog API & older clients](Dialog-API-and-Older-Clients).
 - New keys from an update are merged in. Your old file is copied to `config-backups/`.
   Crates you defined, plus `pvp.yml` `ARENA`/`KITS` and the arena blocks in `duels.yml` /
   `ffa.yml`, are never overwritten.
