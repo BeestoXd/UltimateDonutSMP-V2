@@ -309,14 +309,15 @@ The wipe itself is the same one `/playerwipe` performs, down to what survives it
 | --- | --- | --- |
 | `preview` | Any sender with `ultimatedonutsmp2.admin.serverwipe` | Lists the worlds that would be reset and per-table row counts, then reports whether validation passed |
 | `status` | Same | Prints the current wipe state |
-| `prepare` | **Console only** | Validates, then issues a one-time confirmation token |
-| `confirm <token>` | **Console only** | Runs the wipe |
+| `prepare` | **Console only** | Validates, then prints a one-time confirmation token |
+| `confirm <token>` | **Console only** | Runs the wipe. The token is the one `prepare` just printed; there is no other place to look it up |
 | `cancel` | **Console only** | Discards a pending preparation |
 
 Configuration:
 
-- `RESET-WORLDS` is the list of worlds to regenerate. It ships empty, and `preview` fails validation until you fill it in.
-- `PROTECTED-WORLDS` names worlds that must never be reset, and is honoured even if a name also appears in `RESET-WORLDS`.
+- `RESET-WORLDS` is the list of worlds to regenerate. It ships empty, and `preview` fails validation until you fill it in. A world listed here is wiped even if spawn, warps, crates or the overworld/nether/end live in it.
+- `PROTECTED-WORLDS` is the only denylist. A name there is never reset, even when it also appears in `RESET-WORLDS`.
+- Each reset world also has to appear under `WORLD-SETTINGS` in `rtp.yml`, or as an `RTP-MENU.BUTTONS.*.WORLD` value. Stock `rtp.yml` already lists `world`, `world_nether` and `world_the_end`.
 - `TOKEN-TTL-SECONDS` (default 300, floor 30) is how long the token from `prepare` stays valid.
 - `BACKUP-DIRECTORY` (default `server-wipe-backups`) is where the pre-wipe copies are written, relative to the plugin folder unless you give an absolute path.
 - `MESSAGES.MAINTENANCE` and `MESSAGES.KICK` are what players see while the wipe is being prepared and when the sequence starts.

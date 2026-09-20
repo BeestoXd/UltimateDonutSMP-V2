@@ -1,11 +1,9 @@
 package com.bx.ultimateDonutSmp2.managers;
 
 import com.bx.ultimateDonutSmp2.UltimateDonutSmp2;
-import com.bx.ultimateDonutSmp2.models.PortalDefinition;
 import com.bx.ultimateDonutSmp2.utils.ColorUtils;
 import com.bx.ultimateDonutSmp2.utils.PlayerLogoutLocationNbt;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.configuration.ConfigurationSection;
@@ -403,7 +401,7 @@ public class ServerWipeManager {
             return new Validation(worlds, environments, errors);
         }
 
-        Set<String> protectedWorlds = collectProtectedWorlds();
+        Set<String> protectedWorlds = configuredProtectedWorlds(config().getStringList("PROTECTED-WORLDS"));
         Path worldContainer = Bukkit.getWorldContainer().toPath().toAbsolutePath().normalize();
         for (String worldName : worlds) {
             if (!isSafeWorldName(worldName)) {
@@ -411,7 +409,7 @@ public class ServerWipeManager {
                 continue;
             }
             if (protectedWorlds.contains(worldName.toLowerCase(Locale.ROOT))) {
-                errors.add("World " + worldName + " is protected.");
+                errors.add("World " + worldName + " is listed in PROTECTED-WORLDS.");
                 continue;
             }
             if (!isConfiguredRtpWorld(worldName)) {
@@ -433,54 +431,6 @@ public class ServerWipeManager {
         }
 
         return new Validation(List.copyOf(worlds), Map.copyOf(environments), List.copyOf(errors));
-    }
-
-    private Set<String> collectProtectedWorlds() {
-        LinkedHashSet<String> protectedWorlds = new LinkedHashSet<>();
-        for (String configured : config().getStringList("PROTECTED-WORLDS")) {
-            addWorldName(protectedWorlds, configured);
-        }
-
-        if (!Bukkit.getWorlds().isEmpty()) {
-            String primary = Bukkit.getWorlds().getFirst().getName();
-            addWorldName(protectedWorlds, primary);
-            addWorldName(protectedWorlds, primary + "_nether");
-            addWorldName(protectedWorlds, primary + "_the_end");
-        }
-
-        if (plugin.getSpawnManager() != null) {
-            addLocationWorld(protectedWorlds, plugin.getSpawnManager().getSpawnLocation());
-            addLocationWorld(protectedWorlds, plugin.getSpawnManager().getAfkLocation());
-            for (SpawnManager.TeleportArea area : plugin.getSpawnManager().getSpawnAreas()) {
-                addLocationWorld(protectedWorlds, plugin.getSpawnManager().resolveDestination(area));
-            }
-            for (SpawnManager.TeleportArea area : plugin.getSpawnManager().getAfkAreas()) {
-                addLocationWorld(protectedWorlds, plugin.getSpawnManager().resolveDestination(area));
-            }
-        }
-
-        if (plugin.getWarpManager() != null) {
-            for (Location location : plugin.getWarpManager().getWarpLocations()) {
-                addLocationWorld(protectedWorlds, location);
-            }
-        }
-
-        if (plugin.getPortalManager() != null && plugin.getCuboidManager() != null) {
-            for (PortalDefinition portal : plugin.getPortalManager().getPortals()) {
-                CuboidManager.Cuboid cuboid = plugin.getCuboidManager().getCuboid(portal.cuboidName());
-                if (cuboid != null) {
-                    addWorldName(protectedWorlds, cuboid.world());
-                }
-                addWorldName(protectedWorlds, portal.hologramWorld());
-            }
-        }
-
-        if (plugin.getCrateManager() != null) {
-            for (CrateManager.CrateBlockKey key : plugin.getCrateManager().getBoundBlockIds().keySet()) {
-                addWorldName(protectedWorlds, key.world());
-            }
-        }
-        return Set.copyOf(protectedWorlds);
     }
 
     private boolean isConfiguredRtpWorld(String worldName) {
@@ -728,16 +678,17 @@ public class ServerWipeManager {
         return String.format(Locale.ROOT, "%06d", RANDOM.nextInt(1_000_000));
     }
 
-    private void addLocationWorld(Set<String> worlds, Location location) {
-        if (location != null && location.getWorld() != null) {
-            addWorldName(worlds, location.getWorld().getName());
+    static Set<String> configuredProtectedWorlds(Collection<String> values) {
+        LinkedHashSet<String> protectedWorlds = new LinkedHashSet<>();
+        if (values != null) {
+            for (String configured : values) {
+                if (configured == null || configured.isBlank()) {
+                    continue;
+                }
+                protectedWorlds.add(configured.trim().toLowerCase(Locale.ROOT));
+            }
         }
-    }
-
-    private void addWorldName(Set<String> worlds, String world) {
-        if (world != null && !world.isBlank()) {
-            worlds.add(world.trim().toLowerCase(Locale.ROOT));
-        }
+        return Set.copyOf(protectedWorlds);
     }
 
     static boolean isSafeWorldName(String worldName) {

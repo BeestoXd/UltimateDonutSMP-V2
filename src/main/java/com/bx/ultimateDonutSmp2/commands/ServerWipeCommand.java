@@ -52,6 +52,7 @@ public class ServerWipeCommand implements CommandExecutor, TabCompleter {
                 }
                 if (args.length < 2) {
                     send(sender, "&cUsage: /" + label + " confirm <token>");
+                    send(sender, "&7Run /" + label + " prepare first. It prints the token.");
                     return true;
                 }
                 sendResult(sender, plugin.getServerWipeManager().confirm(args[1]));
