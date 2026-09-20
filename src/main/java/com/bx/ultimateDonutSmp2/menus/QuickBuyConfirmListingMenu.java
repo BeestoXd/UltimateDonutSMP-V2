@@ -80,7 +80,15 @@ public class QuickBuyConfirmListingMenu extends BaseMenu {
     }
 
     @Override
+    public boolean isEscBackTarget() {
+        return false;
+    }
+
+    @Override
     public void handleClick(int slot, Player player, ClickType clickType) {
+        if (confirmed) {
+            return;
+        }
         var shopCfg = plugin.getConfigManager().getShop();
         int cancelSlot = shopCfg.getInt("CONFIRM-LISTING.CANCEL-BUTTON.SLOT", CANCEL_SLOT);
         int confirmSlot = shopCfg.getInt("CONFIRM-LISTING.CONFIRM-BUTTON.SLOT", CONFIRM_SLOT);

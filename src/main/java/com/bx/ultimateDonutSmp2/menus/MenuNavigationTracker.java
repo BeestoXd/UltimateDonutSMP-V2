@@ -118,7 +118,10 @@ public class MenuNavigationTracker {
         // Pop current menu
         stack.removeLast();
 
-        // Return previous menu if available
+        while (!stack.isEmpty() && !stack.peekLast().isEscBackTarget()) {
+            stack.removeLast();
+        }
+
         if (stack.isEmpty()) {
             history.remove(uuid);
             return null;

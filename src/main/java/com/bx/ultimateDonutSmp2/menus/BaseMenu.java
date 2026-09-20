@@ -83,6 +83,14 @@ public abstract class BaseMenu implements InventoryHolder {
         return this.getClass().equals(other.getClass());
     }
 
+    /**
+     * Whether Escape may reopen this menu as a parent. One-shot escrow screens return false so a
+     * listed item cannot be confirmed or refunded a second time from history.
+     */
+    public boolean isEscBackTarget() {
+        return true;
+    }
+
     @Override
     public Inventory getInventory() {
         return inventory;

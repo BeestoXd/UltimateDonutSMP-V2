@@ -55,6 +55,24 @@ class MenuNavigationTrackerTest {
         public void build(Player player) {}
     }
 
+    private static class DummyNonTargetMenu extends BaseMenu {
+        final int id;
+        DummyNonTargetMenu(int id) {
+            super(null, "Confirm " + id, 9);
+            this.id = id;
+        }
+        @Override
+        public void build(Player player) {}
+        @Override
+        public boolean isEscBackTarget() {
+            return false;
+        }
+        @Override
+        public boolean isSameScreen(BaseMenu other) {
+            return other instanceof DummyNonTargetMenu that && that.id == id;
+        }
+    }
+
     @BeforeEach
     void setUp() {
         tracker = new MenuNavigationTracker(null);
@@ -228,6 +246,46 @@ class MenuNavigationTrackerTest {
         tracker.setExplicitClose(uuid, false);
 
         assertTrue(tracker.isPlayerInitiatedClose(null, uuid));
+    }
+
+    @Test
+    void popPrevious_skipsMenusThatAreNotEscBackTargets() {
+        BaseMenu browse = new DummyMenuA();
+        BaseMenu confirm = new DummyNonTargetMenu(1);
+        BaseMenu yourItems = new DummyMenuB();
+
+        tracker.recordOpen(player, browse);
+        tracker.recordOpen(player, confirm);
+        tracker.recordOpen(player, yourItems);
+
+        BaseMenu previous = tracker.popPrevious(player);
+        assertSame(browse, previous, "ESC after listing must skip the consumed confirm screen");
+        assertEquals(1, tracker.getStack(uuid).size());
+        assertSame(browse, tracker.getStack(uuid).peekLast());
+    }
+
+    @Test
+    void popPrevious_whenConfirmWasRoot_closesInsteadOfReopeningIt() {
+        BaseMenu confirm = new DummyNonTargetMenu(1);
+        BaseMenu yourItems = new DummyMenuA();
+
+        tracker.recordOpen(player, confirm);
+        tracker.recordOpen(player, yourItems);
+
+        assertNull(tracker.popPrevious(player), "ESC after /ah sell must not reopen confirm listing");
+        assertNull(tracker.getStack(uuid));
+    }
+
+    @Test
+    void popPrevious_skipsAChainOfNonTargets() {
+        BaseMenu browse = new DummyMenuA();
+        tracker.recordOpen(player, browse);
+        tracker.recordOpen(player, new DummyNonTargetMenu(1));
+        tracker.recordOpen(player, new DummyNonTargetMenu(2));
+        tracker.recordOpen(player, new DummyMenuB());
+
+        assertSame(browse, tracker.popPrevious(player));
+        assertEquals(1, tracker.getStack(uuid).size());
     }
 
     @Test
