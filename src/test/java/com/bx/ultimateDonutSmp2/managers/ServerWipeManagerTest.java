@@ -3,6 +3,7 @@ package com.bx.ultimateDonutSmp2.managers;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -32,5 +33,20 @@ class ServerWipeManagerTest {
         assertFalse(ServerWipeManager.isTokenExpired(1_000L, 5_999L, 5_000L));
         assertTrue(ServerWipeManager.isTokenExpired(1_000L, 6_001L, 5_000L));
         assertTrue(ServerWipeManager.isTokenExpired(0L, 1_000L, 5_000L));
+    }
+
+    @Test
+    void protectedWorldsComeOnlyFromConfig() {
+        assertEquals(Set.of(), ServerWipeManager.configuredProtectedWorlds(List.of()));
+        assertEquals(Set.of(), ServerWipeManager.configuredProtectedWorlds(List.of(" ", "")));
+        assertEquals(
+                Set.of("spawn", "lobby"),
+                ServerWipeManager.configuredProtectedWorlds(List.of(" spawn ", "lobby", "SPAWN"))
+        );
+
+        Set<String> empty = ServerWipeManager.configuredProtectedWorlds(List.of());
+        assertFalse(empty.contains("world"));
+        assertFalse(empty.contains("world_nether"));
+        assertFalse(empty.contains("world_the_end"));
     }
 }

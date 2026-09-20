@@ -478,8 +478,8 @@ Two nodes govern who may be punished: a target holding `ultimatedonutsmp2.admin.
 |------------|-----------|------------|--------|
 | `preview` | — | `ultimatedonutsmp2.admin.serverwipe` | Report what a wipe would delete. |
 | `status` | — | `ultimatedonutsmp2.admin.serverwipe` | Report the state of any staged wipe. |
-| `prepare` | — | `ultimatedonutsmp2.admin.serverwipe` | Stage a wipe. |
-| `confirm` | — | `ultimatedonutsmp2.admin.serverwipe` | Execute the staged wipe. |
+| `prepare` | — | `ultimatedonutsmp2.admin.serverwipe` | Stage a wipe and print the confirmation token. |
+| `confirm` | `<token>` | `ultimatedonutsmp2.admin.serverwipe` | Execute the staged wipe using the token from `prepare`. |
 | `cancel` | — | `ultimatedonutsmp2.admin.serverwipe` | Discard the staged wipe. |
 
 `/playerwipe` and `/playerunwipe` both preview by default and require `confirm` as a second argument to act.
