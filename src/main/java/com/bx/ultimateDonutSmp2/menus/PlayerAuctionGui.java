@@ -28,7 +28,7 @@ public final class PlayerAuctionGui extends BaseMenu {
     private int totalPages = 1;
 
     public PlayerAuctionGui(UltimateDonutSmp2 plugin, int page) {
-        super(plugin, plugin.getAuctionHouseManager().getMyListingsTitle(), 54);
+        super(plugin, plugin.getAuctionHouseManager().getMyListingsTitle(), plugin.getAuctionHouseManager().getMyListingsSize());
         this.page = Math.max(1, page);
     }
 

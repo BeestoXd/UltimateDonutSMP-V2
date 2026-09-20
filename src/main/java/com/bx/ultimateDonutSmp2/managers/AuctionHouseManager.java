@@ -215,7 +215,7 @@ public final class AuctionHouseManager {
     }
 
     public int getBrowseSize() {
-        return 54;
+        return normalizeSize(config().getInt("GUI.BROWSE.SIZE", 54));
     }
 
     public int getBrowseItemsPerPage() {
