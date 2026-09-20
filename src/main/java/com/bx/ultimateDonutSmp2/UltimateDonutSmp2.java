@@ -144,11 +144,13 @@ public final class UltimateDonutSmp2 extends JavaPlugin {
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
     /**
-     * Runs before the worlds and their datapacks are read, which is the only moment the generated
-     * pause-screen datapack can land in time for this start rather than the next one.
+     * Runs before the worlds and their datapacks are read. A committed server wipe has to move
+     * reset-world folders here, because Paper will not unload the overworld while the process is
+     * up. The pause-screen datapack also has to land in this window so it is present on this start.
      */
     @Override
     public void onLoad() {
+        ServerWipeManager.moveCommittedWorldsBeforeWorldLoad(this);
         com.bx.ultimateDonutSmp2.dialogs.PauseScreenDatapack.writeBeforeWorldLoad(this);
     }
 
