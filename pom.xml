@@ -41,7 +41,7 @@
         <folia.supported>true</folia.supported>
         <minecraft.api.version>26.1.2</minecraft.api.version>
         <server.variant>paper-spigot</server.variant>
-        <server.supported.range>26.1.2-26.2</server.supported.range>
+        <server.supported.range>26.1.2-26.3</server.supported.range>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
