@@ -4532,4 +4532,25 @@ QUICK_BUY:
   LISTED_SUCCESS: '&aSuccessfully listed {item} for ${price}!'
   TRANSACTIONS_TITLE: Transactions (Page {page})
   YOUR_ITEMS_TITLE: Auction -> Your Items
+  BEDROCK:
+    CATALOGUE_TITLE: Choose Item
+    CATALOGUE_PAGE: "Page {page}/{pages}."
+    CATALOGUE_SEARCHING: "Search: {query}. Page {page}/{pages}."
+    CATALOGUE_EMPTY: "Nothing matches {query}."
+    SEARCH_TITLE: Search items
+    SEARCH_INPUT: Item name
+    AMOUNT_TITLE: How many to buy?
+    AMOUNT_INPUT: "Amount (max {max})"
+    AMOUNT_INVALID: Enter a whole number.
+    ENCHANT_TITLE: Choose Enchantments
+    ENCHANT_CONTENT: Tap an enchantment to change its level.
+    ENCHANT_OFF: "{name}"
+    ENCHANT_ON: "{name} {level}"
+    BUTTON_SEARCH: Search
+    BUTTON_BACK: Back
+    BUTTON_PREVIOUS: Previous page
+    BUTTON_NEXT: Next page
+    BUTTON_SKIP: Skip enchantments
+    BUTTON_CONFIRM: Confirm enchantments
+    BUTTON_ADD: Add to Quick Buy
 

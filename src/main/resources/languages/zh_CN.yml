@@ -3860,4 +3860,25 @@ QUICK_BUY:
   LISTED_SUCCESS: '&a成功以 ${price} 上架 {item}！'
   TRANSACTIONS_TITLE: '交易记录 (第 {page} 页)'
   YOUR_ITEMS_TITLE: '拍卖行 -> 你的物品'
+  BEDROCK:
+    CATALOGUE_TITLE: 选择物品
+    CATALOGUE_PAGE: "第 {page}/{pages} 页。"
+    CATALOGUE_SEARCHING: "搜索：{query}。第 {page}/{pages} 页。"
+    CATALOGUE_EMPTY: "没有与 {query} 匹配的物品。"
+    SEARCH_TITLE: 搜索物品
+    SEARCH_INPUT: 物品名称
+    AMOUNT_TITLE: 要买多少？
+    AMOUNT_INPUT: "数量（最多 {max}）"
+    AMOUNT_INVALID: 请输入整数。
+    ENCHANT_TITLE: 选择附魔
+    ENCHANT_CONTENT: 点按附魔以更改等级。
+    ENCHANT_OFF: "{name}"
+    ENCHANT_ON: "{name} {level}"
+    BUTTON_SEARCH: 搜索
+    BUTTON_BACK: 返回
+    BUTTON_PREVIOUS: 上一页
+    BUTTON_NEXT: 下一页
+    BUTTON_SKIP: 跳过附魔
+    BUTTON_CONFIRM: 确认附魔
+    BUTTON_ADD: 加入快捷购买
 

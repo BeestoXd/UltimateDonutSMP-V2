@@ -3929,4 +3929,25 @@ QUICK_BUY:
   LISTED_SUCCESS: '&a{item} anunciado com sucesso por ${price}!'
   TRANSACTIONS_TITLE: 'Transações (Página {page})'
   YOUR_ITEMS_TITLE: 'Leilão -> Seus Itens'
+  BEDROCK:
+    CATALOGUE_TITLE: Escolher item
+    CATALOGUE_PAGE: "Página {page}/{pages}."
+    CATALOGUE_SEARCHING: "Busca: {query}. Página {page}/{pages}."
+    CATALOGUE_EMPTY: "Nada corresponde a {query}."
+    SEARCH_TITLE: Buscar itens
+    SEARCH_INPUT: Nome do item
+    AMOUNT_TITLE: Quantos comprar?
+    AMOUNT_INPUT: "Quantidade (máx. {max})"
+    AMOUNT_INVALID: Digite um número inteiro.
+    ENCHANT_TITLE: Escolher encantamentos
+    ENCHANT_CONTENT: Toque em um encantamento para mudar o nível.
+    ENCHANT_OFF: "{name}"
+    ENCHANT_ON: "{name} {level}"
+    BUTTON_SEARCH: Buscar
+    BUTTON_BACK: Voltar
+    BUTTON_PREVIOUS: Página anterior
+    BUTTON_NEXT: Próxima página
+    BUTTON_SKIP: Pular encantamentos
+    BUTTON_CONFIRM: Confirmar encantamentos
+    BUTTON_ADD: Adicionar à Compra Rápida
 

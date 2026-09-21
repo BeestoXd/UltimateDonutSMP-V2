@@ -54,7 +54,10 @@ whole server. That is a global switch, not a per-client fallback.
 3. Do not rely on ViaBackwards as a compatibility layer for this plugin's menus.
 
 Geyser / Floodgate Bedrock clients also lack the Java Dialog API. Treat them the same
-way: do not expect dialog screens to work.
+way: do not expect dialog screens to work. Quick Buy's Choose Item screen is the one
+that has to be different, because a button per material freezes the Bedrock client.
+Floodgate gets a paged form there, and a Bedrock player without Floodgate gets the
+chest catalogue.
 
 Layout and copy for the dialogs themselves live in [dialog.yml](Config-dialog.yml) and
 `DIALOG` in `languages/<locale>.yml`.

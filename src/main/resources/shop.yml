@@ -596,6 +596,12 @@ QUICK-BUY:
       - '*_SPAWN_EGG'
       - 'INFESTED_*'
 
+  # Bedrock freezes on the Choose Item dialog, which is one button per material.
+  # Floodgate players get a paged form with search. false uses the chest catalogue instead.
+  BEDROCK:
+    ENABLED: true
+    PAGE-SIZE: 20
+
   # Configuration for empty grid slots (slots 0-44)
   EMPTY-SLOT:
     MATERIAL: GRAY_STAINED_GLASS_PANE

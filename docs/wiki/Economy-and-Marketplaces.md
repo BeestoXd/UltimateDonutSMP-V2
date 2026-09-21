@@ -85,6 +85,11 @@ Choose Item screen, which by default lists every material the server version has
 blacklist is Quick Buy only, so an entry there does not disappear from `/orders`. Setting `MODE` to
 `CUSTOM` restricts the picker to items priced in `worth.yml`.
 
+Bedrock clients freeze on that screen, because Geyser has to turn one dialog button per material
+into a single form. Floodgate players get a paged list with a search box instead, 20 items a page,
+under `QUICK-BUY.BEDROCK` in `shop.yml`. If Floodgate is not installed the same slot opens the chest
+catalogue (45 items a page) and does not continue into the enchant dialog.
+
 Prices are not written in `shop.yml`. `QUICK-BUY.PRICING` decides where each one comes from, in this
 order:
 

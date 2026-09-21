@@ -4000,4 +4000,25 @@ QUICK_BUY:
   LISTED_SUCCESS: '&aBerhasil memasang {item} seharga ${price}!'
   TRANSACTIONS_TITLE: 'Transaksi (Halaman {page})'
   YOUR_ITEMS_TITLE: 'Lelang -> Item Anda'
+  BEDROCK:
+    CATALOGUE_TITLE: Pilih item
+    CATALOGUE_PAGE: "Halaman {page}/{pages}."
+    CATALOGUE_SEARCHING: "Cari: {query}. Halaman {page}/{pages}."
+    CATALOGUE_EMPTY: "Tidak ada yang cocok dengan {query}."
+    SEARCH_TITLE: Cari item
+    SEARCH_INPUT: Nama item
+    AMOUNT_TITLE: Mau beli berapa?
+    AMOUNT_INPUT: "Jumlah (maks {max})"
+    AMOUNT_INVALID: Masukkan bilangan bulat.
+    ENCHANT_TITLE: Pilih enchantment
+    ENCHANT_CONTENT: Ketuk enchantment untuk mengubah levelnya.
+    ENCHANT_OFF: "{name}"
+    ENCHANT_ON: "{name} {level}"
+    BUTTON_SEARCH: Cari
+    BUTTON_BACK: Kembali
+    BUTTON_PREVIOUS: Halaman sebelumnya
+    BUTTON_NEXT: Halaman berikutnya
+    BUTTON_SKIP: Lewati enchantment
+    BUTTON_CONFIRM: Konfirmasi enchantment
+    BUTTON_ADD: Tambahkan ke Quick Buy
 

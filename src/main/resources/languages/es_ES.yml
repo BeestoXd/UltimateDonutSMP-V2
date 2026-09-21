@@ -3930,4 +3930,25 @@ QUICK_BUY:
   LISTED_SUCCESS: '&a¡Publicaste con éxito {item} por ${price}!'
   TRANSACTIONS_TITLE: 'Transacciones (Página {page})'
   YOUR_ITEMS_TITLE: 'Subasta -> Tus Objetos'
+  BEDROCK:
+    CATALOGUE_TITLE: Elegir objeto
+    CATALOGUE_PAGE: "Página {page}/{pages}."
+    CATALOGUE_SEARCHING: "Búsqueda: {query}. Página {page}/{pages}."
+    CATALOGUE_EMPTY: "Nada coincide con {query}."
+    SEARCH_TITLE: Buscar objetos
+    SEARCH_INPUT: Nombre del objeto
+    AMOUNT_TITLE: "¿Cuántos quieres comprar?"
+    AMOUNT_INPUT: "Cantidad (máx. {max})"
+    AMOUNT_INVALID: Escribe un número entero.
+    ENCHANT_TITLE: Elegir encantamientos
+    ENCHANT_CONTENT: Toca un encantamiento para cambiar su nivel.
+    ENCHANT_OFF: "{name}"
+    ENCHANT_ON: "{name} {level}"
+    BUTTON_SEARCH: Buscar
+    BUTTON_BACK: Volver
+    BUTTON_PREVIOUS: Página anterior
+    BUTTON_NEXT: Página siguiente
+    BUTTON_SKIP: Saltar encantamientos
+    BUTTON_CONFIRM: Confirmar encantamientos
+    BUTTON_ADD: Añadir a Compra Rápida
 
