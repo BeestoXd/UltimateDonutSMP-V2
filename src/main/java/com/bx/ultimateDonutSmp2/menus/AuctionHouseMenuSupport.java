@@ -182,18 +182,35 @@ final class AuctionHouseMenuSupport {
         return ItemUtils.createItem(material, name, lines);
     }
 
-    static List<String> browseFilterLore(AuctionHouseManager.AuctionSort current, List<String> prefix) {
+    static List<String> browseFilterLore(
+            AuctionHouseManager.AuctionSort current,
+            List<AuctionHouseManager.AuctionSort> allowed,
+            List<String> prefix
+    ) {
         List<String> lore = new ArrayList<>(prefix == null || prefix.isEmpty()
                 ? List.of("&o&7Click to change")
                 : prefix);
         lore.add("");
-        boolean lowest = current == AuctionHouseManager.AuctionSort.PRICE_LOWEST;
-        boolean highest = current == AuctionHouseManager.AuctionSort.PRICE_HIGHEST;
-        boolean recent = !lowest && !highest;
-        lore.add((lowest ? "&f▪ " : "&8▪ ") + "Lowest Price");
-        lore.add((highest ? "&f▪ " : "&8▪ ") + "Highest Price");
-        lore.add((recent ? "&f▪ " : "&8▪ ") + "Recently Listed");
+        List<AuctionHouseManager.AuctionSort> sorts = allowed == null || allowed.isEmpty()
+                ? List.of(
+                        AuctionHouseManager.AuctionSort.PRICE_LOWEST,
+                        AuctionHouseManager.AuctionSort.PRICE_HIGHEST,
+                        AuctionHouseManager.AuctionSort.NEWEST)
+                : allowed;
+        for (AuctionHouseManager.AuctionSort sort : sorts) {
+            lore.add((sort == current ? "&f▪ " : "&8▪ ") + browseFilterLabel(sort));
+        }
         return lore;
+    }
+
+    static String browseFilterLabel(AuctionHouseManager.AuctionSort sort) {
+        return switch (sort) {
+            case PRICE_LOWEST -> "Lowest Price";
+            case PRICE_HIGHEST -> "Highest Price";
+            case NEWEST -> "Recently Listed";
+            case EXPIRING_SOON -> "Expiring Soon";
+            case OLDEST -> "Oldest";
+        };
     }
 
     static String configText(
