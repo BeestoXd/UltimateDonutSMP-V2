@@ -120,9 +120,11 @@ public final class AuctionHouseBrowseMenu extends BaseMenu {
                     List.of("&7Go to page &f{page}"), "{page}", String.valueOf(renderedPage.page() - 1)));
         }
 
-        // Slot 47: Filter (Hopper) matching Design/Auction/Main Gui or Menu/1.png
+        // Slot 47: Filter (Hopper). Rows follow SORTING.ALLOWED. The design
+        // screenshot is the three-sort case: Lowest / Highest / Recently Listed.
         List<String> filterLore = AuctionHouseMenuSupport.browseFilterLore(
                 effective.sort(),
+                plugin.getAuctionHouseManager().getAllowedSorts(),
                 AuctionHouseMenuSupport.configList(
                         plugin,
                         "GUI.BROWSE.CONTROLS.FILTER.LORE",
@@ -198,7 +200,7 @@ public final class AuctionHouseBrowseMenu extends BaseMenu {
             open(player, current.withPage(renderedPage.page() - 1), false);
         } else if (slot == controlSlot("FILTER", 47)) {
             AuctionHouseSounds.play(player, plugin, AuctionHouseSounds.FILTER);
-            open(player, current.withSort(nextCycleSort(current.sort())), false);
+            open(player, current.withSort(nextSort(current.sort())), false);
         } else if (slot == controlSlot("QUICK_BUY", 48)) {
             QuickBuySounds.play(player, plugin, QuickBuySounds.OPEN);
             navigate(player, () -> new QuickBuyMenu(plugin).open(player));
@@ -298,19 +300,25 @@ public final class AuctionHouseBrowseMenu extends BaseMenu {
     }
 
     private AuctionHouseManager.AuctionSort nextSort(AuctionHouseManager.AuctionSort current) {
-        List<AuctionHouseManager.AuctionSort> sorts = plugin.getAuctionHouseManager().getAllowedSorts();
-        int index = sorts.indexOf(current);
-        return index < 0 ? plugin.getAuctionHouseManager().getDefaultSort() : sorts.get((index + 1) % sorts.size());
+        return nextAllowedSort(
+                current,
+                plugin.getAuctionHouseManager().getAllowedSorts(),
+                plugin.getAuctionHouseManager().getDefaultSort()
+        );
     }
 
-    private AuctionHouseManager.AuctionSort nextCycleSort(AuctionHouseManager.AuctionSort current) {
-        if (current == AuctionHouseManager.AuctionSort.PRICE_LOWEST) {
-            return AuctionHouseManager.AuctionSort.PRICE_HIGHEST;
-        } else if (current == AuctionHouseManager.AuctionSort.PRICE_HIGHEST) {
-            return AuctionHouseManager.AuctionSort.NEWEST;
-        } else {
-            return AuctionHouseManager.AuctionSort.PRICE_LOWEST;
+    static AuctionHouseManager.AuctionSort nextAllowedSort(
+            AuctionHouseManager.AuctionSort current,
+            List<AuctionHouseManager.AuctionSort> sorts,
+            AuctionHouseManager.AuctionSort fallback
+    ) {
+        if (sorts == null || sorts.isEmpty()) {
+            return fallback != null ? fallback : AuctionHouseManager.AuctionSort.NEWEST;
         }
+        int index = sorts.indexOf(current);
+        return index < 0
+                ? (fallback != null ? fallback : sorts.get(0))
+                : sorts.get((index + 1) % sorts.size());
     }
 
     private int controlSlot(String key, int fallback) {
