@@ -43,7 +43,7 @@ DELIVERY:
 
 # Item matching and restriction filters
 MATCHING:
-  # Materials blocked from being requested via item orders
+  # Materials blocked from being requested via item orders. The Quick Buy blacklist in shop.yml does not apply here.
   BLOCKED_MATERIALS:
     - BEDROCK
     - BARRIER

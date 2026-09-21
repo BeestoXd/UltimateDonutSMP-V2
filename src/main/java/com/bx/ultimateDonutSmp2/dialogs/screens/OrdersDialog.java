@@ -85,7 +85,8 @@ public final class OrdersDialog extends DialogScreen {
         screen.button(text("ORDERS.GUI.DIALOG.CHOOSE.SEARCH", "&fSearch"), null, CHOOSE_SEARCH_WIDTH, DialogActions.ORD_PICK_SRCH);
 
         OrdersManager manager = plugin.getOrdersManager();
-        for (Material mat : QuickBuyItemDialog.getSelectableMaterials(plugin, q)) {
+        // shop.yml QUICK-BUY.CHOOSE-ITEM.BLACKLIST is Quick Buy only.
+        for (Material mat : QuickBuyItemDialog.getSelectableMaterials(plugin, q, List.of())) {
             if (!manager.canOrderMaterial(mat)) {
                 continue;
             }
@@ -265,7 +266,7 @@ public final class OrdersDialog extends DialogScreen {
             String raw = DialogActions.argument(action, DialogActions.ORD_ITEM);
             Material material = raw == null ? null : Material.matchMaterial(raw.toUpperCase(Locale.ROOT));
             if (material == null
-                    || QuickBuyItemDialog.isBlacklisted(plugin, material)
+                    || ChooseItemBlacklist.isBlacklisted(material, List.of())
                     || !plugin.getOrdersManager().canOrderMaterial(material)) {
                 plugin.getOrdersManager().playSound(player, "ORDERS.FAIL");
                 return true;

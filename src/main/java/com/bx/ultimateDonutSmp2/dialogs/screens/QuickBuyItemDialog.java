@@ -31,6 +31,7 @@ import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -530,6 +531,20 @@ public final class QuickBuyItemDialog extends DialogScreen {
     }
 
     public static List<Material> getSelectableMaterials(UltimateDonutSmp2 plugin, String query) {
+        return getSelectableMaterials(plugin, query, ChooseItemBlacklist.configuredEntries(plugin));
+    }
+
+    /**
+     * @param shopBlacklist names merged onto the built-in unsuitable set. Quick Buy
+     *        passes {@code QUICK-BUY.CHOOSE-ITEM.BLACKLIST}. The orders picker passes
+     *        an empty list so a shop.yml entry does not hide the same item there.
+     */
+    public static List<Material> getSelectableMaterials(
+            UltimateDonutSmp2 plugin,
+            String query,
+            Collection<String> shopBlacklist
+    ) {
+        Collection<String> extras = shopBlacklist == null ? List.of() : shopBlacklist;
         String mode = "VANILLA";
         int maxItems = 2000;
         if (plugin != null && plugin.getConfigManager() != null && plugin.getConfigManager().getShop() != null) {
@@ -553,7 +568,7 @@ public final class QuickBuyItemDialog extends DialogScreen {
                 if (mat == null || mat.isAir() || mat.isLegacy() || mat.name().startsWith("LEGACY_")) {
                     continue;
                 }
-                if (isBlacklisted(plugin, mat)) {
+                if (ChooseItemBlacklist.isBlacklisted(mat, extras)) {
                     continue;
                 }
                 if (!seen.add(mat)) {
@@ -570,7 +585,7 @@ public final class QuickBuyItemDialog extends DialogScreen {
                 if (mat.isLegacy() || mat.name().startsWith("LEGACY_") || isAir(mat)) {
                     continue;
                 }
-                if (!isItem(mat) || isBlacklisted(plugin, mat)) {
+                if (!isItem(mat) || ChooseItemBlacklist.isBlacklisted(mat, extras)) {
                     continue;
                 }
                 String name = plugin != null && plugin.getWorthManager() != null

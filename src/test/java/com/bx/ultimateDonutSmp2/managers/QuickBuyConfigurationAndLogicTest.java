@@ -289,6 +289,32 @@ class QuickBuyConfigurationAndLogicTest {
     }
 
     @Test
+    void shopBlacklistEntriesStayOffTheOrderPicker() throws Exception {
+        List<Material> shop = com.bx.ultimateDonutSmp2.dialogs.screens.QuickBuyItemDialog
+                .getSelectableMaterials(null, "", List.of("DIAMOND", "*_LOG"));
+        List<Material> orders = com.bx.ultimateDonutSmp2.dialogs.screens.QuickBuyItemDialog
+                .getSelectableMaterials(null, "", List.of());
+
+        assertFalse(shop.contains(Material.DIAMOND));
+        assertFalse(shop.contains(Material.OAK_LOG));
+        assertTrue(orders.contains(Material.DIAMOND));
+        assertTrue(orders.contains(Material.OAK_LOG));
+        assertFalse(orders.contains(Material.BEDROCK));
+        assertFalse(orders.contains(Material.COW_SPAWN_EGG));
+        assertTrue(com.bx.ultimateDonutSmp2.dialogs.screens.ChooseItemBlacklist.isBlacklisted(
+                Material.DIAMOND, List.of("DIAMOND")));
+        assertFalse(com.bx.ultimateDonutSmp2.dialogs.screens.ChooseItemBlacklist.isBlacklisted(
+                Material.DIAMOND, List.of()));
+
+        String ordersDialog = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src/main/java/com/bx/ultimateDonutSmp2/dialogs/screens/OrdersDialog.java"
+        ));
+        assertTrue(ordersDialog.contains("getSelectableMaterials(plugin, q, List.of())"));
+        assertTrue(ordersDialog.contains("ChooseItemBlacklist.isBlacklisted(material, List.of())"));
+        assertFalse(ordersDialog.contains("QuickBuyItemDialog.isBlacklisted"));
+    }
+
+    @Test
     void chooseItemBlacklistHidesSurvivalUnsuitableItems() {
         List<Material> allMaterials = com.bx.ultimateDonutSmp2.dialogs.screens.QuickBuyItemDialog.getSelectableMaterials(null, "");
         assertTrue(allMaterials.contains(Material.APPLE));
