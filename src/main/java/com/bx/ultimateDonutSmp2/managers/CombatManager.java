@@ -3,6 +3,7 @@ package com.bx.ultimateDonutSmp2.managers;
 import com.bx.ultimateDonutSmp2.UltimateDonutSmp2;
 import com.bx.ultimateDonutSmp2.models.PlayerData;
 import com.bx.ultimateDonutSmp2.utils.ColorUtils;
+import com.bx.ultimateDonutSmp2.utils.CommandLabelUtils;
 import com.bx.ultimateDonutSmp2.utils.PlayerSettingUtils;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.Bukkit;
@@ -10,6 +11,8 @@ import org.bukkit.entity.Player;
 
 import com.bx.ultimateDonutSmp2.utils.PermissionUtils;
 
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -161,14 +164,54 @@ public class CombatManager {
     }
 
     public boolean isBlockedCommand(String command) {
-        for (String blocked : plugin.getConfigManager().getConfig()
-                .getStringList("COMBAT-MANAGER.BLOCK-COMMANDS")) {
-            if (blocked.equalsIgnoreCase(command) ||
-                command.toLowerCase().startsWith(blocked.toLowerCase() + " ")) {
+        return isBlockedCommand(command, plugin.getConfigManager().getConfig()
+                .getStringList("COMBAT-MANAGER.BLOCK-COMMANDS"));
+    }
+
+    /**
+     * Matches a preprocess token against the combat block list.
+     *
+     * <p>Bukkit keeps a {@code plugin:} prefix on the token when the player types
+     * {@code /plugin:tpa}. The list is written as {@code /tpa}, so that prefix is removed
+     * before comparing. Arguments after the first space stay attached, which is how a
+     * listed subcommand such as {@code /tpa accept} stays narrower than {@code /tpa}.</p>
+     */
+    static boolean isBlockedCommand(String command, List<String> blockedCommands) {
+        if (command == null || blockedCommands == null) {
+            return false;
+        }
+        String typed = withoutPluginNamespace(command);
+        for (String blocked : blockedCommands) {
+            if (blocked == null) {
+                continue;
+            }
+            String normalized = withoutPluginNamespace(blocked);
+            if (typed.equals(normalized) || typed.startsWith(normalized + " ")) {
                 return true;
             }
         }
         return false;
+    }
+
+    private static String withoutPluginNamespace(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        String value = raw.trim().toLowerCase(Locale.ROOT);
+        int space = value.indexOf(' ');
+        String token = space < 0 ? value : value.substring(0, space);
+        String rest = space < 0 ? "" : value.substring(space);
+
+        boolean slash = token.startsWith("/");
+        String body = slash ? token.substring(1) : token;
+        if (body.isEmpty()) {
+            return value;
+        }
+        String label = CommandLabelUtils.normalizeLabel(body);
+        if (label.isEmpty()) {
+            return value;
+        }
+        return (slash ? "/" : "") + label + rest;
     }
 
     public boolean isExcludedWorld(String worldName) {
