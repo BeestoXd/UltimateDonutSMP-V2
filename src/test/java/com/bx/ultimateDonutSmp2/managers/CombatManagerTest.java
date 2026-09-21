@@ -1,12 +1,17 @@
 package com.bx.ultimateDonutSmp2.managers;
 
 import com.bx.ultimateDonutSmp2.models.PlayerData;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CombatManagerTest {
@@ -56,5 +61,41 @@ class CombatManagerTest {
     @Test
     void aPlayerWithNoProfileKeepsSeeingTheCountdown() {
         assertTrue(CombatManager.showsCombatTimer(null));
+    }
+
+    @Test
+    void namespacedFormOfEveryBundledBlockedCommandIsBlockedToo() {
+        List<String> blocked = bundledBlockCommands();
+        assertTrue(CombatManager.isBlockedCommand("/tpa", blocked), "control");
+        assertTrue(
+                CombatManager.isBlockedCommand("/ultimatedonutsmp2:tpa", blocked),
+                "CombatListener forwards the namespaced token; /ultimatedonutsmp2:tpa must still hit /tpa"
+        );
+        assertTrue(CombatManager.isBlockedCommand("/UltimateDonutSMP2:Spawn", blocked));
+        assertTrue(CombatManager.isBlockedCommand("/ultimatedonutsmp2:afk", blocked));
+        assertTrue(CombatManager.isBlockedCommand("/ultimatedonutsmp2:rtp", blocked));
+        assertTrue(CombatManager.isBlockedCommand("/ultimatedonutsmp2:homes", blocked));
+        assertTrue(CombatManager.isBlockedCommand("/ultimatedonutsmp2:tpa Steve", blocked));
+        assertFalse(CombatManager.isBlockedCommand("/tpaaccept", blocked));
+        assertFalse(CombatManager.isBlockedCommand("/msg Steve", blocked));
+        assertFalse(CombatManager.isBlockedCommand("/home", blocked));
+    }
+
+    @Test
+    void aListedSubcommandStaysNarrowerThanItsParent() {
+        List<String> blocked = List.of("/tpa accept");
+        assertFalse(CombatManager.isBlockedCommand("/tpa", blocked));
+        assertFalse(CombatManager.isBlockedCommand("/ultimatedonutsmp2:tpa", blocked));
+        assertTrue(CombatManager.isBlockedCommand("/tpa accept", blocked));
+        assertTrue(CombatManager.isBlockedCommand("/ultimatedonutsmp2:tpa accept extra", blocked));
+    }
+
+    private static List<String> bundledBlockCommands() {
+        var stream = CombatManagerTest.class.getClassLoader().getResourceAsStream("config.yml");
+        assertNotNull(stream);
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(
+                new InputStreamReader(stream, StandardCharsets.UTF_8)
+        );
+        return config.getStringList("COMBAT-MANAGER.BLOCK-COMMANDS");
     }
 }
