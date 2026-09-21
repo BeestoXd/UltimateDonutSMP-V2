@@ -3925,4 +3925,25 @@ QUICK_BUY:
   LISTED_SUCCESS: '&aУспешно выставлен {item} за ${price}!'
   TRANSACTIONS_TITLE: 'Транзакции (Страница {page})'
   YOUR_ITEMS_TITLE: 'Аукцион -> Ваши предметы'
+  BEDROCK:
+    CATALOGUE_TITLE: Выбрать предмет
+    CATALOGUE_PAGE: "Страница {page}/{pages}."
+    CATALOGUE_SEARCHING: "Поиск: {query}. Страница {page}/{pages}."
+    CATALOGUE_EMPTY: "Ничего не найдено по запросу {query}."
+    SEARCH_TITLE: Поиск предметов
+    SEARCH_INPUT: Название предмета
+    AMOUNT_TITLE: Сколько купить?
+    AMOUNT_INPUT: "Количество (макс. {max})"
+    AMOUNT_INVALID: Введите целое число.
+    ENCHANT_TITLE: Выбрать чары
+    ENCHANT_CONTENT: Нажмите на чары, чтобы сменить уровень.
+    ENCHANT_OFF: "{name}"
+    ENCHANT_ON: "{name} {level}"
+    BUTTON_SEARCH: Поиск
+    BUTTON_BACK: Назад
+    BUTTON_PREVIOUS: Предыдущая страница
+    BUTTON_NEXT: Следующая страница
+    BUTTON_SKIP: Пропустить чары
+    BUTTON_CONFIRM: Подтвердить чары
+    BUTTON_ADD: Добавить в быструю покупку
 

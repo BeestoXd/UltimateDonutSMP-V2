@@ -199,6 +199,8 @@ class QuickBuyConfigurationAndLogicTest {
         assertTrue(config.contains("QUICK-BUY.CHOOSE-ITEM.MAX-ITEMS"));
         assertTrue(config.getInt("QUICK-BUY.CHOOSE-ITEM.MAX-ITEMS") > 0);
         assertTrue(config.contains("QUICK-BUY.CHOOSE-ITEM.BLACKLIST"));
+        assertTrue(config.getBoolean("QUICK-BUY.BEDROCK.ENABLED"));
+        assertEquals(20, config.getInt("QUICK-BUY.BEDROCK.PAGE-SIZE"));
         List<String> blacklist = config.getStringList("QUICK-BUY.CHOOSE-ITEM.BLACKLIST");
         assertTrue(blacklist.contains("COMMAND_BLOCK"), "Choose Item blacklist must include command blocks");
         assertTrue(blacklist.contains("BEDROCK"), "Choose Item blacklist must include bedrock");

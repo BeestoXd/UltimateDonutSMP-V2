@@ -5,6 +5,7 @@ import com.bx.ultimateDonutSmp2.dialogs.DialogSupport;
 import com.bx.ultimateDonutSmp2.dialogs.screens.QuickBuyItemDialog;
 import com.bx.ultimateDonutSmp2.managers.AuctionHouseManager;
 import com.bx.ultimateDonutSmp2.models.QuickBuyEntry;
+import com.bx.ultimateDonutSmp2.utils.BedrockPlayers;
 import com.bx.ultimateDonutSmp2.utils.ColorUtils;
 import com.bx.ultimateDonutSmp2.utils.ItemUtils;
 import com.bx.ultimateDonutSmp2.utils.NumberUtils;
@@ -382,6 +383,13 @@ public class QuickBuyMenu extends BaseMenu {
     }
 
     private void openItemPicker(Player player, int targetSlot) {
+        if (BedrockPlayers.isBedrock(player)) {
+            if (plugin.openQuickBuyBedrockCatalogue(player, targetSlot)) {
+                return;
+            }
+            new QuickBuyItemSelectMenu(plugin, targetSlot, 0, "").open(player);
+            return;
+        }
         if (DialogSupport.isAvailable() && plugin.getDialogManager() != null) {
             QuickBuyItemDialog dialog = plugin.getDialogManager().getScreen(QuickBuyItemDialog.class);
             if (dialog != null) {

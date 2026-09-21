@@ -3895,4 +3895,25 @@ QUICK_BUY:
   LISTED_SUCCESS: '&a{item} mis en vente avec succès pour ${price} !'
   TRANSACTIONS_TITLE: 'Transactions (Page {page})'
   YOUR_ITEMS_TITLE: 'Enchères -> Vos Objets'
+  BEDROCK:
+    CATALOGUE_TITLE: Choisir un objet
+    CATALOGUE_PAGE: "Page {page}/{pages}."
+    CATALOGUE_SEARCHING: "Recherche : {query}. Page {page}/{pages}."
+    CATALOGUE_EMPTY: "Aucun objet ne correspond à {query}."
+    SEARCH_TITLE: Rechercher des objets
+    SEARCH_INPUT: "Nom de l'objet"
+    AMOUNT_TITLE: Combien en acheter ?
+    AMOUNT_INPUT: "Quantité (max {max})"
+    AMOUNT_INVALID: Entre un nombre entier.
+    ENCHANT_TITLE: Choisir les enchantements
+    ENCHANT_CONTENT: Touche un enchantement pour changer son niveau.
+    ENCHANT_OFF: "{name}"
+    ENCHANT_ON: "{name} {level}"
+    BUTTON_SEARCH: Rechercher
+    BUTTON_BACK: Retour
+    BUTTON_PREVIOUS: Page précédente
+    BUTTON_NEXT: Page suivante
+    BUTTON_SKIP: Ignorer les enchantements
+    BUTTON_CONFIRM: Confirmer les enchantements
+    BUTTON_ADD: "Ajouter à l'achat rapide"
 

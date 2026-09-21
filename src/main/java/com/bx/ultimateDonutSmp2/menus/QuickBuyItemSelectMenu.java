@@ -4,6 +4,7 @@ import com.bx.ultimateDonutSmp2.UltimateDonutSmp2;
 import com.bx.ultimateDonutSmp2.dialogs.DialogSupport;
 import com.bx.ultimateDonutSmp2.dialogs.screens.QuickBuyItemDialog;
 import com.bx.ultimateDonutSmp2.models.QuickBuyEntry;
+import com.bx.ultimateDonutSmp2.utils.BedrockPlayers;
 import com.bx.ultimateDonutSmp2.utils.ColorUtils;
 import com.bx.ultimateDonutSmp2.utils.ItemUtils;
 import com.bx.ultimateDonutSmp2.utils.SignInputUtil;
@@ -119,7 +120,8 @@ public class QuickBuyItemSelectMenu extends BaseMenu {
                 return;
             }
             click(player);
-            if (DialogSupport.isAvailable() && plugin.getDialogManager() != null) {
+            if (!BedrockPlayers.isBedrock(player)
+                    && DialogSupport.isAvailable() && plugin.getDialogManager() != null) {
                 QuickBuyItemDialog dialog = plugin.getDialogManager().getScreen(QuickBuyItemDialog.class);
                 if (dialog != null) {
                     player.closeInventory();
@@ -138,7 +140,9 @@ public class QuickBuyItemSelectMenu extends BaseMenu {
         Material selected = slotToMaterial.get(slot);
         if (selected != null && !QuickBuyItemDialog.isBlacklisted(plugin, selected)) {
             click(player);
-            if (DialogSupport.isAvailable() && plugin.getDialogManager() != null && QuickBuyItemDialog.isEnchantable(selected)) {
+            if (!BedrockPlayers.isBedrock(player)
+                    && DialogSupport.isAvailable() && plugin.getDialogManager() != null
+                    && QuickBuyItemDialog.isEnchantable(selected)) {
                 QuickBuyItemDialog dialog = plugin.getDialogManager().getScreen(QuickBuyItemDialog.class);
                 if (dialog != null) {
                     player.closeInventory();

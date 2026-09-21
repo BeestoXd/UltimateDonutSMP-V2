@@ -4003,4 +4003,25 @@ QUICK_BUY:
   LISTED_SUCCESS: '&aErfolgreich {item} für ${price} angeboten!'
   TRANSACTIONS_TITLE: 'Transaktionen (Seite {page})'
   YOUR_ITEMS_TITLE: 'Auktion -> Deine Items'
+  BEDROCK:
+    CATALOGUE_TITLE: Gegenstand wählen
+    CATALOGUE_PAGE: "Seite {page}/{pages}."
+    CATALOGUE_SEARCHING: "Suche: {query}. Seite {page}/{pages}."
+    CATALOGUE_EMPTY: "Nichts passt zu {query}."
+    SEARCH_TITLE: Gegenstände suchen
+    SEARCH_INPUT: Gegenstandsname
+    AMOUNT_TITLE: Wie viele kaufen?
+    AMOUNT_INPUT: "Menge (max. {max})"
+    AMOUNT_INVALID: Gib eine ganze Zahl ein.
+    ENCHANT_TITLE: Verzauberungen wählen
+    ENCHANT_CONTENT: Tippe auf eine Verzauberung, um ihre Stufe zu ändern.
+    ENCHANT_OFF: "{name}"
+    ENCHANT_ON: "{name} {level}"
+    BUTTON_SEARCH: Suche
+    BUTTON_BACK: Zurück
+    BUTTON_PREVIOUS: Vorherige Seite
+    BUTTON_NEXT: Nächste Seite
+    BUTTON_SKIP: Verzauberungen überspringen
+    BUTTON_CONFIRM: Verzauberungen bestätigen
+    BUTTON_ADD: Zum Schnellkauf hinzufügen
 

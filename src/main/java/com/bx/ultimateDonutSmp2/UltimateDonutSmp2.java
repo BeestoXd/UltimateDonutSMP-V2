@@ -83,6 +83,7 @@ public final class UltimateDonutSmp2 extends JavaPlugin {
     private ShopManager shopManager;
     private OrdersManager ordersManager;
     private OrdersBedrockManager ordersBedrockManager;
+    private QuickBuyBedrockManager quickBuyBedrockManager;
     private EnchantmentsManager enchantmentsManager;
     private FilterManager filterManager;
     private DuelManager duelManager;
@@ -253,6 +254,11 @@ public final class UltimateDonutSmp2 extends JavaPlugin {
                 homeBedrockManager = new HomeBedrockManager(this);
             } catch (LinkageError error) {
                 getLogger().warning("Floodgate is present but its API could not be loaded; Homes will use Java GUIs.");
+            }
+            try {
+                quickBuyBedrockManager = new QuickBuyBedrockManager(this);
+            } catch (LinkageError error) {
+                getLogger().warning("Floodgate is present but its API could not be loaded; Quick Buy will use the chest catalogue.");
             }
         }
         duelManager = new DuelManager(this);
@@ -1424,6 +1430,13 @@ public final class UltimateDonutSmp2 extends JavaPlugin {
 
     public OrdersBedrockManager getOrdersBedrockManager() {
         return ordersBedrockManager;
+    }
+
+    public boolean openQuickBuyBedrockCatalogue(Player player, int targetSlot) {
+        if (quickBuyBedrockManager == null || player == null) {
+            return false;
+        }
+        return quickBuyBedrockManager.openCatalogue(player, targetSlot, "", 0);
     }
 
     public HomeBedrockManager getHomeBedrockManager() {
