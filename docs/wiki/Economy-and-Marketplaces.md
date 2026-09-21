@@ -81,8 +81,9 @@ you want players trading shards between themselves.
 `/shop` opens the DonutSMP-style Quick Buy grid, configured under `QUICK-BUY` in `shop.yml`. Players
 pin items into the grid themselves rather than browsing a fixed catalogue: an empty slot opens the
 Choose Item screen, which by default lists every material the server version has
-(`QUICK-BUY.CHOOSE-ITEM.MODE: VANILLA`, capped by `MAX-ITEMS` and narrowed by `BLACKLIST`). Setting
-`MODE` to `CUSTOM` restricts the picker to items priced in `worth.yml`.
+(`QUICK-BUY.CHOOSE-ITEM.MODE: VANILLA`, capped by `MAX-ITEMS` and narrowed by `BLACKLIST`). That
+blacklist is Quick Buy only, so an entry there does not disappear from `/orders`. Setting `MODE` to
+`CUSTOM` restricts the picker to items priced in `worth.yml`.
 
 Prices are not written in `shop.yml`. `QUICK-BUY.PRICING` decides where each one comes from, in this
 order:
@@ -226,7 +227,8 @@ It is configured in [orders.yml](Config-orders.yml).
 offer with `MIN_PRICE_EACH`, `MAX_PRICE_EACH` and `MAX_TOTAL_BUDGET`, plus an optional
 `ORDER_CREATION_FEE`. `DELIVERY.MODE` chooses between `DEPOSIT_GUI`, where the supplier drops items
 into a deposit window, and `DIRECT`; `MAX_DELIVER_PER_CLICK` and `MAX_DELIVER_PER_TRANSACTION` cap a
-single delivery. `MATCHING.BLOCKED_MATERIALS` keeps materials off the board entirely.
+single delivery. `MATCHING.BLOCKED_MATERIALS` keeps materials off the board entirely. The Choose Item
+blacklist in `shop.yml` does not; put an order block in `orders.yml` if that is what you want.
 
 **Category buttons come from `filter.yml`.** The item catalogue behind the browse and order-creation
 menus is built from the categories in [filter.yml](Config-filter.yml) — `Blocks`, `Tools`, `Food`,

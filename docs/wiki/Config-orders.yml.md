@@ -169,7 +169,7 @@ Item matching and restriction filters
 
 | Option path | Type | Accepted values | Default | What it does |
 | :--- | :--- | :--- | :--- | :--- |
-| `MATCHING.BLOCKED_MATERIALS` | `list` | A list of values | _list of 9 items_ | Materials blocked from being requested via item orders |
+| `MATCHING.BLOCKED_MATERIALS` | `list` | A list of values | _list of 9 items_ | Materials blocked from being requested via item orders. The Quick Buy blacklist in shop.yml does not apply here. |
 
 <details>
 <summary>Default contents of <code>MATCHING.BLOCKED_MATERIALS</code> (9 items)</summary>
@@ -195,7 +195,7 @@ BLOCKED_MATERIALS:
 ```yaml
 # Item matching and restriction filters
 MATCHING:
-  # Materials blocked from being requested via item orders
+  # Materials blocked from being requested via item orders. The Quick Buy blacklist in shop.yml does not apply here.
   BLOCKED_MATERIALS:
     - BEDROCK
     - BARRIER

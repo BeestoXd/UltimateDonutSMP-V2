@@ -331,7 +331,7 @@ Item selection dialog configuration (Choose Item screen)
 | :--- | :--- | :--- | :--- | :--- |
 | `QUICK-BUY.CHOOSE-ITEM.MODE` | `string` | Any text | `VANILLA` | Mode for obtaining selectable items: VANILLA: all items/blocks/armor/swords directly from vanilla Minecraft matching the server version (default) CUSTOM: items configured in worth.yml |
 | `QUICK-BUY.CHOOSE-ITEM.MAX-ITEMS` | `integer` | Any integer | `2000` | Maximum number of items to display in the selection list (default: 2000) |
-| `QUICK-BUY.CHOOSE-ITEM.BLACKLIST` | `list` | A list of values | _list of 30 items_ | Extra materials hidden from Choose Item. Wildcards such as *_SPAWN_EGG are allowed. Command-block variants, infested blocks, and spawn eggs are always hidden even if omitted here. |
+| `QUICK-BUY.CHOOSE-ITEM.BLACKLIST` | `list` | A list of values | _list of 30 items_ | Extra materials hidden from Quick Buy's Choose Item screen. Does not affect /orders. Wildcards such as *_SPAWN_EGG are allowed. Command-block variants, infested blocks, and spawn eggs are always hidden even if omitted here. |
 
 <details>
 <summary>Default contents of <code>QUICK-BUY.CHOOSE-ITEM.BLACKLIST</code> (30 items)</summary>
@@ -476,7 +476,8 @@ QUICK-BUY:
     MODE: VANILLA
     # Maximum number of items to display in the selection list (default: 2000)
     MAX-ITEMS: 2000
-    # Extra materials hidden from Choose Item. Wildcards such as *_SPAWN_EGG are allowed.
+    # Extra materials hidden from Quick Buy's Choose Item screen. Does not affect /orders.
+    # Wildcards such as *_SPAWN_EGG are allowed.
     # Command-block variants, infested blocks, and spawn eggs are always hidden even if omitted here.
     BLACKLIST:
       - BEDROCK
