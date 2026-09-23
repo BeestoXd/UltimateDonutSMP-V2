@@ -186,7 +186,7 @@ public class QuickBuyInsertItemMenu extends BaseMenu {
 
         // Add price estimate lore line to the display item
         ItemStack preview = realItem.clone();
-        ShopManager.QuickBuyQuote quote = plugin.getShopManager().resolveQuickBuyQuote(preview.getType(), preview.getAmount());
+        ShopManager.QuickBuyQuote quote = plugin.getShopManager().resolveQuickBuyQuote(preview, preview.getAmount());
         double estPrice = quote.available() ? quote.totalPrice() : 0.0;
         String formattedPrice = NumberUtils.formatNice(estPrice);
 

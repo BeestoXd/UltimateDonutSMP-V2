@@ -64,6 +64,27 @@ class WorthManagerTest {
     }
 
     @Test
+    void extraEnchantmentWorthCalculatedForEnchantedItemsAndBooks() throws Exception {
+        setupMockServer();
+
+        org.bukkit.configuration.file.YamlConfiguration worthConfig = new org.bukkit.configuration.file.YamlConfiguration();
+        worthConfig.set("TYPE.ARMOR_AND_TOOLS.DIAMOND_SWORD", 50.0);
+        worthConfig.set("TYPE.BOOK.ENCHANTED_BOOK:SHARPNESS:5", 1500.0);
+
+        UltimateDonutSmp2 plugin = createMockPlugin(worthConfig);
+        WorthManager worthManager = new WorthManager(plugin);
+
+        org.bukkit.inventory.ItemStack sword = new org.bukkit.inventory.ItemStack(org.bukkit.Material.DIAMOND_SWORD);
+        org.bukkit.enchantments.Enchantment sharpness = new TestEnchantment(org.bukkit.NamespacedKey.minecraft("sharpness"));
+        sword.addUnsafeEnchantment(sharpness, 5);
+
+        assertEquals(1500.0, worthManager.getExtraEnchantmentWorth(sword));
+
+        org.bukkit.inventory.ItemStack plainSword = new org.bukkit.inventory.ItemStack(org.bukkit.Material.DIAMOND_SWORD);
+        assertEquals(0.0, worthManager.getExtraEnchantmentWorth(plainSword));
+    }
+
+    @Test
     void findMaterialResolvesSnakeCaseAndPrettifiedNames() throws Exception {
         org.bukkit.configuration.file.YamlConfiguration worthConfig = new org.bukkit.configuration.file.YamlConfiguration();
         worthConfig.set("TYPE.BLOCKS.ACACIA_PRESSURE_PLATE", 25.0);
