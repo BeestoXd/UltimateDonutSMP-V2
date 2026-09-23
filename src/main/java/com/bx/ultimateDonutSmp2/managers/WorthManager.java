@@ -35,6 +35,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -1070,7 +1071,25 @@ public class WorthManager {
         return baseData;
     }
 
-    private double getEnchantmentWorth(Enchantment enchantment, int level) {
+    public double getExtraEnchantmentWorth(ItemStack item) {
+        if (item == null) {
+            return 0;
+        }
+        Map<Enchantment, Integer> enchantments = item.getEnchantments();
+        if (item.getType() == Material.ENCHANTED_BOOK && item.getItemMeta() instanceof EnchantmentStorageMeta esm) {
+            enchantments = esm.getStoredEnchants();
+        }
+        if (enchantments == null || enchantments.isEmpty()) {
+            return 0;
+        }
+        double extraWorth = 0;
+        for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
+            extraWorth += getEnchantmentWorth(entry.getKey(), entry.getValue());
+        }
+        return extraWorth;
+    }
+
+    public double getEnchantmentWorth(Enchantment enchantment, int level) {
         String enchantmentKey = enchantment.getKey().getKey()
                 .toUpperCase(Locale.US)
                 .replace('-', '_');

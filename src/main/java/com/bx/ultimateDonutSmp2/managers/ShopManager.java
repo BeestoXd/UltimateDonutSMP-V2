@@ -472,6 +472,21 @@ public class ShopManager {
         return resolveQuickBuyQuote(buyer, entry.material(), entry.buyAmount(), entry.getEnchantments());
     }
 
+    public QuickBuyQuote resolveQuickBuyQuote(Player buyer, ItemStack item, int amount) {
+        if (item == null || item.getType().isAir()) {
+            return new QuickBuyQuote(0, 0, null, false, true);
+        }
+        Map<org.bukkit.enchantments.Enchantment, Integer> enchants = new HashMap<>(item.getEnchantments());
+        if (item.getType() == Material.ENCHANTED_BOOK && item.getItemMeta() instanceof org.bukkit.inventory.meta.EnchantmentStorageMeta esm) {
+            enchants.putAll(esm.getStoredEnchants());
+        }
+        return resolveQuickBuyQuote(buyer, item.getType(), amount, enchants);
+    }
+
+    public QuickBuyQuote resolveQuickBuyQuote(ItemStack item, int amount) {
+        return resolveQuickBuyQuote(null, item, amount);
+    }
+
     public QuickBuyQuote resolveQuickBuyQuote(Player buyer, Material material, int amount) {
         return resolveQuickBuyQuote(buyer, material, amount, java.util.Collections.emptyMap());
     }
@@ -481,6 +496,9 @@ public class ShopManager {
             return new QuickBuyQuote(0, 0, null, false, true);
         }
         int qty = Math.max(1, amount);
+        ItemStack sampleItem = createSampleItem(material, requiredEnchants);
+        double serverWorth = sampleItem != null ? getWorth(sampleItem) : getWorth(material);
+
         boolean useAh = plugin.getConfigManager().getShop().getBoolean("QUICK-BUY.PRICING.USE-AUCTION-HOUSE", true);
         if (useAh && plugin.getAuctionHouseManager() != null && plugin.getAuctionHouseManager().isEnabled()) {
             List<AuctionListing> listings = plugin.getAuctionHouseManager().getActiveListings(AuctionHouseManager.AuctionSort.PRICE_LOWEST);
@@ -492,6 +510,7 @@ public class ShopManager {
                     .filter(l -> buyer == null || !buyer.getUniqueId().equals(l.sellerUuid()))
                     .filter(l -> l.item() != null && l.item().getType() == material && l.item().getAmount() > 0)
                     .filter(l -> matchesRequiredEnchants(l.item(), requiredEnchants))
+                    .filter(l -> serverWorth <= 0 || (l.price() / Math.max(1, l.item().getAmount())) >= serverWorth)
                     .min(Comparator.comparingDouble(l -> l.price() / Math.max(1, l.item().getAmount())))
                     .orElse(null);
 
@@ -501,23 +520,29 @@ public class ShopManager {
             }
         }
 
-        double shopPrice = findServerShopPrice(material);
+        double shopPrice = findServerShopPrice(sampleItem != null ? sampleItem : new ItemStack(material));
         if (shopPrice > 0) {
+            if (serverWorth > 0 && shopPrice < serverWorth) {
+                shopPrice = serverWorth;
+            }
             return new QuickBuyQuote(shopPrice, shopPrice * qty, null, false, false);
         }
 
         return new QuickBuyQuote(0, 0, null, false, true);
     }
 
-    private static boolean matchesRequiredEnchants(ItemStack item, Map<org.bukkit.enchantments.Enchantment, Integer> requiredEnchants) {
+    static boolean matchesRequiredEnchants(ItemStack item, Map<org.bukkit.enchantments.Enchantment, Integer> requiredEnchants) {
         if (requiredEnchants == null || requiredEnchants.isEmpty()) {
             return true;
         }
         if (item == null) {
             return false;
         }
+        org.bukkit.inventory.meta.EnchantmentStorageMeta esm = (item.getType() == Material.ENCHANTED_BOOK && item.getItemMeta() instanceof org.bukkit.inventory.meta.EnchantmentStorageMeta meta)
+                ? meta
+                : null;
         for (Map.Entry<org.bukkit.enchantments.Enchantment, Integer> req : requiredEnchants.entrySet()) {
-            int level = item.getEnchantmentLevel(req.getKey());
+            int level = esm != null ? esm.getStoredEnchantLevel(req.getKey()) : item.getEnchantmentLevel(req.getKey());
             if (level < req.getValue()) {
                 return false;
             }
@@ -529,27 +554,73 @@ public class ShopManager {
         return resolveQuickBuyQuote(null, material, amount);
     }
 
-    public double findServerShopPrice(Material material) {
-        if (material == null) return -1;
-        for (ShopItem item : loadAllItems()) {
-            if (item.material() == material && item.currency() == Currency.MONEY && item.pricePerUnit() > 0) {
-                return item.pricePerUnit();
+    public static ItemStack createSampleItem(Material material, Map<org.bukkit.enchantments.Enchantment, Integer> requiredEnchants) {
+        if (material == null || material.isAir()) {
+            return null;
+        }
+        ItemStack item = new ItemStack(material, 1);
+        if (requiredEnchants != null && !requiredEnchants.isEmpty()) {
+            org.bukkit.inventory.meta.ItemMeta meta = item.getItemMeta();
+            if (meta != null) {
+                if (material == Material.ENCHANTED_BOOK && meta instanceof org.bukkit.inventory.meta.EnchantmentStorageMeta esm) {
+                    for (Map.Entry<org.bukkit.enchantments.Enchantment, Integer> entry : requiredEnchants.entrySet()) {
+                        if (entry.getKey() != null && entry.getValue() != null && entry.getValue() > 0) {
+                            esm.addStoredEnchant(entry.getKey(), entry.getValue(), true);
+                        }
+                    }
+                } else {
+                    for (Map.Entry<org.bukkit.enchantments.Enchantment, Integer> entry : requiredEnchants.entrySet()) {
+                        if (entry.getKey() != null && entry.getValue() != null && entry.getValue() > 0) {
+                            meta.addEnchant(entry.getKey(), entry.getValue(), true);
+                        }
+                    }
+                }
+                item.setItemMeta(meta);
             }
         }
-        double worth = getWorth(material);
-        if (worth > 0) {
-            double multiplier = plugin.getConfigManager().getShop().getDouble("QUICK-BUY.PRICING.WORTH-MULTIPLIER", 1.0);
-            return worth * multiplier;
+        return item;
+    }
+
+    public double findServerShopPrice(ItemStack item) {
+        if (item == null || item.getType().isAir()) return -1;
+        Material material = item.getType();
+
+        double itemWorth = getWorth(item);
+
+        for (ShopItem shopItem : loadAllItems()) {
+            if (shopItem.material() == material && shopItem.currency() == Currency.MONEY && shopItem.pricePerUnit() > 0) {
+                double configuredPrice = shopItem.pricePerUnit();
+                return itemWorth > 0 ? Math.max(configuredPrice, itemWorth) : configuredPrice;
+            }
         }
+
+        if (itemWorth > 0) {
+            double multiplier = plugin.getConfigManager().getShop().getDouble("QUICK-BUY.PRICING.WORTH-MULTIPLIER", 1.0);
+            return Math.max(itemWorth, itemWorth * multiplier);
+        }
+
         boolean autoBalance = plugin.getConfigManager().getShop().getBoolean("QUICK-BUY.PRICING.AUTO-BALANCE-MISSING", true);
         if (autoBalance && plugin.getBalancedPriceManager() != null) {
             double autoPrice = plugin.getBalancedPriceManager().getBalancedPrice(material);
             if (autoPrice > 0) {
                 double autoMultiplier = plugin.getConfigManager().getShop().getDouble("QUICK-BUY.PRICING.AUTO-BALANCE-MULTIPLIER", 1.0);
-                return autoPrice * autoMultiplier;
+                double basePrice = Math.max(autoPrice, autoPrice * autoMultiplier);
+                double extraEnchants = plugin.getWorthManager() != null ? plugin.getWorthManager().getExtraEnchantmentWorth(item) : 0;
+                return basePrice + extraEnchants;
             }
         }
         return -1;
+    }
+
+    public double findServerShopPrice(Material material) {
+        if (material == null || material.isAir()) return -1;
+        return findServerShopPrice(new ItemStack(material));
+    }
+
+    public double findServerShopPrice(Material material, Map<org.bukkit.enchantments.Enchantment, Integer> requiredEnchants) {
+        if (material == null || material.isAir()) return -1;
+        ItemStack sample = createSampleItem(material, requiredEnchants);
+        return findServerShopPrice(sample != null ? sample : new ItemStack(material));
     }
 
     public CompletableFuture<QuickBuyExecutionResult> executeQuickBuy(Player buyer, QuickBuyEntry entry) {
