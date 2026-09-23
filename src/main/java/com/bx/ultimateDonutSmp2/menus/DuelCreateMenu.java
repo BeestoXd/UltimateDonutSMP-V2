@@ -29,6 +29,18 @@ public class DuelCreateMenu extends BaseMenu {
         this.privacyMode = privacyMode == null ? DuelPrivacyMode.INVITE_ONLY : privacyMode;
     }
 
+    public static int resolvePrivacySlot(int size) {
+        return (size - 9) + 5;
+    }
+
+    public DuelPrivacyMode getPrivacyMode() {
+        return privacyMode;
+    }
+
+    public UUID getTargetUuid() {
+        return targetUuid;
+    }
+
     @Override
     public void build(Player player) {
         clear();
@@ -93,7 +105,7 @@ public class DuelCreateMenu extends BaseMenu {
                         "&7only same-team members can accept this duel.")
                 : plugin.getDuelManager().getGuiText("CREATE.ITEMS.PRIVACY_BUTTON.LORE_INVITE",
                         "&7direct invite duel.");
-        set(lastRow + 5, ItemUtils.createItem(
+        set(resolvePrivacySlot(inventory.getSize()), ItemUtils.createItem(
                 privacyMode == DuelPrivacyMode.FRIENDS_ONLY ? Material.OAK_SIGN : Material.PAPER,
                 plugin.getDuelManager().getGuiText("CREATE.ITEMS.PRIVACY_BUTTON.NAME",
                         "&bprivacy: &f{privacy}", "{privacy}", privacyMode.displayName()),
@@ -119,6 +131,15 @@ public class DuelCreateMenu extends BaseMenu {
             SoundUtils.play(player, plugin.getConfigManager().getSound("DUELS.CLICK"));
             plugin.getDuelManager().sendChallenge(player, target, options.get(index).selection(), privacyMode);
             player.closeInventory();
+            return;
+        }
+
+        if (slot == resolvePrivacySlot(inventory.getSize())) {
+            DuelPrivacyMode nextMode = privacyMode == DuelPrivacyMode.FRIENDS_ONLY
+                    ? DuelPrivacyMode.INVITE_ONLY
+                    : DuelPrivacyMode.FRIENDS_ONLY;
+            SoundUtils.play(player, plugin.getConfigManager().getSound("DUELS.CLICK"));
+            new DuelCreateMenu(plugin, targetUuid, nextMode).open(player);
             return;
         }
 
