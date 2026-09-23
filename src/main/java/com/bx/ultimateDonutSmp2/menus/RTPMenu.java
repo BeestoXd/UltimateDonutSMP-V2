@@ -2,6 +2,7 @@ package com.bx.ultimateDonutSmp2.menus;
 
 import com.bx.ultimateDonutSmp2.UltimateDonutSmp2;
 import com.bx.ultimateDonutSmp2.managers.RTPManager;
+import com.bx.ultimateDonutSmp2.utils.ColorUtils;
 import com.bx.ultimateDonutSmp2.utils.ItemUtils;
 import com.bx.ultimateDonutSmp2.utils.SoundUtils;
 import org.bukkit.Material;
@@ -49,6 +50,12 @@ public class RTPMenu extends BaseMenu {
 
     @Override
     public void handleClick(int slot, Player player) {
+        if (plugin.getCombatManager() != null && plugin.getCombatManager().isInCombat(player.getUniqueId())) {
+            player.sendMessage(ColorUtils.toComponent(plugin.getCombatManager().getBlockMessage()));
+            close(player);
+            return;
+        }
+
         RTPManager.RTPDestination destination = plugin.getRtpManager().getDestinationBySlot(slot);
         if (destination == null) {
             return;

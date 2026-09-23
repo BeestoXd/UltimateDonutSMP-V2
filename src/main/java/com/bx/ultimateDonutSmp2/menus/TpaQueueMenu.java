@@ -84,6 +84,12 @@ public class TpaQueueMenu extends BaseMenu {
         UUID requesterUuid = queuedRequestSlots.get(slot);
         if (requesterUuid != null) {
             SoundUtils.play(player, plugin.getConfigManager().getSound("MENUS.BUTTON-CLICK"));
+            if (plugin.getCombatManager() != null && plugin.getCombatManager().isInCombat(player.getUniqueId())) {
+                player.sendMessage(com.bx.ultimateDonutSmp2.utils.ColorUtils.toComponent(
+                        plugin.getCombatManager().getBlockMessage()
+                ));
+                return;
+            }
             if (!plugin.getTPAManager().acceptQueuedRequest(player, requesterUuid, tpaHere)) {
                 player.sendMessage(com.bx.ultimateDonutSmp2.utils.ColorUtils.toComponent(
                         menus().getString(MENU_PATH + ".MESSAGES.REQUEST-MISSING", "&cThat queued request is no longer available.")
@@ -113,6 +119,12 @@ public class TpaQueueMenu extends BaseMenu {
 
         if (slot == randomSlot) {
             SoundUtils.play(player, plugin.getConfigManager().getSound("MENUS.BUTTON-CLICK"));
+            if (plugin.getCombatManager() != null && plugin.getCombatManager().isInCombat(player.getUniqueId())) {
+                player.sendMessage(com.bx.ultimateDonutSmp2.utils.ColorUtils.toComponent(
+                        plugin.getCombatManager().getBlockMessage()
+                ));
+                return;
+            }
             if (!plugin.getTPAManager().acceptRandomQueuedRequest(player, tpaHere)) {
                 player.sendMessage(com.bx.ultimateDonutSmp2.utils.ColorUtils.toComponent(
                         menus().getString(MENU_PATH + ".MESSAGES.EMPTY", "&cThere are no queued requests to accept.")

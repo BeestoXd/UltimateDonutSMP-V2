@@ -33,6 +33,11 @@ public class RTPQueueCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
+        if (plugin.getCombatManager() != null && plugin.getCombatManager().isInCombat(player.getUniqueId())) {
+            player.sendMessage(ColorUtils.toComponent(plugin.getCombatManager().getBlockMessage()));
+            return true;
+        }
+
         String subcommand = args.length == 0 ? "join" : args[0].toLowerCase(Locale.ROOT);
         switch (subcommand) {
             case "leave", "quit" -> plugin.getRtpQueueManager().leave(player);

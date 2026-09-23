@@ -1367,6 +1367,11 @@ public class RTPManager {
     }
 
     private boolean queueTeleport(Player player, String worldName) {
+        if (plugin.getCombatManager() != null && plugin.getCombatManager().isInCombat(player.getUniqueId())) {
+            player.sendMessage(ColorUtils.toComponent(plugin.getCombatManager().getBlockMessage()));
+            return false;
+        }
+
         if (isDeniedWorld(worldName)) {
             player.sendMessage(ColorUtils.toComponent("&cYou cannot RTP in this world."));
             return false;
@@ -1779,6 +1784,11 @@ public class RTPManager {
             resultTaskRef[0].cancel();
         }
         if (player.isOnline()) {
+            if (plugin.getCombatManager() != null && plugin.getCombatManager().isInCombat(playerId)) {
+                player.sendMessage(ColorUtils.toComponent(plugin.getCombatManager().getBlockMessage()));
+                processNextInQueue();
+                return;
+            }
             plugin.getTeleportManager().queue(player, found, "RTP", null);
         }
         processNextInQueue();

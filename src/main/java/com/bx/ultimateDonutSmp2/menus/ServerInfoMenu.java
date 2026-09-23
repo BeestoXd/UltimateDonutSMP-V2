@@ -157,6 +157,10 @@ public class ServerInfoMenu extends BaseMenu {
             return false;
         }
         close(player);
+        if (plugin.getCombatManager() != null && plugin.getCombatManager().isInCombat(player.getUniqueId())) {
+            player.sendMessage(ColorUtils.toComponent(plugin.getCombatManager().getBlockMessage()));
+            return false;
+        }
         if (selector.isEmpty()) {
             plugin.getRtpManager().queueCommandTeleport(player, player.getWorld().getName());
         } else {

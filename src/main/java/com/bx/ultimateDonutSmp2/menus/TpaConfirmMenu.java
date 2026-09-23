@@ -1,6 +1,7 @@
 package com.bx.ultimateDonutSmp2.menus;
 
 import com.bx.ultimateDonutSmp2.UltimateDonutSmp2;
+import com.bx.ultimateDonutSmp2.utils.ColorUtils;
 import com.bx.ultimateDonutSmp2.utils.ItemUtils;
 import com.bx.ultimateDonutSmp2.utils.SoundUtils;
 import org.bukkit.Bukkit;
@@ -55,6 +56,11 @@ public class TpaConfirmMenu extends BaseMenu {
 
         if (slot == 11) {
             player.performCommand("tpadeny " + requesterName);
+            return;
+        }
+
+        if (plugin.getCombatManager() != null && plugin.getCombatManager().isInCombat(player.getUniqueId())) {
+            player.sendMessage(ColorUtils.toComponent(plugin.getCombatManager().getBlockMessage()));
             return;
         }
 

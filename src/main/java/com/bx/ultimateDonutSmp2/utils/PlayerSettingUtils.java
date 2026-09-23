@@ -97,12 +97,18 @@ public final class PlayerSettingUtils {
     }
 
     public static void clearActionBar(Player player) {
+        if (player == null) return;
         try {
             java.lang.reflect.Method m = player.getClass().getMethod("sendActionBar", net.kyori.adventure.text.Component.class);
             m.invoke(player, net.kyori.adventure.text.Component.empty());
             return;
         } catch (Throwable ignored) {
         }
-        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, ColorUtils.toBaseComponents(""));
+        try {
+            if (player.spigot() != null) {
+                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, ColorUtils.toBaseComponents(""));
+            }
+        } catch (Throwable ignored) {
+        }
     }
 }

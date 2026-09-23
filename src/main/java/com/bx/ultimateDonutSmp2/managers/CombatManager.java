@@ -5,6 +5,7 @@ import com.bx.ultimateDonutSmp2.models.PlayerData;
 import com.bx.ultimateDonutSmp2.utils.ColorUtils;
 import com.bx.ultimateDonutSmp2.utils.CommandLabelUtils;
 import com.bx.ultimateDonutSmp2.utils.PlayerSettingUtils;
+import com.bx.ultimateDonutSmp2.utils.SoundUtils;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -34,6 +35,21 @@ public class CombatManager {
         combatMap.put(player.getUniqueId(), System.currentTimeMillis() + cooldownMillis);
         startCountdown(player);
 
+        if (plugin.getTeleportManager() != null && plugin.getTeleportManager().hasPending(player.getUniqueId())) {
+            plugin.getTeleportManager().cancel(player.getUniqueId());
+            PlayerSettingUtils.clearActionBar(player);
+            String cancelMsg = plugin.getConfigManager().getMessageOrDefault("TELEPORT.CANCELED", "&cTeleport cancelled.");
+            player.sendMessage(ColorUtils.toComponent(cancelMsg));
+            SoundUtils.play(player, plugin.getConfigManager().getSound("TELEPORT.CANCELLED"));
+        }
+        if (plugin.getRtpManager() != null && plugin.getRtpManager().hasActiveRtpFlow(player.getUniqueId())) {
+            plugin.getRtpManager().clearSearch(player.getUniqueId());
+            plugin.getRtpManager().removeFromQueue(player.getUniqueId());
+        }
+        if (plugin.getRtpQueueManager() != null && plugin.getRtpQueueManager().isInQueue(player.getUniqueId())) {
+            plugin.getRtpQueueManager().leave(player);
+        }
+
         if (player.getAllowFlight()
                 && player.getGameMode() != org.bukkit.GameMode.CREATIVE
                 && player.getGameMode() != org.bukkit.GameMode.SPECTATOR) {
@@ -55,6 +71,10 @@ public class CombatManager {
         UUID uuid = player.getUniqueId();
         BukkitTask old = tasks.remove(uuid);
         if (old != null) old.cancel();
+
+        if (plugin.getSpigotScheduler() == null) {
+            return;
+        }
 
         BukkitTask task = plugin.getSpigotScheduler().runEntityTimer(player, () -> {
             Player p = Bukkit.getPlayer(uuid);
@@ -218,5 +238,11 @@ public class CombatManager {
         return plugin.getConfigManager().getConfig()
                 .getStringList("COMBAT-MANAGER.EXCLUDED-WORLDS")
                 .contains(worldName);
+    }
+
+    public String getBlockMessage() {
+        return plugin.getConfigManager().getConfig()
+                .getString("COMBAT-MANAGER.BLOCK-MESSAGE",
+                        "&cyou can't use this command in your current status.");
     }
 }
