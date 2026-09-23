@@ -64,7 +64,6 @@ overwriting it, and drops a copy of the previous version into `config-backups/<t
 | [`RESPAWN-RTP`](#section-respawn-rtp) | section | 5 keys |
 | [`TELEPORT-COOLDOWN`](#section-teleport-cooldown) | section | 8 keys |
 | [`BOUNTY`](#section-bounty) | section | 1 keys |
-| [`AMETHYST-TOOLS`](#section-amethyst-tools) | section | 7 keys |
 | [`VOICE-CHAT`](#section-voice-chat) | section | 3 keys |
 | [`FEATURES`](#section-features) | section | 1 keys |
 | [`COMMANDS`](#section-commands) | section | 31 keys |
@@ -2305,115 +2304,6 @@ BOUNTY:
   # Configuration section for Excluded Worlds.
   EXCLUDED-WORLDS:
   - duels
-```
-
-</details>
-
----
-
-## Section: `AMETHYST-TOOLS`
-
-### Options
-
-| Option path | Type | Accepted values | Default | What it does |
-| :--- | :--- | :--- | :--- | :--- |
-| `AMETHYST-TOOLS.EXCLUDED-WORLDS` | `list` | A list of values | _list of 1 item_ | The excluded worlds list. |
-
-<details>
-<summary>Default contents of <code>AMETHYST-TOOLS.EXCLUDED-WORLDS</code> (1 item)</summary>
-
-```yaml
-EXCLUDED-WORLDS:
-  - 'duels'
-```
-
-</details>
-
-### Entry schema (6 entries)
-
-Each entry under `AMETHYST-TOOLS` is keyed by a name you choose, and every entry accepts the same options:
-
-### Shipped entries
-
-| Entry key | `NAME` |
-| :--- | :--- |
-| `PICKAXE` | `&#A303F9Amethyst Pickaxe` |
-| `AXE` | `&#A303F9Amethyst Axe` |
-| `SELLAXE` | `&#A303F9Amethyst Sell Axe` |
-| `SHOVEL` | `&#A303F9Amethyst Shovel` |
-| `BUCKET` | `&#A303F9Amethyst Bucket` |
-| `BOOSTER` | `&#A303F9Shard Booster` |
-
-| Key | Type | Accepted values | Required? | What it does |
-| :--- | :--- | :--- | :--- | :--- |
-| `ENCHANTMENTS` | `list` | A list of values | Required | The enchantments list. |
-| `LORE` | `list` | A list of values | Required | Tooltip lines under the item name. |
-| `NAME` | `string` | Any text | Required | Display name shown to players. |
-| `PARTICLE` | `section` | — | Required | Options for particle, listed below. |
-| `ALLOWED-BLOCKS` | `list` | A list of values | Optional (1/6) | The allowed blocks list. |
-| `DISABLED-BLOCKS` | `list` | A list of values | Optional (1/6) | The disabled blocks list. |
-
-#### `AMETHYST-TOOLS.<entry>.PARTICLE`
-
-| Key | Type | Accepted values | Required? | What it does |
-| :--- | :--- | :--- | :--- | :--- |
-| `AMOUNT` | `integer` | Any integer | Required | How many to give or take. |
-| `MATERIAL` | `string` | Any text | Required | Bukkit `Material` name for the icon. |
-| `NAME` | `string` | Any text | Required | Display name shown to players. |
-
-<details>
-<summary>Default <code>AMETHYST-TOOLS</code> block as shipped</summary>
-
-```yaml
-# Configuration section for Amethyst Tools.
-AMETHYST-TOOLS:
-  # Configuration section for Excluded Worlds.
-  EXCLUDED-WORLDS:
-  - duels
-  # Configuration section for Pickaxe.
-  PICKAXE:
-    # Configuration section for Particle.
-    PARTICLE:
-      NAME: FALLING_DUST
-      MATERIAL: PURPLE_CONCRETE_POWDER
-      # The numerical value for Amount. Available options: Any valid integer
-      AMOUNT: 10
-    # Configuration section for Disabled Blocks.
-    DISABLED-BLOCKS:
-    - GRASS_BLOCK
-    - DIRT_PATH
-    - DIRT
-    - COARSE_DIRT
-    - ROOTED_DIRT
-    - CLAY
-    - FARMLAND
-    - SAND
-    - RED_SAND
-    - GRAVEL
-    - SPAWNER
-    NAME: '&#A303F9Amethyst Pickaxe'
-    LORE:
-    - '&79 Blocks Per Break'
-    - '&8Self Destruct'
-    - '&8{time}'
-    # Configuration section for Enchantments.
-    ENCHANTMENTS:
-    - MENDING:1
-    - EFFICIENCY:5
-    - UNBREAKING:3
-  # Configuration section for Axe.
-  AXE:
-    # Configuration section for Particle.
-    PARTICLE:
-      NAME: FALLING_DUST
-      MATERIAL: PURPLE_CONCRETE_POWDER
-      # The numerical value for Amount. Available options: Any valid integer
-      AMOUNT: 10
-    NAME: '&#A303F9Amethyst Axe'
-    LORE:
-    - '&7Breaks Trees Instantly'
-    - '&8Self Destruct'
-# ... section continues, see the file on disk for the full block
 ```
 
 </details>
