@@ -1619,7 +1619,7 @@ public class CrateManager {
                 section.getInt("PREVIEW-SLOT", 13),
                 section.getInt("CONFIRM-SLOT", 15),
                 parseDisplayItem(section.getConfigurationSection("CONFIRM-BUTTON"), "crate confirm button", Material.LIME_STAINED_GLASS_PANE),
-                section.getInt("CANCEL-SLOT", 11),
+                section.getInt("CANCEL-BUTTON.SLOT", section.getInt("CANCEL-SLOT", 11)),
                 parseDisplayItem(section.getConfigurationSection("CANCEL-BUTTON"), "crate cancel button", Material.RED_STAINED_GLASS_PANE)
         );
     }
