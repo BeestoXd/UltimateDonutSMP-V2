@@ -609,6 +609,13 @@ public class TPAManager {
         return plugin.getDuelManager() != null && (plugin.getDuelManager().isInDuel(uuid) || plugin.getDuelManager().isTransitioning(uuid));
     }
 
+    private boolean isBlockedByCombat(Player player) {
+        if (player == null || plugin.getCombatManager() == null) {
+            return false;
+        }
+        return plugin.getCombatManager().isInCombat(player.getUniqueId());
+    }
+
     private boolean acceptRequest(Player target, TpaRequest request) {
         if (target == null || request == null || !target.isOnline()
                 || !target.getUniqueId().equals(request.target())) {
@@ -624,6 +631,25 @@ public class TPAManager {
         if (isBlockedByDuel(target) || isBlockedByDuel(requester)) {
             target.sendMessage(ColorUtils.toComponent("&cyou cannot use TPA during a duel."));
             requester.sendMessage(ColorUtils.toComponent("&cyou cannot use TPA during a duel."));
+            return false;
+        }
+
+        boolean targetCombat = isBlockedByCombat(target);
+        boolean requesterCombat = isBlockedByCombat(requester);
+        if (targetCombat || requesterCombat) {
+            String blockMsg = plugin.getCombatManager() != null
+                    ? plugin.getCombatManager().getBlockMessage()
+                    : "&cyou can't use this command in your current status.";
+            if (targetCombat) {
+                target.sendMessage(ColorUtils.toComponent(blockMsg));
+            } else {
+                target.sendMessage(ColorUtils.toComponent("&cThat player is currently in combat."));
+            }
+            if (requesterCombat) {
+                requester.sendMessage(ColorUtils.toComponent(blockMsg));
+            } else {
+                requester.sendMessage(ColorUtils.toComponent("&cThat player is currently in combat."));
+            }
             return false;
         }
 

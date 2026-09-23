@@ -52,6 +52,11 @@ public class TPACommand implements CommandExecutor {
     }
 
     private void handleTpa(Player player, String[] args) {
+        if (plugin.getCombatManager() != null && plugin.getCombatManager().isInCombat(player.getUniqueId())) {
+            send(player, plugin.getCombatManager().getBlockMessage());
+            return;
+        }
+
         if (args.length == 0) {
             if (plugin.getDialogManager() != null && plugin.getDialogManager().openTeleport(player)) {
                 return;
@@ -64,6 +69,11 @@ public class TPACommand implements CommandExecutor {
         if (target == null || target.equals(player)) {
             send(player, target == null ? "&cPlayer not online."
                     : plugin.getConfigManager().getMessage("TPA.CANNOT-INVITE-YOURSELF"));
+            return;
+        }
+
+        if (plugin.getCombatManager() != null && plugin.getCombatManager().isInCombat(target.getUniqueId())) {
+            send(player, "&c" + target.getName() + " is currently in combat.");
             return;
         }
 
@@ -132,6 +142,11 @@ public class TPACommand implements CommandExecutor {
     }
 
     private void handleTpaHere(Player player, String[] args) {
+        if (plugin.getCombatManager() != null && plugin.getCombatManager().isInCombat(player.getUniqueId())) {
+            send(player, plugin.getCombatManager().getBlockMessage());
+            return;
+        }
+
         if (args.length == 0) {
             new TpaQueueMenu(plugin, true).open(player);
             return;
@@ -141,6 +156,11 @@ public class TPACommand implements CommandExecutor {
         if (target == null || target.equals(player)) {
             send(player, target == null ? "&cPlayer not online."
                     : plugin.getConfigManager().getMessage("TPA.CANNOT-INVITE-YOURSELF"));
+            return;
+        }
+
+        if (plugin.getCombatManager() != null && plugin.getCombatManager().isInCombat(target.getUniqueId())) {
+            send(player, "&c" + target.getName() + " is currently in combat.");
             return;
         }
 
@@ -209,6 +229,11 @@ public class TPACommand implements CommandExecutor {
     }
 
     private void handleAccept(Player player, String[] args) {
+        if (plugin.getCombatManager() != null && plugin.getCombatManager().isInCombat(player.getUniqueId())) {
+            send(player, plugin.getCombatManager().getBlockMessage());
+            return;
+        }
+
         TPAManager.TpaRequest request = plugin.getTPAManager().getRequest(player.getUniqueId());
         if (request == null) {
             send(player, plugin.getConfigManager().getMessage("TPA.NO-REQUEST",
@@ -302,6 +327,10 @@ public class TPACommand implements CommandExecutor {
     }
 
     private void acceptFromChat(Player clicker, UUID requesterUuid, boolean tpaHere) {
+        if (plugin.getCombatManager() != null && plugin.getCombatManager().isInCombat(clicker.getUniqueId())) {
+            clicker.sendMessage(ColorUtils.toComponent(plugin.getCombatManager().getBlockMessage()));
+            return;
+        }
         TPAManager.TpaRequest request = plugin.getTPAManager().getRequest(clicker.getUniqueId());
         if (request == null || !request.requester().equals(requesterUuid) || request.tpaHere() != tpaHere) {
             return;
@@ -320,6 +349,9 @@ public class TPACommand implements CommandExecutor {
     }
 
     private boolean shouldOpenTpaConfirmMenu(Player target) {
+        if (plugin.getCombatManager() != null && plugin.getCombatManager().isInCombat(target.getUniqueId())) {
+            return false;
+        }
         PlayerData currentTargetData = plugin.getPlayerDataManager().get(target);
         return currentTargetData == null || currentTargetData.isTpaConfirmMenuEnabled();
     }

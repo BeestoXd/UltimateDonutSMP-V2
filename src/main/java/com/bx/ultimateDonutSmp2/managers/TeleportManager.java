@@ -53,6 +53,11 @@ public class TeleportManager {
             }
         }
 
+        if (plugin.getCombatManager() != null && plugin.getCombatManager().isInCombat(uuid)) {
+            player.sendMessage(ColorUtils.toComponent(plugin.getCombatManager().getBlockMessage()));
+            return;
+        }
+
         String normalizedType = normalizeType(type);
         int cooldownSecs = warmupSeconds(plugin.getConfigManager().getConfig(), normalizedType);
         boolean quietSpawn = "SPAWN".equals(normalizedType)

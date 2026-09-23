@@ -181,6 +181,13 @@ public class RTPQueueManager {
         }
 
         UUID playerId = player.getUniqueId();
+        if (plugin.getCombatManager() != null && plugin.getCombatManager().isInCombat(playerId)) {
+            if (notifyRefusal) {
+                player.sendMessage(ColorUtils.toComponent(plugin.getCombatManager().getBlockMessage()));
+            }
+            return false;
+        }
+
         if (isInQueue(playerId)) {
             if (notifyRefusal) {
                 sendMessage(

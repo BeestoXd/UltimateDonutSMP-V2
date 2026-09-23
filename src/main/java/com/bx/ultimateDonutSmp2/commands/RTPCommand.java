@@ -34,6 +34,11 @@ public class RTPCommand implements CommandExecutor {
             return true;
         }
 
+        if (plugin.getCombatManager() != null && plugin.getCombatManager().isInCombat(player.getUniqueId())) {
+            player.sendMessage(ColorUtils.toComponent(plugin.getCombatManager().getBlockMessage()));
+            return true;
+        }
+
         if (args.length == 0) {
             plugin.getRtpManager().queueCommandTeleport(player, player.getWorld().getName());
             return true;
