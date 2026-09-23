@@ -371,7 +371,6 @@ Pre-prepared world pool settings for FLAT terrain mode
 | :--- | :--- | :--- | :--- | :--- |
 | `MAP_SOURCES.RANDOM_BIOMES.FLAT_POOL.ENABLED` | `boolean` | `true`, `false` | `true` | Enable pre-generating flat duel worlds in advance (true / false) |
 | `MAP_SOURCES.RANDOM_BIOMES.FLAT_POOL.REUSE_WORLDS` | `boolean` | `true`, `false` | `true` | Recycle and reuse clean flat worlds for subsequent matches (true / false) |
-| `MAP_SOURCES.RANDOM_BIOMES.FLAT_POOL.SIZE` | `integer` | Any integer | `2` | Number of pre-prepared flat worlds to keep ready in pool |
 | `MAP_SOURCES.RANDOM_BIOMES.FLAT_POOL.PREPARE_INTERVAL_TICKS` | `integer` | Any integer | `20` | Interval in ticks between pool preparation checks |
 
 #### `MAP_SOURCES.RANDOM_BIOMES.VANILLA_POOL`
@@ -384,7 +383,6 @@ Pre-prepared world pool settings for VANILLA terrain mode
 | :--- | :--- | :--- | :--- | :--- |
 | `MAP_SOURCES.RANDOM_BIOMES.VANILLA_POOL.ENABLED` | `boolean` | `true`, `false` | `true` | Enable pre-generating vanilla terrain duel worlds (true / false) |
 | `MAP_SOURCES.RANDOM_BIOMES.VANILLA_POOL.RUNTIME_GENERATION` | `boolean` | `true`, `false` | `true` | Allow background chunk generation for vanilla terrain (true / false) |
-| `MAP_SOURCES.RANDOM_BIOMES.VANILLA_POOL.SIZE` | `integer` | Any integer | `2` | Number of pre-prepared vanilla worlds to keep ready in pool |
 | `MAP_SOURCES.RANDOM_BIOMES.VANILLA_POOL.CHUNKS_PER_TICK` | `integer` | Any integer | `1` | Chunks generated per tick to prevent server lag |
 | `MAP_SOURCES.RANDOM_BIOMES.VANILLA_POOL.PREPARE_INTERVAL_TICKS` | `integer` | Any integer | `20` | Interval in ticks between vanilla pool preparation ticks |
 | `MAP_SOURCES.RANDOM_BIOMES.VANILLA_POOL.MAX_SYNC_STEP_MS` | `integer` | Any integer | `2000` | Maximum allowed time in milliseconds per sync preparation step before pausing |

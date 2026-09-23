@@ -75,4 +75,15 @@ class DuelWorldManagerTest {
         assertEquals(8, DuelWorldManager.arenaSampleStep(128));
         assertEquals(16, DuelWorldManager.arenaSampleStep(256));
     }
+
+    @Test
+    void duelPoolSizeKeysAreNotPresentInConfigOrDocumentation() throws Exception {
+        YamlConfiguration duels = bundledDuels();
+        assertFalse(duels.contains("MAP_SOURCES.RANDOM_BIOMES.FLAT_POOL.SIZE"));
+        assertFalse(duels.contains("MAP_SOURCES.RANDOM_BIOMES.VANILLA_POOL.SIZE"));
+
+        String wiki = java.nio.file.Files.readString(new File("docs/wiki/Config-duels.yml.md").toPath());
+        assertFalse(wiki.contains("MAP_SOURCES.RANDOM_BIOMES.FLAT_POOL.SIZE"));
+        assertFalse(wiki.contains("MAP_SOURCES.RANDOM_BIOMES.VANILLA_POOL.SIZE"));
+    }
 }
