@@ -1300,7 +1300,7 @@ public class DuelManager {
             return true;
         }
 
-        for (String allowed : commandPatterns("COMMAND_BLOCK.ALLOWLIST", List.of("/duel", "/draw", "/leave", "/queue", "/create"))) {
+        for (String allowed : commandPatterns("COMMAND_BLOCK.ALLOWLIST", List.of("/duel", "/draw", "/leave", "/queue"))) {
             if (matchesCommandPattern(raw, allowed)) {
                 return true;
             }
@@ -2818,6 +2818,9 @@ public class DuelManager {
 
     private List<String> commandPatterns(String path, List<String> defaults) {
         List<String> configured = config().getStringList(path);
+        if (configured.isEmpty()) {
+            configured = config().getStringList("COMMAND_BLOCK.COMMANDS");
+        }
         List<String> source = configured.isEmpty() ? defaults : configured;
         List<String> patterns = new ArrayList<>();
         for (String value : source) {
