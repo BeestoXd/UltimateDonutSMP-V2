@@ -11,6 +11,7 @@ import com.bx.ultimateDonutSmp2.models.DuelStats;
 import com.bx.ultimateDonutSmp2.models.PlayerData;
 import com.bx.ultimateDonutSmp2.utils.AttributeUtils;
 import com.bx.ultimateDonutSmp2.utils.ColorUtils;
+import com.bx.ultimateDonutSmp2.utils.CommandLabelUtils;
 import com.bx.ultimateDonutSmp2.utils.ItemSerializationUtils;
 import com.bx.ultimateDonutSmp2.utils.LocationUtils;
 import com.bx.ultimateDonutSmp2.utils.PlayerSettingUtils;
@@ -1281,7 +1282,11 @@ public class DuelManager {
     }
 
     public boolean isCommandAllowedDuringMatch(String rawCommand) {
-        if (!config().getBoolean("COMMAND_BLOCK.ENABLED", true)) {
+        return isCommandAllowedDuringMatch(rawCommand, plugin == null ? null : config());
+    }
+
+    static boolean isCommandAllowedDuringMatch(String rawCommand, FileConfiguration config) {
+        if (config != null && !config.getBoolean("COMMAND_BLOCK.ENABLED", true)) {
             return true;
         }
 
@@ -1290,9 +1295,9 @@ public class DuelManager {
             return true;
         }
 
-        String mode = config().getString("COMMAND_BLOCK.MODE", "ALLOWLIST").trim().toUpperCase(Locale.ROOT);
+        String mode = config == null ? "ALLOWLIST" : config.getString("COMMAND_BLOCK.MODE", "ALLOWLIST").trim().toUpperCase(Locale.ROOT);
         if ("BLOCKLIST".equals(mode)) {
-            for (String blocked : commandPatterns("COMMAND_BLOCK.BLOCKLIST", List.of("/tpa", "/home", "/spawn", "/rtp", "/sethome", "/tpaccept", "/tpahere", "/warp", "/back", "/tpdeny", "/tpadeny"))) {
+            for (String blocked : commandPatterns(config, "COMMAND_BLOCK.BLOCKLIST", List.of("/tpa", "/home", "/spawn", "/rtp", "/sethome", "/tpaccept", "/tpahere", "/warp", "/back", "/tpdeny", "/tpadeny"))) {
                 if (matchesCommandPattern(raw, blocked)) {
                     return false;
                 }
@@ -1300,7 +1305,7 @@ public class DuelManager {
             return true;
         }
 
-        for (String allowed : commandPatterns("COMMAND_BLOCK.ALLOWLIST", List.of("/duel", "/draw", "/leave", "/queue"))) {
+        for (String allowed : commandPatterns(config, "COMMAND_BLOCK.ALLOWLIST", List.of("/duel", "/draw", "/leave", "/queue"))) {
             if (matchesCommandPattern(raw, allowed)) {
                 return true;
             }
@@ -2817,9 +2822,13 @@ public class DuelManager {
     }
 
     private List<String> commandPatterns(String path, List<String> defaults) {
-        List<String> configured = config().getStringList(path);
-        if (configured.isEmpty()) {
-            configured = config().getStringList("COMMAND_BLOCK.COMMANDS");
+        return commandPatterns(plugin == null ? null : config(), path, defaults);
+    }
+
+    static List<String> commandPatterns(FileConfiguration config, String path, List<String> defaults) {
+        List<String> configured = config == null ? List.of() : config.getStringList(path);
+        if (configured.isEmpty() && config != null) {
+            configured = config.getStringList("COMMAND_BLOCK.COMMANDS");
         }
         List<String> source = configured.isEmpty() ? defaults : configured;
         List<String> patterns = new ArrayList<>();
@@ -2832,15 +2841,39 @@ public class DuelManager {
         return patterns;
     }
 
-    private String normalizeCommandPattern(String value) {
+    static String normalizeCommandPattern(String value) {
         if (value == null || value.isBlank()) {
             return "";
         }
-        String normalized = value.trim().toLowerCase(Locale.ROOT);
-        return normalized.startsWith("/") ? normalized : "/" + normalized;
+        String stripped = withoutPluginNamespace(value);
+        if (stripped.isBlank()) {
+            return "";
+        }
+        return stripped.startsWith("/") ? stripped : "/" + stripped;
     }
 
-    private boolean matchesCommandPattern(String raw, String pattern) {
+    private static String withoutPluginNamespace(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        String value = raw.trim().toLowerCase(Locale.ROOT);
+        int space = value.indexOf(' ');
+        String token = space < 0 ? value : value.substring(0, space);
+        String rest = space < 0 ? "" : value.substring(space);
+
+        boolean slash = token.startsWith("/");
+        String body = slash ? token.substring(1) : token;
+        if (body.isEmpty()) {
+            return value;
+        }
+        String label = CommandLabelUtils.normalizeLabel(body);
+        if (label.isEmpty()) {
+            return value;
+        }
+        return (slash ? "/" : "") + label + rest;
+    }
+
+    private static boolean matchesCommandPattern(String raw, String pattern) {
         if (raw == null || pattern == null || pattern.isBlank()) {
             return false;
         }
