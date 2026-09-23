@@ -1125,10 +1125,6 @@ public class DuelWorldManager {
         return config().getBoolean(FLAT_POOL_PATH + ".REUSE_WORLDS", true);
     }
 
-    private int getFlatPoolSize() {
-        return Math.max(1, config().getInt(FLAT_POOL_PATH + ".SIZE", 2));
-    }
-
     private int getFlatPoolPrepareIntervalTicks() {
         return Math.max(20, config().getInt(FLAT_POOL_PATH + ".PREPARE_INTERVAL_TICKS", 20));
     }
@@ -1139,10 +1135,6 @@ public class DuelWorldManager {
 
     public boolean isVanillaRuntimeGenerationEnabled() {
         return config().getBoolean(VANILLA_POOL_PATH + ".RUNTIME_GENERATION", true);
-    }
-
-    private int getVanillaPoolSize() {
-        return Math.max(1, config().getInt(VANILLA_POOL_PATH + ".SIZE", 2));
     }
 
     private int getVanillaPoolChunksPerTick() {

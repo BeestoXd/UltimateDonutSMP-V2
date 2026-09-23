@@ -145,8 +145,6 @@ MAP_SOURCES:
       ENABLED: true
       # Recycle and reuse clean flat worlds for subsequent matches (true / false)
       REUSE_WORLDS: true
-      # Number of pre-prepared flat worlds to keep ready in pool
-      SIZE: 2
       # Interval in ticks between pool preparation checks
       PREPARE_INTERVAL_TICKS: 20
 
@@ -156,8 +154,6 @@ MAP_SOURCES:
       ENABLED: true
       # Allow background chunk generation for vanilla terrain (true / false)
       RUNTIME_GENERATION: true
-      # Number of pre-prepared vanilla worlds to keep ready in pool
-      SIZE: 2
       # Chunks generated per tick to prevent server lag
       CHUNKS_PER_TICK: 1
       # Interval in ticks between vanilla pool preparation ticks
