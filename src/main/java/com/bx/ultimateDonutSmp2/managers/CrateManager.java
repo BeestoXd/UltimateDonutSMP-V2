@@ -295,6 +295,9 @@ public class CrateManager {
     }
 
     public ActionResult addMoneyReward(String crateId, int slot, double amount) {
+        if (!Double.isFinite(amount) || amount <= 0D) {
+            return new ActionResult(false, "&camount must be a positive number.");
+        }
         CrateDefinition crate = getCrate(crateId);
         if (crate == null) {
             return new ActionResult(false, "&ccrate '&f" + crateId + "&c' was not found.");
@@ -329,6 +332,9 @@ public class CrateManager {
     }
 
     private void writeMoneyReward(FileConfiguration cratesConfig, String basePath, int slot, double amount) {
+        if (!Double.isFinite(amount) || amount <= 0D) {
+            return;
+        }
         cratesConfig.set(basePath + ".SLOT", slot);
         cratesConfig.set(basePath + ".DISPLAY.MATERIAL", Material.SUNFLOWER.name());
         cratesConfig.set(basePath + ".DISPLAY.DISPLAY-NAME", "&fMoney reward");
@@ -1039,6 +1045,9 @@ public class CrateManager {
         if (data == null) {
             return false;
         }
+        if (!Double.isFinite(grant.moneyAmount()) || grant.moneyAmount() <= 0D) {
+            return false;
+        }
         data.addMoney(grant.moneyAmount());
         return true;
     }
@@ -1529,20 +1538,24 @@ public class CrateManager {
                     "",
                     0L
             );
-            case MONEY -> new GrantDefinition(
-                    type,
-                    new DisplayItem(Material.SUNFLOWER,
-                            plugin.getCurrencyManager().color(CurrencyManager.CurrencyType.MONEY)
-                                    + plugin.getCurrencyManager().singular(CurrencyManager.CurrencyType.MONEY)
-                                    + " reward",
-                            List.of(), 1, List.of()),
-                    section.getDouble("AMOUNT", 0D),
-                    0L,
-                    List.of(),
-                    false,
-                    "",
-                    0L
-            );
+            case MONEY -> {
+                double rawAmount = section.getDouble("AMOUNT", 0D);
+                double safeAmount = (Double.isFinite(rawAmount) && rawAmount > 0D) ? rawAmount : 0D;
+                yield new GrantDefinition(
+                        type,
+                        new DisplayItem(Material.SUNFLOWER,
+                                plugin.getCurrencyManager().color(CurrencyManager.CurrencyType.MONEY)
+                                        + plugin.getCurrencyManager().singular(CurrencyManager.CurrencyType.MONEY)
+                                        + " reward",
+                                List.of(), 1, List.of()),
+                        safeAmount,
+                        0L,
+                        List.of(),
+                        false,
+                        "",
+                        0L
+                );
+            }
             case SHARDS -> new GrantDefinition(
                     type,
                     new DisplayItem(Material.AMETHYST_SHARD,

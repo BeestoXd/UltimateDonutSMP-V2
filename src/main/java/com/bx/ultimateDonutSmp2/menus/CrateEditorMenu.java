@@ -118,7 +118,10 @@ public class CrateEditorMenu extends BaseMenu {
                     String amountStr = display.substring(8).strip();
                     Double parsed = null;
                     try {
-                        parsed = Double.parseDouble(amountStr);
+                        double val = Double.parseDouble(amountStr);
+                        if (Double.isFinite(val) && val > 0D) {
+                            parsed = val;
+                        }
                     } catch (NumberFormatException ignored) { }
                     if (parsed == null) {
                         player.sendMessage(ColorUtils.toComponent("&cInvalid money amount in template display name. Use '[MONEY] 10.5'."));

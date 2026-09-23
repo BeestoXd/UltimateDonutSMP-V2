@@ -479,6 +479,10 @@ public class CrateCommand implements CommandExecutor, TabCompleter {
                     sender.sendMessage(ColorUtils.toComponent("&camount must be a number."));
                     return true;
                 }
+                if (parsed <= 0D) {
+                    sender.sendMessage(ColorUtils.toComponent("&camount must be a positive number."));
+                    return true;
+                }
                 result = plugin.getCrateManager().addMoneyReward(crate.id(), slot, parsed);
             } else if (verb.equals("shards")) {
                 if (args.length < 5) {
@@ -680,7 +684,8 @@ public class CrateCommand implements CommandExecutor, TabCompleter {
 
     private Double parseDouble(String input) {
         try {
-            return Double.parseDouble(input);
+            double parsed = Double.parseDouble(input);
+            return Double.isFinite(parsed) ? parsed : null;
         } catch (NumberFormatException exception) {
             return null;
         }
