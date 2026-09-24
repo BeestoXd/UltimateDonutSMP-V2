@@ -231,11 +231,12 @@ public class FeatureManager {
             case "orders" -> new Feature[]{Feature.ORDERS};
             case "duel", "create", "queue", "draw", "arena" -> new Feature[]{Feature.DUELS};
             case "ffa", "ffastats", "ffaarena" -> new Feature[]{Feature.FFA};
+            case "pvp" -> new Feature[]{Feature.PVP_ARENA};
             case "auctionhouse" -> new Feature[]{Feature.AUCTION_HOUSE};
             case "enderchest", "ecsee" -> new Feature[]{Feature.ENDER_CHEST};
             case "sell", "sellhand", "sellall", "sellhistory" -> new Feature[]{Feature.SELL};
             case "worth", "meta" -> new Feature[]{Feature.SELL, Feature.WORTH};
-            case "rtp" -> new Feature[]{Feature.RTP};
+            case "rtp", "rtpq", "rtpqueue" -> new Feature[]{Feature.RTP};
             case "stats", "ping", "playtime" -> new Feature[]{Feature.STATS};
             case "leaderboard" -> new Feature[]{Feature.LEADERBOARDS};
             case "freeze" -> new Feature[]{Feature.FREEZE};
@@ -364,8 +365,10 @@ public class FeatureManager {
             case RTP_ZONE -> {
                 if (plugin.getRtpZoneManager() != null) {
                     plugin.getRtpZoneManager().reloadSettings();
-                    for (Player player : plugin.getServer().getOnlinePlayers()) {
-                        plugin.getRtpZoneManager().clearState(player);
+                    if (plugin.getServer() != null) {
+                        for (Player player : plugin.getServer().getOnlinePlayers()) {
+                            plugin.getRtpZoneManager().clearState(player);
+                        }
                     }
                 }
             }
@@ -373,10 +376,15 @@ public class FeatureManager {
                 if (plugin.getRtpManager() != null) {
                     plugin.getRtpManager().reload();
                 }
+                if (plugin.getRtpQueueManager() != null) {
+                    plugin.getRtpQueueManager().reload();
+                }
                 if (plugin.getRtpZoneManager() != null) {
                     plugin.getRtpZoneManager().reloadSettings();
-                    for (Player player : plugin.getServer().getOnlinePlayers()) {
-                        plugin.getRtpZoneManager().clearState(player);
+                    if (plugin.getServer() != null) {
+                        for (Player player : plugin.getServer().getOnlinePlayers()) {
+                            plugin.getRtpZoneManager().clearState(player);
+                        }
                     }
                 }
             }
@@ -440,6 +448,23 @@ public class FeatureManager {
             case FFA -> {
                 if (plugin.getFfaManager() != null) {
                     plugin.getFfaManager().reload();
+                }
+            }
+            case PVP_ARENA -> {
+                if (!isEnabled(feature)) {
+                    if (plugin.getPvpMatchManager() != null) {
+                        plugin.getPvpMatchManager().shutdown();
+                    }
+                    if (plugin.getPvpManager() != null) {
+                        plugin.getPvpManager().shutdown();
+                    }
+                } else {
+                    if (plugin.getPvpManager() != null) {
+                        plugin.getPvpManager().reload();
+                    }
+                    if (plugin.getPvpMatchManager() != null) {
+                        plugin.getPvpMatchManager().reload();
+                    }
                 }
             }
             case NETWORK_SERVERS -> {
