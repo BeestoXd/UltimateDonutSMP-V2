@@ -170,6 +170,9 @@ public class FeatureManager {
 
     public void clearCache() {
         featureCache.clear();
+        if (plugin != null && plugin.getFakePlayerManager() != null) {
+            plugin.getFakePlayerManager().clearCache();
+        }
     }
 
     public DisabledCommandAction getDisabledCommandAction() {
@@ -394,6 +397,14 @@ public class FeatureManager {
             case STAFF_MODE -> {
                 if (!isEnabled(feature) && plugin.getStaffModeManager() != null) {
                     plugin.getStaffModeManager().shutdown();
+                }
+                if (plugin.getFakePlayerManager() != null) {
+                    plugin.getFakePlayerManager().clearCache();
+                    if (!isEnabled(feature)) {
+                        plugin.getFakePlayerManager().shutdown();
+                    } else {
+                        plugin.getFakePlayerManager().reload();
+                    }
                 }
             }
             case FREEZE -> {

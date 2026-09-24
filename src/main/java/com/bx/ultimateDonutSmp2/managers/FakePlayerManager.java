@@ -90,6 +90,7 @@ public class FakePlayerManager {
     }
 
     public synchronized void reload() {
+        clearCache();
         removeAllInternal("reload");
         loadSettings();
         restartMonitor();
@@ -99,6 +100,8 @@ public class FakePlayerManager {
     }
 
     public synchronized void shutdown() {
+        this.enabled = false;
+        clearCache();
         cancelMonitor();
         cancelPositionLock();
         removeAllInternal("shutdown");
@@ -111,7 +114,7 @@ public class FakePlayerManager {
         return packetBridge != null;
     }
 
-    private Boolean cachedEnabled = null;
+    private volatile Boolean cachedEnabled = null;
 
     public void clearCache() {
         cachedEnabled = null;
@@ -323,7 +326,9 @@ public class FakePlayerManager {
     }
 
     private FakePlayerPacketBridge createBridge() {
-        if (!isClassAvailable("com.comphenix.protocol.ProtocolLibrary")
+        if (plugin == null || plugin.getServer() == null
+                || !isClassAvailable("com.comphenix.protocol.ProtocolLibrary")
+                || plugin.getServer().getPluginManager() == null
                 || plugin.getServer().getPluginManager().getPlugin("ProtocolLib") == null
                 || !plugin.getServer().getPluginManager().isPluginEnabled("ProtocolLib")) {
             return null;
@@ -372,7 +377,7 @@ public class FakePlayerManager {
     private void restartMonitor() {
         cancelMonitor();
         cancelPositionLock();
-        if (!enabled) {
+        if (!enabled || plugin == null || plugin.getSpigotScheduler() == null) {
             return;
         }
         monitorTask = plugin.getSpigotScheduler().runGlobalTimer(this::tick, checkIntervalTicks, checkIntervalTicks);
