@@ -5,9 +5,11 @@ import com.bx.ultimateDonutSmp2.models.FfaArena;
 import com.bx.ultimateDonutSmp2.models.FfaMatch;
 import com.bx.ultimateDonutSmp2.models.FfaPlayerSnapshot;
 import com.bx.ultimateDonutSmp2.models.FfaStats;
+import com.bx.ultimateDonutSmp2.models.PlayerData;
 import com.bx.ultimateDonutSmp2.utils.AttributeUtils;
 import com.bx.ultimateDonutSmp2.utils.ColorUtils;
 import com.bx.ultimateDonutSmp2.utils.LocationUtils;
+import com.bx.ultimateDonutSmp2.utils.NumberUtils;
 import com.bx.ultimateDonutSmp2.utils.SoundUtils;
 import com.bx.ultimateDonutSmp2.utils.TitleUtils;
 import org.bukkit.Bukkit;
@@ -175,6 +177,34 @@ public class FfaManager {
 
     public boolean shouldCountTowardGlobalStats() {
         return config().getBoolean("RULES.COUNT_TOWARD_GLOBAL_STATS", false);
+    }
+
+    public boolean shouldGiveSurvivalRewards() {
+        return config().getBoolean("RULES.GIVE_SURVIVAL_REWARDS", false);
+    }
+
+    public boolean shouldRestoreInventory() {
+        return config().getBoolean("PLAYER_STATE.RESTORE_INVENTORY", true);
+    }
+
+    public boolean shouldRestoreHealth() {
+        return config().getBoolean("PLAYER_STATE.RESTORE_HEALTH", true);
+    }
+
+    public boolean shouldRestoreEffects() {
+        return config().getBoolean("PLAYER_STATE.RESTORE_EFFECTS", true);
+    }
+
+    public boolean shouldCleanupProjectiles() {
+        return config().getBoolean("ROLLBACK.CLEANUP_PROJECTILES", true);
+    }
+
+    public boolean shouldCleanupDrops() {
+        return config().getBoolean("ROLLBACK.CLEANUP_DROPS", true);
+    }
+
+    public boolean shouldCleanupFireAndFluids() {
+        return config().getBoolean("ROLLBACK.CLEANUP_FIRE_AND_FLUIDS", true);
     }
 
     public int getCountdownSeconds() {
@@ -839,8 +869,70 @@ public class FfaManager {
 
         event.getDrops().clear();
         event.setDroppedExp(0);
+
+        Player killer = victim.getKiller();
+        if (killer == null) {
+            UUID opponentUuid = match.getOpponent(victim.getUniqueId());
+            if (opponentUuid != null) {
+                killer = Bukkit.getPlayer(opponentUuid);
+            }
+        }
+
+        if (killer != null && !killer.equals(victim)) {
+            if (shouldCountTowardGlobalStats()) {
+                PlayerData killerData = plugin.getPlayerDataManager() != null ? plugin.getPlayerDataManager().get(killer) : null;
+                if (killerData != null) {
+                    killerData.addKill();
+                    killerData.addKillStreak();
+                }
+                PlayerData victimData = plugin.getPlayerDataManager() != null ? plugin.getPlayerDataManager().get(victim) : null;
+                if (victimData != null) {
+                    victimData.addDeath();
+                    victimData.resetKillStreak();
+                }
+            }
+            if (shouldGiveSurvivalRewards()) {
+                giveSurvivalRewards(killer, victim);
+            }
+        }
+
         finishParticipantMatch(match, victim.getUniqueId(), "DEATH", true);
         return true;
+    }
+
+    private void giveSurvivalRewards(Player killer, Player victim) {
+        if (killer == null || victim == null || killer.equals(victim) || plugin == null) {
+            return;
+        }
+
+        if (plugin.getFeatureManager() != null && plugin.getFeatureManager().isEnabled(FeatureManager.Feature.SHARDS)) {
+            ShardManager shardManager = plugin.getShardManager();
+            if (shardManager != null) {
+                if (shardManager.tryClaimKillReward(killer.getUniqueId(), victim.getUniqueId())) {
+                    long multiplier = shardManager.getKillMultiplier(killer.getUniqueId());
+                    long shardsPerKill = ShardManager.applyMultiplier(shardManager.rollKillReward(), multiplier);
+                    shardManager.giveShards(killer, shardsPerKill, false);
+                    shardManager.sendKillRewardFeedback(killer, shardsPerKill, multiplier);
+                } else {
+                    shardManager.sendKillRewardCooldownFeedback(killer, victim.getUniqueId());
+                }
+            }
+        }
+
+        if (plugin.getFeatureManager() != null && plugin.getFeatureManager().isEnabled(FeatureManager.Feature.BOUNTY)
+                && plugin.getBountyManager() != null
+                && plugin.getBountyManager().hasBounty(victim.getUniqueId())
+                && victim.getWorld() != null
+                && !plugin.getBountyManager().isExcludedWorld(victim.getWorld().getName())) {
+            double amount = plugin.getBountyManager().claimBounty(killer, victim.getUniqueId());
+            if (amount > 0) {
+                String msg = plugin.getConfigManager().getMessage("BOUNTY.CLAIM-SUCCESS",
+                        "{amount}", NumberUtils.format(amount),
+                        "{amount_formatted}", plugin.getCurrencyManager().formatMoney(amount),
+                        "{player}", plugin.getHideManager().publicName(victim));
+                killer.sendMessage(ColorUtils.toComponent(msg));
+            }
+        }
     }
 
     public boolean consumeRespawn(Player player, org.bukkit.event.player.PlayerRespawnEvent event) {
@@ -1264,7 +1356,9 @@ public class FfaManager {
         player.setFlying(false);
         player.setInvulnerable(false);
         player.setCollidable(true);
-        clearPotionEffects(player);
+        if (shouldRestoreEffects()) {
+            clearPotionEffects(player);
+        }
         healPlayerForMatch(player);
         player.setAbsorptionAmount(0D);
         player.setFireTicks(0);
@@ -1701,6 +1795,18 @@ public class FfaManager {
         UUID remainingUuid = match.getOpponent(exitingUuid);
         ArenaSnapshot arenaSnapshot = arenaSnapshots.get(match.getId());
 
+        if (remainingUuid != null) {
+            String winnerName = match.getOpponentName(exitingUuid);
+            String loserName = match.getOpponentName(remainingUuid);
+            storeTransitionTitle(remainingUuid,
+                    formatResultTitle("victory", winnerName, loserName, "&e&lVICTORY!"),
+                    formatResultSubtitle("victory", winnerName, loserName, "&e" + winnerName + " &fwon the FFA Match!"));
+            storeTransitionTitle(exitingUuid,
+                    formatResultTitle("defeat", loserName, winnerName, "&c&lDEFEAT!"),
+                    formatResultSubtitle("defeat", loserName, winnerName, "&c" + winnerName + " &feliminated you!"));
+            updateStatsAfterWin(remainingUuid, exitingUuid);
+        }
+
         match.setStatus(FfaMatch.MatchStatus.POST_MATCH);
         updateMatchRecord(match, null, null, "FINISHED", endReason);
 
@@ -1726,6 +1832,23 @@ public class FfaManager {
                 || match.getStatus() == FfaMatch.MatchStatus.POST_MATCH
                 || match.getStatus() == FfaMatch.MatchStatus.FINISHED) {
             return;
+        }
+
+        if (respawnParticipantUuid != null && match.isParticipant(respawnParticipantUuid)) {
+            UUID winnerUuid = match.getOpponent(respawnParticipantUuid);
+            if (winnerUuid != null) {
+                String winnerName = match.getOpponentName(respawnParticipantUuid);
+                String loserName = match.getOpponentName(winnerUuid);
+                storeTransitionTitle(winnerUuid,
+                        formatResultTitle("victory", winnerName, loserName, "&e&lVICTORY!"),
+                        formatResultSubtitle("victory", winnerName, loserName, "&e" + winnerName + " &fwon the FFA Match!"));
+                storeTransitionTitle(respawnParticipantUuid,
+                        formatResultTitle("defeat", loserName, winnerName, "&c&lDEFEAT!"),
+                        formatResultSubtitle("defeat", loserName, winnerName, "&c" + winnerName + " &feliminated you!"));
+                updateStatsAfterWin(winnerUuid, respawnParticipantUuid);
+            }
+        } else if ("COMBAT_EXPIRED".equalsIgnoreCase(endReason)) {
+            updateStatsAfterDraw(match.getPlayerOneUuid(), match.getPlayerTwoUuid());
         }
 
         match.setStatus(FfaMatch.MatchStatus.POST_MATCH);
@@ -1888,15 +2011,19 @@ public class FfaManager {
             return;
         }
 
-        PlayerInventory inventory = player.getInventory();
-        inventory.clear();
-        inventory.setStorageContents(snapshot.getStorageContents());
-        inventory.setArmorContents(snapshot.getArmorContents());
-        inventory.setItemInOffHand(snapshot.getOffHand());
+        if (shouldRestoreInventory()) {
+            PlayerInventory inventory = player.getInventory();
+            inventory.clear();
+            inventory.setStorageContents(snapshot.getStorageContents());
+            inventory.setArmorContents(snapshot.getArmorContents());
+            inventory.setItemInOffHand(snapshot.getOffHand());
+        }
 
-        clearPotionEffects(player);
-        for (PotionEffect effect : snapshot.getPotionEffects()) {
-            player.addPotionEffect(effect);
+        if (shouldRestoreEffects()) {
+            clearPotionEffects(player);
+            for (PotionEffect effect : snapshot.getPotionEffects()) {
+                player.addPotionEffect(effect);
+            }
         }
 
         player.setGameMode(snapshot.getGameMode());
@@ -1915,7 +2042,11 @@ public class FfaManager {
         player.resetPlayerWeather();
 
         double maxHealth = AttributeUtils.getMaxHealth(player);
-        player.setHealth(Math.min(maxHealth, Math.max(1D, snapshot.getHealth())));
+        if (shouldRestoreHealth()) {
+            player.setHealth(maxHealth);
+        } else {
+            player.setHealth(Math.min(maxHealth, Math.max(1D, snapshot.getHealth())));
+        }
         player.updateInventory();
     }
 
@@ -3269,12 +3400,24 @@ public class FfaManager {
     }
 
     private String formatResultTitle(String key, String playerName, String opponentName, String fallback) {
-        String raw = config().getString("RESULT-TITLES." + key + ".TITLE", fallback);
+        String raw = config().getString("RESULT-TITLES." + key.toLowerCase() + ".title");
+        if (raw == null) {
+            raw = config().getString("RESULT-TITLES." + key.toUpperCase() + ".TITLE");
+        }
+        if (raw == null) {
+            raw = config().getString("RESULT-TITLES." + key + ".TITLE", fallback);
+        }
         return applyResultPlaceholders(raw, playerName, opponentName);
     }
 
     private String formatResultSubtitle(String key, String playerName, String opponentName, String fallback) {
-        String raw = config().getString("RESULT-TITLES." + key + ".SUBTITLE", fallback);
+        String raw = config().getString("RESULT-TITLES." + key.toLowerCase() + ".subtitle");
+        if (raw == null) {
+            raw = config().getString("RESULT-TITLES." + key.toUpperCase() + ".SUBTITLE");
+        }
+        if (raw == null) {
+            raw = config().getString("RESULT-TITLES." + key + ".SUBTITLE", fallback);
+        }
         return applyResultPlaceholders(raw, playerName, opponentName);
     }
 
@@ -3882,6 +4025,9 @@ public class FfaManager {
             }
         }
 
+        if (shouldCleanupFireAndFluids()) {
+            cleanupFireAndFluids(snapshot, world);
+        }
         cleanupTransientEntities(snapshot, world);
         return success;
     }
@@ -4342,16 +4488,48 @@ public class FfaManager {
         });
     }
 
+    private void cleanupFireAndFluids(ArenaSnapshot snapshot, World world) {
+        if (snapshot == null || world == null) {
+            return;
+        }
+
+        int minX = snapshot.minX();
+        int maxX = snapshot.maxX();
+        int minY = Math.max(world.getMinHeight(), snapshot.minY());
+        int maxY = Math.min(world.getMaxHeight() - 1, snapshot.maxY());
+        int minZ = snapshot.minZ();
+        int maxZ = snapshot.maxZ();
+
+        for (int x = minX; x <= maxX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
+                if (!world.isChunkLoaded(x >> 4, z >> 4)) {
+                    continue;
+                }
+                for (int y = minY; y <= maxY; y++) {
+                    Block block = world.getBlockAt(x, y, z);
+                    Material mat = block.getType();
+                    if (mat == Material.FIRE || mat == Material.SOUL_FIRE) {
+                        block.setType(Material.AIR, false);
+                    } else if (mat == Material.LAVA || mat == Material.WATER) {
+                        block.setType(Material.AIR, false);
+                    }
+                }
+            }
+        }
+    }
+
     private void cleanupTransientEntities(ArenaSnapshot snapshot, World world) {
+        boolean cleanupDrops = shouldCleanupDrops();
+        boolean cleanupProjectiles = shouldCleanupProjectiles();
+
         for (Entity entity : world.getEntities()) {
             if (entity instanceof Player || !snapshot.contains(entity.getLocation())) {
                 continue;
             }
 
             String typeName = entity.getType().name();
-            if (typeName.equals("ITEM")
-                    || typeName.equals("EXPERIENCE_ORB")
-                    || typeName.equals("ARROW")
+            boolean isDrop = typeName.equals("ITEM") || typeName.equals("EXPERIENCE_ORB");
+            boolean isProjectile = typeName.equals("ARROW")
                     || typeName.equals("SPECTRAL_ARROW")
                     || typeName.equals("TRIDENT")
                     || typeName.equals("EGG")
@@ -4361,12 +4539,21 @@ public class FfaManager {
                     || typeName.equals("SPLASH_POTION")
                     || typeName.equals("THROWN_POTION")
                     || typeName.equals("LINGERING_POTION")
-                    || typeName.equals("AREA_EFFECT_CLOUD")
+                    || typeName.equals("FIREWORK_ROCKET");
+
+            if (isDrop) {
+                if (cleanupDrops) {
+                    entity.remove();
+                }
+            } else if (isProjectile) {
+                if (cleanupProjectiles) {
+                    entity.remove();
+                }
+            } else if (typeName.equals("AREA_EFFECT_CLOUD")
                     || typeName.equals("FALLING_BLOCK")
                     || typeName.equals("PRIMED_TNT")
                     || typeName.equals("TNT")
                     || typeName.equals("END_CRYSTAL")
-                    || typeName.equals("FIREWORK_ROCKET")
                     || typeName.startsWith("MINECART")
                     || typeName.contains("BOAT")) {
                 entity.remove();
