@@ -1628,7 +1628,7 @@ public final class UltimateDonutSmp2 extends JavaPlugin {
     }
 
     public void syncCommands() {
-        if (getDescription().getCommands() == null) {
+        if (getDescription() == null || getDescription().getCommands() == null) {
             return;
         }
         for (String commandName : getDescription().getCommands().keySet()) {
@@ -1637,10 +1637,12 @@ public final class UltimateDonutSmp2 extends JavaPlugin {
                 syncCommandState(commandName, features);
             }
         }
-        for (org.bukkit.entity.Player player : getServer().getOnlinePlayers()) {
-            try {
-                player.updateCommands();
-            } catch (Exception ignored) {
+        if (getServer() != null) {
+            for (org.bukkit.entity.Player player : getServer().getOnlinePlayers()) {
+                try {
+                    player.updateCommands();
+                } catch (Exception ignored) {
+                }
             }
         }
     }
