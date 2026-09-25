@@ -697,7 +697,6 @@ MENUS:
       - '&7{current_earned}/{next_goal}'
   SELL-MENU:
     TITLE: "&8Place items in here to sell"
-    MULTIPLIER-TITLE: "&8Sell multipliers"
     CONFIRM-BUTTON:
       TITLE: "&a&lConfirm sell"
       LORE:

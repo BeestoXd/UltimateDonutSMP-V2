@@ -929,7 +929,6 @@ PROGRESS-MENU:
     - '&7{current_earned}/{next_goal}'
 SELL-MENU:
   TITLE: '&8Place Items In Here To Sell'
-  MULTIPLIER-TITLE: '&8Sell Multipliers'
   # Selling is always confirmed. Items sit in the grid until the player clicks the sell button,
   # and closing the menu hands them straight back. Everything before SLOT is the sellable grid,
   # so lowering SLOT shrinks the menu.

@@ -33,7 +33,7 @@ customisations.
 | [`SETTINGS-MENU`](#section-settings-menu) | section | 3 keys |
 | [`LEADERBOARDS-MENU`](#section-leaderboards-menu) | section | 5 keys |
 | [`PROGRESS-MENU`](#section-progress-menu) | section | 6 keys |
-| [`SELL-MENU`](#section-sell-menu) | section | 3 keys |
+| [`SELL-MENU`](#section-sell-menu) | section | 2 keys |
 | [`WORTH-MENU`](#section-worth-menu) | section | 3 keys |
 | [`TPA-CONFIRM-MENU`](#section-tpa-confirm-menu) | section | 3 keys |
 | [`BOUNTIES-MENU`](#section-bounties-menu) | section | 9 keys |
@@ -1374,7 +1374,6 @@ PROGRESS-MENU:
 | Option path | Type | Accepted values | Default | What it does |
 | :--- | :--- | :--- | :--- | :--- |
 | `SELL-MENU.TITLE` | `string` | Any text | `&8Place Items In Here To Sell` | Title text. Supports `&` colours and `&#RRGGBB` hex. |
-| `SELL-MENU.MULTIPLIER-TITLE` | `string` | Any text | `&8Sell Multipliers` | Multiplier title. |
 
 ### `SELL-MENU.SELL-BUTTON`
 
@@ -1405,7 +1404,6 @@ LORE:
 ```yaml
 SELL-MENU:
   TITLE: '&8Place Items In Here To Sell'
-  MULTIPLIER-TITLE: '&8Sell Multipliers'
   # Selling is always confirmed. Items sit in the grid until the player clicks the sell button,
   # and closing the menu hands them straight back. Everything before SLOT is the sellable grid,
   # so lowering SLOT shrinks the menu.
