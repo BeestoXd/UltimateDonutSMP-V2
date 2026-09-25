@@ -133,9 +133,10 @@ public class OrdersManager {
 
     public enum DeliveryMode {
         DEPOSIT_GUI,
+        DIRECT,
         AUTO_SCAN;
 
-        private static DeliveryMode fromConfig(String rawValue) {
+        public static DeliveryMode fromConfig(String rawValue) {
             if (rawValue == null || rawValue.isBlank()) {
                 return DEPOSIT_GUI;
             }
