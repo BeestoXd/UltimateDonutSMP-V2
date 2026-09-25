@@ -667,12 +667,6 @@ TEAM:
   NAME-MAX-LENGTH: 5
   # The numerical value for Limit Members. Available options: Any valid integer
   LIMIT-MEMBERS: 10
-# Configuration section for Leaderboard.
-LEADERBOARD:
-  # The numerical value for Update. Available options: Any valid integer
-  UPDATE: 10
-  # The numerical value for Npc Refresh. Available options: Any valid integer
-  NPC-REFRESH: 1
 # Configuration section for Tablist.
 TABLIST:
   # Determines whether Enabled is enabled or disabled. Available options: true, false

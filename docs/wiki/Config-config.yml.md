@@ -51,7 +51,6 @@ overwriting it, and drops a copy of the previous version into `config-backups/<t
 | [`SHARDS`](#section-shards) | section | 12 keys |
 | [`KEY-ALL`](#section-key-all) | section | 7 keys |
 | [`TEAM`](#section-team) | section | 3 keys |
-| [`LEADERBOARD`](#section-leaderboard) | section | 2 keys |
 | [`TABLIST`](#section-tablist) | section | 13 keys |
 | [`SERVER-LIST`](#section-server-list) | section | 2 keys |
 | [`OPTIMIZATION`](#section-optimization) | section | 10 keys |
@@ -1511,31 +1510,6 @@ TEAM:
   NAME-MAX-LENGTH: 5
   # The numerical value for Limit Members. Available options: Any valid integer
   LIMIT-MEMBERS: 10
-```
-
-</details>
-
----
-
-## Section: `LEADERBOARD`
-
-### Options
-
-| Option path | Type | Accepted values | Default | What it does |
-| :--- | :--- | :--- | :--- | :--- |
-| `LEADERBOARD.UPDATE` | `integer` | Any integer | `10` | Update. |
-| `LEADERBOARD.NPC-REFRESH` | `integer` | Any integer | `1` | Npc refresh. |
-
-<details>
-<summary>Default <code>LEADERBOARD</code> block as shipped</summary>
-
-```yaml
-# Configuration section for Leaderboard.
-LEADERBOARD:
-  # The numerical value for Update. Available options: Any valid integer
-  UPDATE: 10
-  # The numerical value for Npc Refresh. Available options: Any valid integer
-  NPC-REFRESH: 1
 ```
 
 </details>
