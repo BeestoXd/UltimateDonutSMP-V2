@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -80,6 +81,19 @@ class LeaderboardConfigurationTest {
             assertTrue(supportedTypes.contains("`" + type.getConfigKey() + "`"),
                     "placeholder docs omit leaderboard type " + type.getConfigKey());
         }
+    }
+
+    @Test
+    void leaderboardSectionIsNotPresentInConfigOrDocumentation() throws Exception {
+        YamlConfiguration config = load("config.yml");
+        assertFalse(config.contains("LEADERBOARD"),
+                "config.yml must not contain unread LEADERBOARD section");
+
+        String wiki = Files.readString(Path.of("docs/wiki/Config-config.yml.md"), StandardCharsets.UTF_8);
+        assertFalse(wiki.contains("LEADERBOARD.UPDATE"),
+                "Config-config.yml.md must not table unread LEADERBOARD.UPDATE");
+        assertFalse(wiki.contains("LEADERBOARD.NPC-REFRESH"),
+                "Config-config.yml.md must not table unread LEADERBOARD.NPC-REFRESH");
     }
 
     private static String normalize(String input) {
