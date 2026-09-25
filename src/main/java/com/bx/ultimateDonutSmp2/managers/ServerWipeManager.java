@@ -414,10 +414,6 @@ public class ServerWipeManager {
                 errors.add("World " + worldName + " is listed in PROTECTED-WORLDS.");
                 continue;
             }
-            if (!isConfiguredRtpWorld(worldName)) {
-                errors.add("World " + worldName + " is not configured as an RTP world.");
-                continue;
-            }
 
             Path worldFolder = worldContainer.resolve(worldName).normalize();
             if (!worldFolder.getParent().equals(worldContainer)) {
@@ -433,23 +429,6 @@ public class ServerWipeManager {
         }
 
         return new Validation(List.copyOf(worlds), Map.copyOf(environments), List.copyOf(errors));
-    }
-
-    private boolean isConfiguredRtpWorld(String worldName) {
-        FileConfiguration rtp = plugin.getConfigManager().getRtp();
-        if (rtp.isConfigurationSection("WORLD-SETTINGS." + worldName)) {
-            return true;
-        }
-        ConfigurationSection buttons = rtp.getConfigurationSection("RTP-MENU.BUTTONS");
-        if (buttons == null) {
-            return false;
-        }
-        for (String key : buttons.getKeys(false)) {
-            if (worldName.equalsIgnoreCase(buttons.getString(key + ".WORLD", ""))) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private Path createBackupDirectory() throws IOException {
