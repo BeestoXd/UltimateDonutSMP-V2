@@ -2932,6 +2932,10 @@ public class OrdersManager {
         return Math.min(45, Math.max(freeSlots, max));
     }
 
+    public int getMyOrdersPlusPageSlots() {
+        return Math.max(0, Math.min(45, config().getInt("GUI.MY_ORDERS.PLUS_PAGE_SLOTS", 45)));
+    }
+
     public boolean hasDonutPlus(Player player) {
         return player != null && (PermissionUtils.hasExact(player, "ultimatedonutsmp2.donutplus")
                 || PermissionUtils.hasExact(player, "donutplus"));
