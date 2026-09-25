@@ -52,12 +52,29 @@ public final class StartupJoinWarmup {
             return;
         }
 
+        if (JoinWarmupPolicy.keepSpawnInMemory(config)) {
+            World overworld = overworld();
+            if (overworld != null) {
+                overworld.setKeepSpawnInMemory(true);
+                int configured = JoinWarmupPolicy.spawnChunkRadius(config);
+                int radius = JoinWarmupPolicy.viewDistanceRadius(worldViewDistance(overworld), configured);
+                boolean pin = JoinWarmupPolicy.pinLoadedChunks(config);
+                List<ChunkTarget> targets = uniqueChunks(List.of(overworld.getSpawnLocation()), radius, pin);
+                int perTick = JoinWarmupPolicy.chunksPerTick(config);
+                loadTargetsPaced(targets, perTick);
+            }
+        }
+
         int logoutCount = collectRecentLogoutAnchors(config).size();
         if (logoutCount > 0) {
             plugin.getLogger().info("Join warmup: found " + logoutCount
                     + " recent logout location(s); chunks load at login, not at boot.");
         }
-        plugin.getLogger().info("Join warmup ready (no chunk preload at boot).");
+        if (JoinWarmupPolicy.keepSpawnInMemory(config)) {
+            plugin.getLogger().info("Join warmup ready (spawn chunks preloading).");
+        } else {
+            plugin.getLogger().info("Join warmup ready (no chunk preload at boot).");
+        }
     }
 
     public void shutdown() {
@@ -83,16 +100,25 @@ public final class StartupJoinWarmup {
         keepTickets();
 
         PlayerLogoutLocationNbt.LogoutLocation logout = findLogoutLocation(uuid);
+        World world;
+        Location anchor;
+        int configured;
         if (logout == null) {
-            return;
-        }
-        World world = resolveWorld(logout.dimension());
-        if (world == null) {
-            return;
+            world = overworld();
+            if (world == null) {
+                return;
+            }
+            anchor = world.getSpawnLocation();
+            configured = JoinWarmupPolicy.spawnChunkRadius(config);
+        } else {
+            world = resolveWorld(logout.dimension());
+            if (world == null) {
+                return;
+            }
+            anchor = new Location(world, logout.x(), logout.y(), logout.z());
+            configured = JoinWarmupPolicy.logoutChunkRadius(config);
         }
 
-        Location anchor = new Location(world, logout.x(), logout.y(), logout.z());
-        int configured = JoinWarmupPolicy.logoutChunkRadius(config);
         int radius = JoinWarmupPolicy.viewDistanceRadius(worldViewDistance(world), configured);
         int waitRadius = Math.min(radius, JoinWarmupPolicy.logoutWaitRadius(config));
         boolean pin = JoinWarmupPolicy.pinLoadedChunks(config);
