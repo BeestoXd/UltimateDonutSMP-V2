@@ -118,6 +118,7 @@ public class SpawnerManager {
     private double defaultXpPerCycle;
     private String mainMenuTitle;
     private int mainMenuSize;
+    private String mainMenuFillerMaterial;
     private String storageTitle;
     private int storageSize;
     private int storageItemsPerPage;
@@ -173,6 +174,8 @@ public class SpawnerManager {
                 config.getString("GUI.MAIN_MENU.TITLE", " "));
         mainMenuSize = normalizeSize(menusConfig.getInt("SPAWNER-MENUS.MAIN-MENU.SIZE",
                 config.getInt("GUI.MAIN_MENU.SIZE", 54)));
+        mainMenuFillerMaterial = menusConfig.getString("SPAWNER-MENUS.MAIN-MENU.FILLER-MATERIAL",
+                config.getString("GUI.MAIN_MENU.FILLER-MATERIAL", "AIR"));
         storageTitle = menusConfig.getString("SPAWNER-MENUS.STORAGE-MENU.TITLE",
                 config.getString("GUI.STORAGE.TITLE", " "));
         storageSize = normalizeSize(menusConfig.getInt("SPAWNER-MENUS.STORAGE-MENU.SIZE",
@@ -868,18 +871,24 @@ public class SpawnerManager {
         }
         String cleanMob = prettifyKey(instance.getMobTypeKey());
         String title = mainMenuTitle
+                .replace("{type}", cleanMob)
                 .replace("{mob}", cleanMob)
                 .replace("{stack}", String.valueOf(instance.getStackAmount()));
 
-        if (!ColorUtils.strip(title).toLowerCase(Locale.US).endsWith("spawner")) {
-            title = title + " Spawner";
+        String stripped = ColorUtils.strip(title).toLowerCase(Locale.US);
+        if (!stripped.endsWith("spawner") && !stripped.endsWith("spawners")) {
+            title = title + " Spawners";
         }
-        title = title.replaceAll("(?i)\\bspawners?\\s+spawners?\\b", "Spawner");
+        title = title.replaceAll("(?i)\\bspawners?\\s+spawners?\\b", "Spawners");
         return title;
     }
 
     public int getMainMenuSize() {
         return mainMenuSize;
+    }
+
+    public String getMainMenuFillerMaterial() {
+        return mainMenuFillerMaterial;
     }
 
     public void openPanel(Player player) {
