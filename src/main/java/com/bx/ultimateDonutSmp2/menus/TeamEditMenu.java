@@ -91,7 +91,7 @@ public class TeamEditMenu extends BaseMenu {
                 member.canUseTeamChat()
         );
 
-        String kickPath = MENU_PATH + ".kick-button";
+        String kickPath = MENU_PATH + ".KICK-BUTTON";
         set(
                 menus().getInt(kickPath + ".SLOT", 11),
                 ItemUtils.createItem(
@@ -101,7 +101,7 @@ public class TeamEditMenu extends BaseMenu {
                 )
         );
 
-        String backPath = MENU_PATH + ".back-button";
+        String backPath = MENU_PATH + ".BACK-BUTTON";
         set(
                 menus().getInt(backPath + ".SLOT", 18),
                 ItemUtils.createItem(
