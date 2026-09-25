@@ -95,7 +95,7 @@ public class FlySpeedCommand implements CommandExecutor {
             }
         }
 
-        if (parsedSpeed == null || parsedSpeed < minSpeed || parsedSpeed > maxSpeed) {
+        if (parsedSpeed == null || !Double.isFinite(parsedSpeed) || parsedSpeed < minSpeed || parsedSpeed > maxSpeed) {
             sendInvalidSpeedMessage(sender, minSpeed, maxSpeed);
             return true;
         }
@@ -121,9 +121,13 @@ public class FlySpeedCommand implements CommandExecutor {
         return true;
     }
 
-    private Double parseSpeed(String arg) {
+    static Double parseSpeed(String arg) {
         try {
-            return Double.parseDouble(arg);
+            double parsed = Double.parseDouble(arg);
+            if (!Double.isFinite(parsed)) {
+                return null;
+            }
+            return parsed;
         } catch (NumberFormatException e) {
             return null;
         }
