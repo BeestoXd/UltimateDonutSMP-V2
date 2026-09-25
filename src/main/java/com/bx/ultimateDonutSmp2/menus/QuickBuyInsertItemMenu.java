@@ -39,29 +39,46 @@ public class QuickBuyInsertItemMenu extends BaseMenu {
         );
     }
 
+    public int getCancelSlot() {
+        return plugin.getConfigManager().getShop().getInt("INSERT-ITEM.CANCEL-BUTTON.SLOT", CANCEL_SLOT);
+    }
+
+    public int getConfirmSlot() {
+        return plugin.getConfigManager().getShop().getInt("INSERT-ITEM.CONFIRM-BUTTON.SLOT", CONFIRM_SLOT);
+    }
+
     @Override
     public void build(Player player) {
         var shopCfg = plugin.getConfigManager().getShop();
-        int cancelSlot = shopCfg.getInt("INSERT-ITEM.CANCEL-BUTTON.SLOT", CANCEL_SLOT);
+        int cancelSlot = getCancelSlot();
         Material cancelMat = ItemUtils.parseMaterial(shopCfg.getString("INSERT-ITEM.CANCEL-BUTTON.MATERIAL", "RED_STAINED_GLASS_PANE"));
         String cancelName = shopCfg.getString("INSERT-ITEM.CANCEL-BUTTON.NAME", "&cCancel");
         List<String> cancelLore = shopCfg.getStringList("INSERT-ITEM.CANCEL-BUTTON.LORE");
         if (cancelLore == null || cancelLore.isEmpty()) {
             cancelLore = List.of("&7Click to cancel and return");
         }
-        set(cancelSlot, ItemUtils.createItem(cancelMat, cancelName, cancelLore));
+        if (inventory != null && cancelSlot >= 0 && cancelSlot < inventory.getSize()) {
+            set(cancelSlot, ItemUtils.createItem(cancelMat, cancelName, cancelLore));
+        }
 
-        set(FILLER_LEFT, ItemUtils.createItem(Material.GRAY_STAINED_GLASS_PANE, " ", List.of()));
-        set(FILLER_RIGHT, ItemUtils.createItem(Material.GRAY_STAINED_GLASS_PANE, " ", List.of()));
-
-        int confirmSlot = shopCfg.getInt("INSERT-ITEM.CONFIRM-BUTTON.SLOT", CONFIRM_SLOT);
+        int confirmSlot = getConfirmSlot();
         Material confirmMat = ItemUtils.parseMaterial(shopCfg.getString("INSERT-ITEM.CONFIRM-BUTTON.MATERIAL", "LIME_STAINED_GLASS_PANE"));
         String confirmName = shopCfg.getString("INSERT-ITEM.CONFIRM-BUTTON.NAME", "&aConfirm");
         List<String> confirmLore = shopCfg.getStringList("INSERT-ITEM.CONFIRM-BUTTON.LORE");
         if (confirmLore == null || confirmLore.isEmpty()) {
             confirmLore = List.of("&7Click to proceed to price input");
         }
-        set(confirmSlot, ItemUtils.createItem(confirmMat, confirmName, confirmLore));
+        if (inventory != null && confirmSlot >= 0 && confirmSlot < inventory.getSize()) {
+            set(confirmSlot, ItemUtils.createItem(confirmMat, confirmName, confirmLore));
+        }
+
+        if (inventory != null) {
+            for (int i = 0; i < inventory.getSize(); i++) {
+                if (i != cancelSlot && i != confirmSlot && i != INSERT_SLOT) {
+                    set(i, ItemUtils.createItem(Material.GRAY_STAINED_GLASS_PANE, " ", List.of()));
+                }
+            }
+        }
     }
 
     public void handleInventoryClick(InventoryClickEvent event) {
@@ -70,8 +87,10 @@ public class QuickBuyInsertItemMenu extends BaseMenu {
         }
 
         int rawSlot = event.getRawSlot();
+        int cancelSlot = getCancelSlot();
+        int confirmSlot = getConfirmSlot();
 
-        if (rawSlot == CANCEL_SLOT) {
+        if (rawSlot == cancelSlot) {
             event.setCancelled(true);
             QuickBuySounds.play(player, plugin, QuickBuySounds.CANCEL);
             returnItemToPlayer(player);
@@ -79,12 +98,7 @@ public class QuickBuyInsertItemMenu extends BaseMenu {
             return;
         }
 
-        if (rawSlot == FILLER_LEFT || rawSlot == FILLER_RIGHT) {
-            event.setCancelled(true);
-            return;
-        }
-
-        if (rawSlot == CONFIRM_SLOT) {
+        if (rawSlot == confirmSlot) {
             event.setCancelled(true);
             ItemStack itemToSell = realItem != null ? realItem.clone() : inventory.getItem(INSERT_SLOT);
             if (itemToSell == null || itemToSell.getType().isAir()) {
@@ -138,6 +152,11 @@ public class QuickBuyInsertItemMenu extends BaseMenu {
         if (rawSlot == INSERT_SLOT) {
             event.setCancelled(false);
             scheduleRefresh(player);
+            return;
+        }
+
+        if (inventory != null && rawSlot < inventory.getSize()) {
+            event.setCancelled(true);
             return;
         }
 
