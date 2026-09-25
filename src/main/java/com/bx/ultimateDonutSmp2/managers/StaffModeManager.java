@@ -965,16 +965,24 @@ public class StaffModeManager {
     }
 
     private boolean restoreInventorySnapshot(Player player, StaffModeState state) {
-        StaffInventorySnapshot snapshot = plugin.getDatabaseManager().loadStaffModeSnapshot(player.getUniqueId());
-        if (snapshot == null) {
-            return false;
+        if (shouldRestoreInventoryOnDisable()) {
+            StaffInventorySnapshot snapshot = plugin.getDatabaseManager().loadStaffModeSnapshot(player.getUniqueId());
+            if (snapshot == null) {
+                return false;
+            }
+
+            PlayerInventory inventory = player.getInventory();
+            inventory.setStorageContents(snapshot.getStorageContents());
+            inventory.setArmorContents(snapshot.getArmorContents());
+            inventory.setItemInOffHand(snapshot.getOffhandItem());
+        } else {
+            PlayerInventory inventory = player.getInventory();
+            inventory.setStorageContents(new ItemStack[36]);
+            inventory.setArmorContents(new ItemStack[4]);
+            inventory.setItemInOffHand(null);
         }
 
-        PlayerInventory inventory = player.getInventory();
-        inventory.setStorageContents(snapshot.getStorageContents());
-        inventory.setArmorContents(snapshot.getArmorContents());
-        inventory.setItemInOffHand(snapshot.getOffhandItem());
-        inventory.setHeldItemSlot(state.getPreviousSelectedSlot());
+        player.getInventory().setHeldItemSlot(state.getPreviousSelectedSlot());
         player.setGameMode(state.getPreviousGameMode());
         player.setAllowFlight(state.isPreviousAllowFlight());
         player.setFlying(state.isPreviousAllowFlight() && state.isPreviousFlying());
