@@ -100,11 +100,46 @@ public class AuctionYourItemsMenu extends BaseMenu {
             String searchQuery,
             int page
     ) {
-        super(plugin, plugin.getConfigManager().getShop().getString("YOUR-ITEMS.TITLE", "Auction -> Your Items"), 54);
+        super(plugin, getMenuTitle(plugin), getMenuSize(plugin));
         this.origin = origin == null ? Origin.AUCTION : origin;
         this.filter = filter == null ? YourItemsFilter.DEFAULT : filter;
         this.searchQuery = searchQuery == null ? "" : searchQuery;
         this.page = Math.max(1, Math.min(2, page));
+    }
+
+    public static int getMenuSize(UltimateDonutSmp2 plugin) {
+        if (plugin == null || plugin.getConfigManager() == null || plugin.getConfigManager().getShop() == null) {
+            return 54;
+        }
+        int configured = plugin.getConfigManager().getShop().getInt("YOUR-ITEMS.SIZE", 54);
+        return normalizeSize(configured);
+    }
+
+    public static int getPlusPageSlots(UltimateDonutSmp2 plugin) {
+        if (plugin == null || plugin.getConfigManager() == null || plugin.getConfigManager().getShop() == null) {
+            return DEFAULT_PLUS_PAGE_SLOTS;
+        }
+        int configured = plugin.getConfigManager().getShop().getInt("YOUR-ITEMS.PLUS-PAGE-SLOTS", DEFAULT_PLUS_PAGE_SLOTS);
+        return Math.max(0, Math.min(GRID_SLOTS, configured));
+    }
+
+    public static int getSellButtonSlot(UltimateDonutSmp2 plugin) {
+        if (plugin == null || plugin.getConfigManager() == null || plugin.getConfigManager().getShop() == null) {
+            return 0;
+        }
+        return plugin.getConfigManager().getShop().getInt("YOUR-ITEMS.SELL-BUTTON.SLOT", 0);
+    }
+
+    private static String getMenuTitle(UltimateDonutSmp2 plugin) {
+        if (plugin == null || plugin.getConfigManager() == null || plugin.getConfigManager().getShop() == null) {
+            return "Auction -> Your Items";
+        }
+        return plugin.getConfigManager().getShop().getString("YOUR-ITEMS.TITLE", "Auction -> Your Items");
+    }
+
+    private static int normalizeSize(int configured) {
+        int size = Math.max(9, Math.min(54, configured));
+        return size - (size % 9);
     }
 
     @Override
@@ -114,9 +149,9 @@ public class AuctionYourItemsMenu extends BaseMenu {
         var shopCfg = plugin.getConfigManager().getShop();
 
         unlockedSlots = page1UnlockedSlots(player);
-        // Next Page/main.png fills slots 0-44. Legacy shop.yml used 36 (Orders copy) and left row 5 empty.
-        plusPageSlots = GRID_SLOTS;
+        plusPageSlots = getPlusPageSlots(plugin);
         plusUnlockedSlots = page2UnlockedSlots(player);
+        int sellButtonSlot = getSellButtonSlot(plugin);
 
         List<AuctionListing> listings = sortedListings(player);
 
@@ -130,12 +165,13 @@ public class AuctionYourItemsMenu extends BaseMenu {
         String expiresFmt = shopCfg.getString("YOUR-ITEMS.ACTIVE-ITEM.EXPIRES-FORMAT", "&7Expires in: &e{time}");
         String cancelLore = shopCfg.getString("YOUR-ITEMS.ACTIVE-ITEM.CANCEL-LORE", "&cClick to cancel listing");
 
-        for (int slot = 0; slot < GRID_SLOTS; slot++) {
+        int contentSlots = Math.min(GRID_SLOTS, Math.max(0, (inventory != null ? inventory.getSize() : getMenuSize(plugin)) - 9));
+        for (int slot = 0; slot < contentSlots; slot++) {
             if (slot < listings.size()) {
                 set(slot, listingDisplay(listings.get(slot), priceFmt, expiresFmt, cancelLore));
                 slotListings.put(slot, listings.get(slot));
             } else if (slot < unlockedSlots) {
-                set(slot, listPane());
+                set(slot, listPane(slot == sellButtonSlot));
             } else {
                 set(slot, lockedPane(false));
             }
@@ -149,8 +185,9 @@ public class AuctionYourItemsMenu extends BaseMenu {
         String priceFmt = shopCfg.getString("YOUR-ITEMS.ACTIVE-ITEM.PRICE-FORMAT", "&7Price: &a${price}");
         String expiresFmt = shopCfg.getString("YOUR-ITEMS.ACTIVE-ITEM.EXPIRES-FORMAT", "&7Expires in: &e{time}");
         String cancelLore = shopCfg.getString("YOUR-ITEMS.ACTIVE-ITEM.CANCEL-LORE", "&cClick to cancel listing");
+        int contentSlots = Math.min(plusPageSlots, Math.max(0, (inventory != null ? inventory.getSize() : getMenuSize(plugin)) - 9));
         int start = GRID_SLOTS;
-        for (int slot = 0; slot < GRID_SLOTS; slot++) {
+        for (int slot = 0; slot < contentSlots; slot++) {
             int listingIndex = start + slot;
             if (listingIndex < listings.size()) {
                 set(slot, listingDisplay(listings.get(listingIndex), priceFmt, expiresFmt, cancelLore));
@@ -261,7 +298,8 @@ public class AuctionYourItemsMenu extends BaseMenu {
         int transSlot = shopCfg.getInt("YOUR-ITEMS.BUTTONS.TRANSACTIONS.SLOT", TRANSACTIONS_SLOT);
         int nextSlot = shopCfg.getInt("YOUR-ITEMS.BUTTONS.NEXT.SLOT", NEXT_SLOT);
 
-        if (slot >= 0 && slot < GRID_SLOTS) {
+        int contentSlots = Math.min(page > 1 ? plusPageSlots : GRID_SLOTS, Math.max(0, (inventory != null ? inventory.getSize() : getMenuSize(plugin)) - 9));
+        if (slot >= 0 && slot < contentSlots) {
             AuctionListing listing = slotListings.get(slot);
             if (listing != null) {
                 click(player);
@@ -291,7 +329,8 @@ public class AuctionYourItemsMenu extends BaseMenu {
                 return;
             }
 
-            if ((page == 1 && slot < unlockedSlots) || (page > 1 && slot < plusUnlockedSlots)) {
+            int sellButtonSlot = getSellButtonSlot(plugin);
+            if ((page == 1 && (slot == sellButtonSlot || slot < unlockedSlots)) || (page > 1 && slot < plusUnlockedSlots)) {
                 click(player);
                 new QuickBuyInsertItemMenu(plugin).open(player);
                 return;
@@ -414,18 +453,24 @@ public class AuctionYourItemsMenu extends BaseMenu {
     }
 
     private ItemStack listPane() {
+        return listPane(false);
+    }
+
+    private ItemStack listPane(boolean isSellButton) {
         var shopCfg = plugin.getConfigManager().getShop();
-        String rawEmptyMat = shopCfg.getString("YOUR-ITEMS.EMPTY-SLOT.MATERIAL",
-                shopCfg.getString("YOUR-ITEMS.SELL-BUTTON.MATERIAL", "GRAY_STAINED_GLASS_PANE"));
+        String primary = isSellButton ? "YOUR-ITEMS.SELL-BUTTON" : "YOUR-ITEMS.EMPTY-SLOT";
+        String fallback = isSellButton ? "YOUR-ITEMS.EMPTY-SLOT" : "YOUR-ITEMS.SELL-BUTTON";
+        String rawEmptyMat = shopCfg.getString(primary + ".MATERIAL",
+                shopCfg.getString(fallback + ".MATERIAL", "GRAY_STAINED_GLASS_PANE"));
         if ("HOPPER".equalsIgnoreCase(rawEmptyMat)) {
             rawEmptyMat = "GRAY_STAINED_GLASS_PANE";
         }
         return chrome(
                 ItemUtils.parseMaterial(rawEmptyMat),
-                shopCfg.getString("YOUR-ITEMS.EMPTY-SLOT.NAME",
-                        shopCfg.getString("YOUR-ITEMS.SELL-BUTTON.NAME", "&fList")),
-                ItemUtils.readLore(shopCfg, "YOUR-ITEMS.EMPTY-SLOT.LORE",
-                        ItemUtils.readLore(shopCfg, "YOUR-ITEMS.SELL-BUTTON.LORE",
+                shopCfg.getString(primary + ".NAME",
+                        shopCfg.getString(fallback + ".NAME", "&fList")),
+                ItemUtils.readLore(shopCfg, primary + ".LORE",
+                        ItemUtils.readLore(shopCfg, fallback + ".LORE",
                                 List.of("&o&7Click to sell an item")))
         );
     }
