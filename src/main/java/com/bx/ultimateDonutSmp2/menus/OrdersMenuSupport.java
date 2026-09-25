@@ -68,12 +68,24 @@ final class OrdersMenuSupport {
         );
     }
 
+    static String publicOwnerName(UltimateDonutSmp2 plugin, Order order) {
+        if (order == null) {
+            return "";
+        }
+        return plugin != null && plugin.getHideManager() != null
+                ? plugin.getHideManager().publicName(order.ownerUuid(), order.ownerName())
+                : (order.ownerName() != null ? order.ownerName() : "");
+    }
+
     static ItemStack createOrderDisplay(
             UltimateDonutSmp2 plugin,
             OrdersManager manager,
             Order order,
             boolean ownedByViewer
     ) {
+        String owner = plugin != null && plugin.getHideManager() != null
+                ? plugin.getHideManager().publicName(order.ownerUuid(), order.ownerName())
+                : (order.ownerName() != null ? order.ownerName() : "");
         List<String> lore = list(
                 plugin,
                 "ORDERS.GUI.ORDER_ITEM.LORE",
@@ -86,7 +98,7 @@ final class OrdersMenuSupport {
                         "&7{time} Until Order expires"
                 ),
                 "{item}", manager.describeItem(order.requestedItem()),
-                "{owner}", order.ownerName(),
+                "{owner}", owner,
                 "{price_each}", plugin.getCurrencyManager().formatMoney(order.priceEach()),
                 "{delivered}", String.valueOf(order.deliveredQuantity()),
                 "{requested}", String.valueOf(order.requestedQuantity()),
@@ -101,7 +113,7 @@ final class OrdersMenuSupport {
                 plugin,
                 "ORDERS.GUI.ORDER_ITEM.NAME",
                 "&f{item}",
-                "{owner}", order.ownerName(),
+                "{owner}", owner,
                 "{item}", manager.describeItem(order.requestedItem())
         );
         ItemStack display = decorateItem(plugin, order.requestedItem(), name, lore, false);

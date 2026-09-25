@@ -113,7 +113,9 @@ public class OrdersBrowseMenu extends BaseMenu {
                 .filter(order -> plugin.getOrdersManager().describeItem(order.requestedItem())
                         .toLowerCase(Locale.ROOT).contains(normalized)
                         || order.requestedMaterialKey().toLowerCase(Locale.ROOT).contains(normalized)
-                        || order.ownerName().toLowerCase(Locale.ROOT).contains(normalized))
+                        || (plugin.getHideManager() != null
+                                ? plugin.getHideManager().publicName(order.ownerUuid(), order.ownerName())
+                                : order.ownerName()).toLowerCase(Locale.ROOT).contains(normalized))
                 .toList();
     }
 
