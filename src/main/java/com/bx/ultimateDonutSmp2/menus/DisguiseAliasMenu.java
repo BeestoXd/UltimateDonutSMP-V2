@@ -16,14 +16,31 @@ import java.util.Map;
 
 public class DisguiseAliasMenu extends BaseMenu {
 
-    private static final int PAGE_SIZE = 45;
+    private static final int DEFAULT_SIZE = 54;
 
     private final int page;
     private final Map<Integer, String> aliasesBySlot = new HashMap<>();
 
     public DisguiseAliasMenu(UltimateDonutSmp2 plugin, int page) {
-        super(plugin, title(plugin, page), 54);
+        super(plugin, title(plugin, page), getMenuSize(plugin));
         this.page = Math.max(0, page);
+    }
+
+    public static int getMenuSize(UltimateDonutSmp2 plugin) {
+        if (plugin == null || plugin.getConfigManager() == null || plugin.getConfigManager().getHide() == null) {
+            return DEFAULT_SIZE;
+        }
+        int configured = plugin.getConfigManager().getHide().getInt("GUI.ALIASES.SIZE", DEFAULT_SIZE);
+        return normalizeSize(configured);
+    }
+
+    private static int normalizeSize(int configured) {
+        int size = Math.max(9, Math.min(54, configured));
+        return size - (size % 9);
+    }
+
+    private int pageSize() {
+        return Math.max(1, (inventory != null ? inventory.getSize() : getMenuSize(plugin)) - 9);
     }
 
     @Override
@@ -31,8 +48,9 @@ public class DisguiseAliasMenu extends BaseMenu {
         clear();
         aliasesBySlot.clear();
         List<HideManager.AliasOption> aliases = new ArrayList<>(plugin.getHideManager().aliases().values());
-        int start = page * PAGE_SIZE;
-        int end = Math.min(aliases.size(), start + PAGE_SIZE);
+        int pageSize = pageSize();
+        int start = page * pageSize;
+        int end = Math.min(aliases.size(), start + pageSize);
         for (int index = start; index < end; index++) {
             HideManager.AliasOption option = aliases.get(index);
             int slot = index - start;
@@ -83,37 +101,42 @@ public class DisguiseAliasMenu extends BaseMenu {
             new DisguiseSkinMenu(plugin, aliasKey, 0).open(player);
             return;
         }
-        if (slot == 45 && page > 0) {
+        int size = inventory.getSize();
+        int navStart = size - 9;
+        if (slot == navStart && page > 0) {
             playPageTurn(player);
             new DisguiseAliasMenu(plugin, page - 1).open(player);
-        } else if (slot == 53 && (page + 1) * PAGE_SIZE < plugin.getHideManager().aliases().size()) {
+        } else if (slot == (size - 1) && (page + 1) * pageSize() < plugin.getHideManager().aliases().size()) {
             playPageTurn(player);
             new DisguiseAliasMenu(plugin, page + 1).open(player);
-        } else if (slot == 49) {
+        } else if (slot == (navStart + 4)) {
             new HideMenu(plugin).open(player);
         }
     }
 
     private void renderNavigation(int total) {
-        fillNavigation();
+        int size = inventory.getSize();
+        int navStart = size - 9;
+        fillNavigation(navStart);
         if (page > 0) {
-            set(45, ItemUtils.createItem(Material.ARROW, "&bPrevious page", List.of()));
+            set(navStart, ItemUtils.createItem(Material.ARROW, "&bPrevious page", List.of()));
         }
-        set(49, ItemUtils.createItem(Material.BARRIER, "&cBack", List.of()));
-        if ((page + 1) * PAGE_SIZE < total) {
-            set(53, ItemUtils.createItem(Material.ARROW, "&bNext page", List.of()));
+        set(navStart + 4, ItemUtils.createItem(Material.BARRIER, "&cBack", List.of()));
+        if ((page + 1) * pageSize() < total) {
+            set(size - 1, ItemUtils.createItem(Material.ARROW, "&bNext page", List.of()));
         }
     }
 
-    private void fillNavigation() {
-        for (int slot = 45; slot < 54; slot++) {
+    private void fillNavigation(int navStart) {
+        for (int slot = navStart; slot < inventory.getSize(); slot++) {
             set(slot, ItemUtils.createItem(Material.BLACK_STAINED_GLASS_PANE, " ", List.of()));
         }
     }
 
     private static String title(UltimateDonutSmp2 plugin, int page) {
+        int pageSize = Math.max(1, getMenuSize(plugin) - 9);
         int total = Math.max(1, plugin.getHideManager().aliases().size());
-        int pages = Math.max(1, (int) Math.ceil(total / (double) PAGE_SIZE));
+        int pages = Math.max(1, (int) Math.ceil(total / (double) pageSize));
         return plugin.getConfigManager().getHide()
                 .getString("GUI.ALIASES.TITLE", "&8Select a name - {page}/{pages}")
                 .replace("{page}", String.valueOf(Math.min(page + 1, pages)))
