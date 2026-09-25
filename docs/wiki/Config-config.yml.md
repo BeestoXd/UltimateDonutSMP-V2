@@ -53,7 +53,7 @@ overwriting it, and drops a copy of the previous version into `config-backups/<t
 | [`TEAM`](#section-team) | section | 3 keys |
 | [`TABLIST`](#section-tablist) | section | 13 keys |
 | [`SERVER-LIST`](#section-server-list) | section | 2 keys |
-| [`OPTIMIZATION`](#section-optimization) | section | 10 keys |
+| [`OPTIMIZATION`](#section-optimization) | section | 9 keys |
 | [`JOIN-WARMUP`](#section-join-warmup) | section | 15 keys |
 | [`ENTITY-PRESSURE`](#section-entity-pressure) | section | 4 keys |
 | [`CLEAR-LAG`](#section-clear-lag) | section | 12 keys |
@@ -1661,7 +1661,6 @@ SERVER-LIST:
 | `OPTIMIZATION.TPS-WARN-THRESHOLD` | `decimal` | Any decimal number | `18.5` | Tps warn threshold. |
 | `OPTIMIZATION.TPS-CRITICAL-THRESHOLD` | `decimal` | Any decimal number | `16.0` | Tps critical threshold. |
 | `OPTIMIZATION.MSPT-WARN-THRESHOLD` | `decimal` | Any decimal number | `45.0` | Mspt warn threshold. |
-| `OPTIMIZATION.MSPT-CRITICAL-THRESHOLD` | `decimal` | Any decimal number | `55.0` | Mspt critical threshold. |
 | `OPTIMIZATION.RECOVERY-SAMPLES` | `integer` | Any integer | `3` | Recovery samples. |
 | `OPTIMIZATION.LOG-STATE-CHANGES` | `boolean` | `true`, `false` | `true` | On/off for log state changes. |
 
@@ -1716,8 +1715,6 @@ OPTIMIZATION:
   TPS-CRITICAL-THRESHOLD: 16.0
   # The decimal value for Mspt Warn Threshold. Available options: Any decimal number
   MSPT-WARN-THRESHOLD: 45.0
-  # The decimal value for Mspt Critical Threshold. Available options: Any decimal number
-  MSPT-CRITICAL-THRESHOLD: 55.0
   # The numerical value for Recovery Samples. Available options: Any valid integer
   RECOVERY-SAMPLES: 3
   # Determines whether Log State Changes is enabled or disabled. Available options: true, false
