@@ -195,9 +195,6 @@ SORTING:
     - MOST_PAID
     - RECENTLY_LISTED
 
-# Visual layout style mode
-DONUT-STYLE: DEPOSIT_GUI
-
 # Geyser/Floodgate Bedrock player compatibility
 BEDROCK:
   ENABLED: true
