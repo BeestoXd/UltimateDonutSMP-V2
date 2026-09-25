@@ -52,8 +52,12 @@ public class OrdersDeliverConfirmMenu extends BaseMenu {
     ) {
         super(
                 plugin,
-                OrdersMenuSupport.text(plugin, "ORDERS.GUI.CONFIRM.TITLE", "&8Orders -> Confirm delivery"),
-                27
+                plugin != null && plugin.getOrdersManager() != null
+                        ? plugin.getOrdersManager().getDeliverTitle(orderId)
+                        : OrdersMenuSupport.text(plugin, "ORDERS.GUI.CONFIRM.TITLE", "&8Orders -> Confirm delivery"),
+                plugin != null && plugin.getOrdersManager() != null
+                        ? plugin.getOrdersManager().getDeliverSize()
+                        : 27
         );
         this.draft = draft;
         this.orderId = orderId;
