@@ -3392,43 +3392,11 @@ public class DatabaseManager {
             plugin.getLogger().log(Level.WARNING, "Failed to get player_logs activity timestamps", e);
         }
 
-        int totalSalesFound = 0;
-        int totalPurchasesFound = 0;
-
         for (int i = 0; i < numBuckets; i++) {
             int bucketFromOldest = (numBuckets - 1 - i);
             long endTime = now - (bucketFromOldest * intervalMs);
             String label = formatter.format(java.time.Instant.ofEpochMilli(endTime));
-
-            int sCount = salesCounts[i];
-            int pCount = purchaseCounts[i];
-            totalSalesFound += sCount;
-            totalPurchasesFound += pCount;
-
-            list.add(new HourlyActivityEntry(label, sCount, pCount));
-        }
-
-        int globalSales = countGlobalSellHistory();
-        int globalPurchases = getTotalShopBuyCount();
-
-        if (totalSalesFound == 0 && globalSales > 0 && !list.isEmpty()) {
-            int baseSales = globalSales / list.size();
-            int remainderSales = globalSales % list.size();
-            for (int i = 0; i < list.size(); i++) {
-                HourlyActivityEntry old = list.get(i);
-                int count = baseSales + (i == list.size() - 1 ? remainderSales : 0);
-                list.set(i, new HourlyActivityEntry(old.hourLabel(), count, old.purchaseCount()));
-            }
-        }
-
-        if (totalPurchasesFound == 0 && globalPurchases > 0 && !list.isEmpty()) {
-            int baseBuy = globalPurchases / list.size();
-            int remainderBuy = globalPurchases % list.size();
-            for (int i = 0; i < list.size(); i++) {
-                HourlyActivityEntry old = list.get(i);
-                int count = baseBuy + (i == list.size() - 1 ? remainderBuy : 0);
-                list.set(i, new HourlyActivityEntry(old.hourLabel(), old.salesCount(), count));
-            }
+            list.add(new HourlyActivityEntry(label, salesCounts[i], purchaseCounts[i]));
         }
 
         return list;
