@@ -34,7 +34,11 @@ public class SpawnerStorageMenu extends BaseMenu {
     private long lastInteractionTime = 0L;
 
     public SpawnerStorageMenu(UltimateDonutSmp2 plugin, long spawnerId, int page) {
-        super(plugin, " ", plugin.getSpawnerManager().getStorageSize());
+        this(plugin, spawnerId, page, plugin != null && plugin.getSpawnerManager() != null ? plugin.getSpawnerManager().getStorageSize() : 54);
+    }
+
+    protected SpawnerStorageMenu(UltimateDonutSmp2 plugin, long spawnerId, int page, int size) {
+        super(plugin, " ", size);
         this.spawnerId = spawnerId;
         this.page = Math.max(1, page);
     }
@@ -340,20 +344,7 @@ public class SpawnerStorageMenu extends BaseMenu {
         return page > 1;
     }
 
-    @Override
-    public void build(Player player) {
-        SpawnerInstance instance = plugin.getSpawnerManager().getSpawner(spawnerId);
-        if (instance == null) {
-            inventory = Bukkit.createInventory(this, plugin.getSpawnerManager().getStorageSize(), ColorUtils.toComponent("&8Spawner Missing"));
-            clear();
-            fill(Material.GRAY_STAINED_GLASS_PANE);
-            set(inventory.getSize() / 2, ItemUtils.createItem(Material.BARRIER, "&cSpawner Not Found"));
-            return;
-        }
-
-        int itemsPerPage = plugin.getSpawnerManager().getStorageItemsPerPage();
-        int totalPages = countStoredPages(instance, itemsPerPage);
-
+    protected String resolveTitle(SpawnerInstance instance, int totalPages) {
         FileConfiguration config = plugin.getConfigManager().getMenus();
         String titleStr = config.getString("SPAWNER-MENUS.STORAGE-MENU.TITLE", "{type} Spawners");
         if (titleStr == null || titleStr.isBlank()) {
@@ -368,15 +359,44 @@ public class SpawnerStorageMenu extends BaseMenu {
                     .replace("{max_page}", String.valueOf(Math.max(totalPages, page)));
             titleStr = titleStr.replaceAll("(?i)\\bspawners?\\s+spawners?\\b", "Spawners");
         }
+        return titleStr;
+    }
 
+    protected int resolveSize() {
+        return plugin.getSpawnerManager().getStorageSize();
+    }
+
+    protected Material resolveFillerMaterial() {
+        return Material.AIR;
+    }
+
+    @Override
+    public void build(Player player) {
+        SpawnerInstance instance = plugin.getSpawnerManager().getSpawner(spawnerId);
+        int menuSize = resolveSize();
+        if (instance == null) {
+            inventory = Bukkit.createInventory(this, menuSize, ColorUtils.toComponent("&8Spawner Missing"));
+            clear();
+            fill(Material.GRAY_STAINED_GLASS_PANE);
+            set(inventory.getSize() / 2, ItemUtils.createItem(Material.BARRIER, "&cSpawner Not Found"));
+            return;
+        }
+
+        int itemsPerPage = plugin.getSpawnerManager().getStorageItemsPerPage();
+        int totalPages = countStoredPages(instance, itemsPerPage);
+
+        String titleStr = resolveTitle(instance, totalPages);
         inventory = Bukkit.createInventory(
                 this,
-                plugin.getSpawnerManager().getStorageSize(),
+                menuSize,
                 ColorUtils.toComponent(titleStr)
         );
 
         clear();
-        // Note: Row 6 (slots 45..53) is left as clean empty air by default, matching reference design
+        Material filler = resolveFillerMaterial();
+        if (filler != null && filler != Material.AIR) {
+            fill(filler);
+        }
 
         int contentSlots = Math.min(itemsPerPage, inventory.getSize() - 9);
         int pageOffset = (page - 1) * itemsPerPage;
@@ -386,6 +406,8 @@ public class SpawnerStorageMenu extends BaseMenu {
             SpawnerLootEntry entry = instance.getSlotLoot(slotIndex);
             if (entry != null && entry.getAmount() > 0L) {
                 set(slot, applyStorageMeta(plugin, instance, entry.getMaterial(), (int) entry.getAmount()));
+            } else if (filler == null || filler == Material.AIR) {
+                inventory.setItem(slot, null);
             }
         }
 
@@ -439,7 +461,8 @@ public class SpawnerStorageMenu extends BaseMenu {
             }
             set(nextSlot, ItemUtils.createItem(nextMat, nextTitle, nextLore));
         } else {
-            set(nextSlot, null);
+            Material filler = resolveFillerMaterial();
+            set(nextSlot, filler != null && filler != Material.AIR ? ItemUtils.createPlaceholder(filler) : null);
         }
 
         // 5. Previous Page Button (Slot 45) - shown when on page > 1
@@ -455,7 +478,8 @@ public class SpawnerStorageMenu extends BaseMenu {
             }
             set(prevSlot, ItemUtils.createItem(prevMat, prevTitle, prevLore));
         } else {
-            set(prevSlot, null);
+            Material filler = resolveFillerMaterial();
+            set(prevSlot, filler != null && filler != Material.AIR ? ItemUtils.createPlaceholder(filler) : null);
         }
     }
 
@@ -539,6 +563,12 @@ public class SpawnerStorageMenu extends BaseMenu {
             // Block hotbar drop, swap and number keys on spawner storage slots
             if (clickType == ClickType.DROP || clickType == ClickType.CONTROL_DROP
                     || clickType == ClickType.NUMBER_KEY || clickType == ClickType.SWAP_OFFHAND) {
+                player.updateInventory();
+                return;
+            }
+
+            SpawnerLootEntry entry = instance.getSlotLoot(slotIndex);
+            if (entry == null || entry.getAmount() <= 0L) {
                 player.updateInventory();
                 return;
             }
