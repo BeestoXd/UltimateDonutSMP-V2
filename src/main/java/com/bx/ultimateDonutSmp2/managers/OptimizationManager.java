@@ -83,7 +83,6 @@ public class OptimizationManager {
     private double warnTps;
     private double criticalTps;
     private double warnMspt;
-    private double criticalMspt;
     private int recoverySamples;
     private int recoverySamplesSeen;
     private double lastTps = -1.0D;
@@ -130,7 +129,6 @@ public class OptimizationManager {
         warnTps = config.getDouble(CONFIG_PATH + ".TPS-WARN-THRESHOLD", 18.5D);
         criticalTps = config.getDouble(CONFIG_PATH + ".TPS-CRITICAL-THRESHOLD", 16.0D);
         warnMspt = config.getDouble(CONFIG_PATH + ".MSPT-WARN-THRESHOLD", 45.0D);
-        criticalMspt = config.getDouble(CONFIG_PATH + ".MSPT-CRITICAL-THRESHOLD", 55.0D);
         recoverySamples = Math.max(1, config.getInt(CONFIG_PATH + ".RECOVERY-SAMPLES", 3));
         recoverySamplesSeen = 0;
 

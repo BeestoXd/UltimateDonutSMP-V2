@@ -730,8 +730,6 @@ OPTIMIZATION:
   TPS-CRITICAL-THRESHOLD: 16.0
   # The decimal value for Mspt Warn Threshold. Available options: Any decimal number
   MSPT-WARN-THRESHOLD: 45.0
-  # The decimal value for Mspt Critical Threshold. Available options: Any decimal number
-  MSPT-CRITICAL-THRESHOLD: 55.0
   # The numerical value for Recovery Samples. Available options: Any valid integer
   RECOVERY-SAMPLES: 3
   # Determines whether Log State Changes is enabled or disabled. Available options: true, false

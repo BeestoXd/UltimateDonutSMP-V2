@@ -38,4 +38,16 @@ class OptimizationLoadPolicyTest {
         assertFalse(OptimizationLoadPolicy.inStartupGrace(60_000L, 60_000L));
         assertFalse(OptimizationLoadPolicy.inStartupGrace(5_000L, 0L));
     }
+
+    @Test
+    void criticalMsptThresholdIsNotInConfigOrDocumentation() throws Exception {
+        org.bukkit.configuration.file.YamlConfiguration config =
+                org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(new java.io.File("src/main/resources/config.yml"));
+        assertFalse(config.contains("OPTIMIZATION.MSPT-CRITICAL-THRESHOLD"),
+                "config.yml must not contain OPTIMIZATION.MSPT-CRITICAL-THRESHOLD");
+
+        String wiki = java.nio.file.Files.readString(java.nio.file.Path.of("docs/wiki/Config-config.yml.md"), java.nio.charset.StandardCharsets.UTF_8);
+        assertFalse(wiki.contains("OPTIMIZATION.MSPT-CRITICAL-THRESHOLD"),
+                "Config-config.yml.md must not document OPTIMIZATION.MSPT-CRITICAL-THRESHOLD");
+    }
 }
