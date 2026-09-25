@@ -48,6 +48,7 @@ public class QuickBuyMenu extends BaseMenu {
         }
     }
 
+    private static final int DEFAULT_SIZE = 54;
     private static final int FILTER_SLOT = 47;
     private static final int REFRESH_SLOT = 48;
     private static final int AUCTION_SLOT = 49;
@@ -63,14 +64,38 @@ public class QuickBuyMenu extends BaseMenu {
     private final Map<Integer, QuickBuyEntry> currentEntries = new HashMap<>();
 
     public QuickBuyMenu(UltimateDonutSmp2 plugin) {
-        super(plugin, plugin.getConfigManager().getShop().getString("QUICK-BUY.TITLE", "&8Quick Buy"), 54);
+        super(plugin, getMenuTitle(plugin), getMenuSize(plugin));
     }
 
     public QuickBuyMenu(UltimateDonutSmp2 plugin, Filter filter, boolean editMode, String searchQuery) {
-        super(plugin, plugin.getConfigManager().getShop().getString("QUICK-BUY.TITLE", "&8Quick Buy"), 54);
+        super(plugin, getMenuTitle(plugin), getMenuSize(plugin));
         this.filter = filter == null ? Filter.DEFAULT : filter;
         this.editMode = editMode;
         this.searchQuery = searchQuery == null ? "" : searchQuery;
+    }
+
+    public static int getMenuSize(UltimateDonutSmp2 plugin) {
+        if (plugin == null || plugin.getConfigManager() == null || plugin.getConfigManager().getShop() == null) {
+            return DEFAULT_SIZE;
+        }
+        int configured = plugin.getConfigManager().getShop().getInt("QUICK-BUY.SIZE", DEFAULT_SIZE);
+        return normalizeSize(configured);
+    }
+
+    private static String getMenuTitle(UltimateDonutSmp2 plugin) {
+        if (plugin == null || plugin.getConfigManager() == null || plugin.getConfigManager().getShop() == null) {
+            return "&8Quick Buy";
+        }
+        return plugin.getConfigManager().getShop().getString("QUICK-BUY.TITLE", "&8Quick Buy");
+    }
+
+    private static int normalizeSize(int configured) {
+        int size = Math.max(9, Math.min(54, configured));
+        return size - (size % 9);
+    }
+
+    private int quickBuySlots() {
+        return Math.max(0, Math.min(QUICK_BUY_SLOTS, (inventory != null ? inventory.getSize() : getMenuSize(plugin)) - 9));
     }
 
     @Override
@@ -80,7 +105,8 @@ public class QuickBuyMenu extends BaseMenu {
         Map<Integer, QuickBuyEntry> stored = plugin.getShopManager().getQuickBuyEntries(player.getUniqueId());
 
         List<QuickBuyEntry> displayList = new ArrayList<>();
-        for (int slot = 0; slot < QUICK_BUY_SLOTS; slot++) {
+        int itemSlots = quickBuySlots();
+        for (int slot = 0; slot < itemSlots; slot++) {
             QuickBuyEntry entry = stored.get(slot);
             if (entry != null && !entry.isEmpty()) {
                 if (searchQuery.isBlank() || itemName(entry.material()).toLowerCase(Locale.ROOT).contains(searchQuery.toLowerCase(Locale.ROOT))) {
@@ -104,7 +130,7 @@ public class QuickBuyMenu extends BaseMenu {
         }
 
         if (filter == Filter.DEFAULT) {
-            for (int slot = 0; slot < QUICK_BUY_SLOTS; slot++) {
+            for (int slot = 0; slot < itemSlots; slot++) {
                 QuickBuyEntry entry = stored.get(slot);
                 if (entry != null && !entry.isEmpty()
                         && (searchQuery.isBlank() || itemName(entry.material()).toLowerCase(Locale.ROOT).contains(searchQuery.toLowerCase(Locale.ROOT)))) {
@@ -114,7 +140,7 @@ public class QuickBuyMenu extends BaseMenu {
                 }
             }
         } else {
-            for (int i = 0; i < QUICK_BUY_SLOTS; i++) {
+            for (int i = 0; i < itemSlots; i++) {
                 if (i < displayList.size()) {
                     renderSlot(player, i, displayList.get(i));
                 } else {
@@ -324,7 +350,7 @@ public class QuickBuyMenu extends BaseMenu {
             return;
         }
 
-        if (slot >= 0 && slot < QUICK_BUY_SLOTS) {
+        if (slot >= 0 && slot < quickBuySlots()) {
             QuickBuyEntry entry = currentEntries.get(slot);
             if (editMode) {
                 if (entry != null && !entry.isEmpty()) {
