@@ -34,7 +34,6 @@ UltimateDonutSMP2 - Player Item Orders Configuration
 | [`CATEGORY_FILTERS`](#section-category-filters) | section | 9 keys |
 | [`GUI`](#section-gui) | section | 9 keys |
 | [`SORTING`](#section-sorting) | section | 2 keys |
-| [`DONUT-STYLE`](#section-donut-style) | string | `DEPOSIT_GUI` |
 | [`BEDROCK`](#section-bedrock) | section | 1 keys |
 | [`NETWORK`](#section-network) | section | 2 keys |
 | [`SEARCH_SIGN`](#section-search-sign) | section | 2 keys |
@@ -532,26 +531,6 @@ SORTING:
     - MOST_MONEY_PER_ITEM
     - MOST_PAID
     - RECENTLY_LISTED
-```
-
-</details>
-
----
-
-## Section: `DONUT-STYLE`
-
-Visual layout style mode
-
-| Option path | Type | Accepted values | Default | What it does |
-| :--- | :--- | :--- | :--- | :--- |
-| `DONUT-STYLE` | `string` | Any text | `DEPOSIT_GUI` | Visual layout style mode |
-
-<details>
-<summary>Default <code>DONUT-STYLE</code> block as shipped</summary>
-
-```yaml
-# Visual layout style mode
-DONUT-STYLE: DEPOSIT_GUI
 ```
 
 </details>
