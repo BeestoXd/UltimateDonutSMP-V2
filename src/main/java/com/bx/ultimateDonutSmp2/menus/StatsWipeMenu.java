@@ -119,7 +119,7 @@ public class StatsWipeMenu extends BaseMenu {
     }
 
     private void renderCloseButton() {
-        String path = MENU_PATH + ".buttons.close";
+        String path = MENU_PATH + ".BUTTONS.CLOSE";
         if (!menus().contains(path)) {
             return;
         }

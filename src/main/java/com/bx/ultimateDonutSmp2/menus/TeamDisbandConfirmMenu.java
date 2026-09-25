@@ -25,7 +25,7 @@ public class TeamDisbandConfirmMenu extends BaseMenu {
             fill(Material.BLACK_STAINED_GLASS_PANE);
         }
 
-        String cancelPath = MENU_PATH + ".cancel-button";
+        String cancelPath = MENU_PATH + ".CANCEL-BUTTON";
         set(
                 menus().getInt(cancelPath + ".SLOT", 11),
                 ItemUtils.createItem(
@@ -35,7 +35,7 @@ public class TeamDisbandConfirmMenu extends BaseMenu {
                 )
         );
 
-        String confirmPath = MENU_PATH + ".confirm-button";
+        String confirmPath = MENU_PATH + ".CONFIRM-BUTTON";
         set(
                 menus().getInt(confirmPath + ".SLOT", 15),
                 ItemUtils.createItem(

@@ -40,21 +40,21 @@ public class StatsWipeConfirmMenu extends BaseMenu {
         int previewCount = plugin.getStatsWipeManager().getPreviewCount(target);
         Map<String, String> placeholders = placeholders(previewCount);
 
-        String infoPath = MENU_PATH + ".buttons.target";
+        String infoPath = MENU_PATH + ".BUTTONS.TARGET";
         set(menus().getInt(infoPath + ".SLOT", 13), ItemUtils.createItem(
                 ItemUtils.parseMaterial(menus().getString(infoPath + ".MATERIAL", "PAPER")),
                 replace(menus().getString(infoPath + ".DISPLAY-NAME", "&cConfirm {target}"), placeholders),
                 replace(menus().getStringList(infoPath + ".LORE"), placeholders)
         ));
 
-        String cancelPath = MENU_PATH + ".buttons.cancel";
+        String cancelPath = MENU_PATH + ".BUTTONS.CANCEL";
         set(menus().getInt(cancelPath + ".SLOT", 11), ItemUtils.createItem(
                 ItemUtils.parseMaterial(menus().getString(cancelPath + ".MATERIAL", "RED_STAINED_GLASS_PANE")),
                 replace(menus().getString(cancelPath + ".DISPLAY-NAME", "&cCancel"), placeholders),
                 replace(menus().getStringList(cancelPath + ".LORE"), placeholders)
         ));
 
-        String confirmPath = MENU_PATH + ".buttons.confirm";
+        String confirmPath = MENU_PATH + ".BUTTONS.CONFIRM";
         set(menus().getInt(confirmPath + ".SLOT", 15), ItemUtils.createItem(
                 ItemUtils.parseMaterial(menus().getString(confirmPath + ".MATERIAL", "LIME_STAINED_GLASS_PANE")),
                 replace(menus().getString(confirmPath + ".DISPLAY-NAME", "&aConfirm"), placeholders),

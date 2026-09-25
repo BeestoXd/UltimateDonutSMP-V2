@@ -311,7 +311,7 @@ public class TeamMenu extends BaseMenu {
     }
 
     private void renderHomeButton(Player player, Team team) {
-        String path = MENU_PATH + ".home-button";
+        String path = MENU_PATH + ".HOME-BUTTON";
         String loreLine;
         if (!plugin.getTeamManager().canVisitHome(team, player.getUniqueId())) {
             loreLine = plugin.getConfigManager().getMessage("TEAM.NO-VISIT-HOME-PERMISSION");
