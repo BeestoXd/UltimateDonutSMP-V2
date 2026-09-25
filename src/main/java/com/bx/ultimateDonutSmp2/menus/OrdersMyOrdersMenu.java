@@ -96,7 +96,11 @@ public class OrdersMyOrdersMenu extends BaseMenu {
 
         boolean hasPlusPlus = plugin.getOrdersManager() != null && plugin.getOrdersManager().hasDonutPlusPlus(player);
         if (page > 1 && !hasPlusPlus) {
-            if (slot >= 0 && slot < GRID_SLOTS) {
+            int configuredSlots = plugin.getOrdersManager() != null
+                    ? plugin.getOrdersManager().getMyOrdersPlusPageSlots()
+                    : DEFAULT_PLUS_PAGE_SLOTS;
+            int contentSlots = Math.min(configuredSlots, Math.max(0, inventory.getSize() - 9));
+            if (slot >= 0 && slot < contentSlots) {
                 OrdersMenuSupport.click(player, plugin);
             }
             return;
@@ -124,7 +128,10 @@ public class OrdersMyOrdersMenu extends BaseMenu {
 
     private void buildPlusPage() {
         // Next Page/main.png fills slots 0-44. A 36-slot loop left row 5 empty.
-        int contentSlots = Math.min(GRID_SLOTS, Math.max(0, inventory.getSize() - 9));
+        int configuredSlots = plugin.getOrdersManager() != null
+                ? plugin.getOrdersManager().getMyOrdersPlusPageSlots()
+                : DEFAULT_PLUS_PAGE_SLOTS;
+        int contentSlots = Math.min(configuredSlots, Math.max(0, inventory.getSize() - 9));
         for (int slot = 0; slot < contentSlots; slot++) {
             set(slot, lockedPane(true));
         }
