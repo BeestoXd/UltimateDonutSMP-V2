@@ -171,6 +171,7 @@ public class RTPManager {
     private final Map<UUID, Map<String, Long>> lastRtpUseByPlayer = new ConcurrentHashMap<>();
     private final Map<UUID, BukkitTask> activeSearchTasks = new ConcurrentHashMap<>();
     private final Map<UUID, BukkitTask> activeResultTasks = new ConcurrentHashMap<>();
+    private final Map<UUID, CompletableFuture<Void>> activePreloads = new ConcurrentHashMap<>();
     private final Map<UUID, CompletableFuture<Location>> activeDirectSearches = new ConcurrentHashMap<>();
     private final Map<UUID, SearchProgress> activeSearches = new ConcurrentHashMap<>();
     private final Map<String, java.util.Queue<CachedLocation>> locationPreCache = new ConcurrentHashMap<>();
@@ -767,6 +768,10 @@ public class RTPManager {
         BukkitTask resultTask = activeResultTasks.remove(playerId);
         if (resultTask != null) {
             resultTask.cancel();
+        }
+        CompletableFuture<Void> preload = activePreloads.remove(playerId);
+        if (preload != null) {
+            preload.cancel(true);
         }
         activeSearches.remove(playerId);
         CompletableFuture<Location> directSearch = activeDirectSearches.remove(playerId);
@@ -1789,7 +1794,38 @@ public class RTPManager {
                 processNextInQueue();
                 return;
             }
-            plugin.getTeleportManager().queue(player, found, "RTP", null);
+            Runnable finalizeTeleport = () -> {
+                if (!player.isOnline()) {
+                    processNextInQueue();
+                    return;
+                }
+                if (plugin.getCombatManager() != null && plugin.getCombatManager().isInCombat(playerId)) {
+                    player.sendMessage(ColorUtils.toComponent(plugin.getCombatManager().getBlockMessage()));
+                    processNextInQueue();
+                    return;
+                }
+                plugin.getTeleportManager().queue(player, found, "RTP", null);
+                processNextInQueue();
+            };
+
+            CompletableFuture<Void> preloadFuture = preloadTeleportChunks(found);
+            if (preloadFuture == null || preloadFuture.isDone()) {
+                finalizeTeleport.run();
+                return;
+            }
+            activePreloads.put(playerId, preloadFuture);
+            preloadFuture.whenComplete((ignored, throwable) -> {
+                activePreloads.remove(playerId);
+                if (preloadFuture.isCancelled()) {
+                    return;
+                }
+                if (plugin.getSpigotScheduler() != null) {
+                    plugin.getSpigotScheduler().runEntity(player, finalizeTeleport);
+                } else {
+                    finalizeTeleport.run();
+                }
+            });
+            return;
         }
         processNextInQueue();
     }
@@ -1981,11 +2017,12 @@ public class RTPManager {
         return world.loadChunk(chunkX, chunkZ, true);
     }
 
-    private CompletableFuture<Void> preloadTeleportChunks(Location destination) {
+    CompletableFuture<Void> preloadTeleportChunks(Location destination) {
         CompletableFuture<Void> future = new CompletableFuture<>();
         if (!plugin.getConfigManager().getRtp().getBoolean(PRELOAD_TELEPORT_CHUNKS_SETTING, true)
                 || destination == null
-                || destination.getWorld() == null) {
+                || destination.getWorld() == null
+                || plugin.getSpigotScheduler() == null) {
             future.complete(null);
             return future;
         }
@@ -2840,16 +2877,17 @@ public class RTPManager {
     }
 
     private int countActiveSearches() {
-        return activeSearches.size() + activeResultTasks.size() + activeDirectSearches.size();
+        return activeSearches.size() + activeResultTasks.size() + activePreloads.size() + activeDirectSearches.size();
     }
 
     private boolean isSearching(UUID playerId) {
-        return activeSearches.containsKey(playerId) || activeDirectSearches.containsKey(playerId);
+        return activeSearches.containsKey(playerId) || activeDirectSearches.containsKey(playerId) || activePreloads.containsKey(playerId);
     }
 
     public boolean hasActiveRtpFlow(UUID playerId) {
         return activeSearches.containsKey(playerId)
                 || activeResultTasks.containsKey(playerId)
+                || activePreloads.containsKey(playerId)
                 || activeDirectSearches.containsKey(playerId);
     }
 
@@ -2925,6 +2963,7 @@ public class RTPManager {
         playerIds.addAll(activeSearches.keySet());
         playerIds.addAll(activeSearchTasks.keySet());
         playerIds.addAll(activeResultTasks.keySet());
+        playerIds.addAll(activePreloads.keySet());
         playerIds.addAll(activeDirectSearches.keySet());
         for (UUID playerId : playerIds) {
             clearSearch(playerId);
