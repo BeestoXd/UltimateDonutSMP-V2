@@ -22,6 +22,9 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 
+import com.bx.ultimateDonutSmp2.utils.CommandLabelUtils;
+
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
@@ -207,15 +210,46 @@ public class FfaListener implements Listener {
             return;
         }
 
-        String raw = event.getMessage().trim().toLowerCase();
-        for (String allowed : ALLOWED_FFA_COMMANDS) {
-            if (raw.equals(allowed) || raw.startsWith(allowed + " ")) {
-                return;
-            }
+        if (isAllowedFfaCommand(event.getMessage())) {
+            return;
         }
 
         event.setCancelled(true);
         event.getPlayer().sendMessage(ColorUtils.toComponent("&cYou cannot use that command during FFA."));
+    }
+
+    static boolean isAllowedFfaCommand(String raw) {
+        if (raw == null) {
+            return false;
+        }
+        String normalized = withoutPluginNamespace(raw);
+        for (String allowed : ALLOWED_FFA_COMMANDS) {
+            if (normalized.equals(allowed) || normalized.startsWith(allowed + " ")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String withoutPluginNamespace(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        String value = raw.trim().toLowerCase(Locale.ROOT);
+        int space = value.indexOf(' ');
+        String token = space < 0 ? value : value.substring(0, space);
+        String rest = space < 0 ? "" : value.substring(space);
+
+        boolean slash = token.startsWith("/");
+        String body = slash ? token.substring(1) : token;
+        if (body.isEmpty()) {
+            return value;
+        }
+        String label = CommandLabelUtils.normalizeLabel(body);
+        if (label.isEmpty()) {
+            return value;
+        }
+        return (slash ? "/" : "") + label + rest;
     }
 
     @EventHandler
