@@ -642,6 +642,16 @@ public class OrdersManager {
         return normalizeSize(config().getInt("GUI.DELIVER_CONFIRM.SIZE", 27));
     }
 
+    public String getCancelOrderTitle(long orderId) {
+        return plugin.getLanguageManager().text("ORDERS.GUI.DELETE.TITLE", null,
+                config().getString("GUI.CANCEL_ORDER.TITLE", "Orders -> Cancel Order"),
+                "{order_id}", String.valueOf(orderId));
+    }
+
+    public int getCancelOrderSize() {
+        return normalizeSize(config().getInt("GUI.CANCEL_ORDER.SIZE", 27));
+    }
+
     public OrderSort getDefaultSort() {
         return OrderSort.fromConfig(config().getString("SORTING.DEFAULT", "MOST_PAID"));
     }

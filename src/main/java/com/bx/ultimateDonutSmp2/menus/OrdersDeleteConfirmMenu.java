@@ -26,7 +26,15 @@ public class OrdersDeleteConfirmMenu extends BaseMenu {
             OrderSort sortMode,
             String categoryFilter
     ) {
-        super(plugin, OrdersMenuSupport.text(plugin, "ORDERS.GUI.DELETE.TITLE", "Orders -> Cancel Order"), 27);
+        super(
+                plugin,
+                plugin != null && plugin.getOrdersManager() != null
+                        ? plugin.getOrdersManager().getCancelOrderTitle(orderId)
+                        : OrdersMenuSupport.text(plugin, "ORDERS.GUI.DELETE.TITLE", "Orders -> Cancel Order"),
+                plugin != null && plugin.getOrdersManager() != null
+                        ? plugin.getOrdersManager().getCancelOrderSize()
+                        : 27
+        );
         this.orderId = orderId;
         this.backToMyOrders = backToMyOrders;
         this.originPage = Math.max(1, originPage);
