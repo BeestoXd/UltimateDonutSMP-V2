@@ -891,6 +891,10 @@ public class SpawnerManager {
         return mainMenuFillerMaterial;
     }
 
+    public boolean isProcessOnlyLoadedChunks() {
+        return processOnlyLoadedChunks;
+    }
+
     public void openPanel(Player player) {
         if (player == null) {
             return;
@@ -1316,7 +1320,7 @@ public class SpawnerManager {
             try {
                 if (!folia) {
                     World world = Bukkit.getWorld(instance.getWorld());
-                    if (world == null || !world.isChunkLoaded(instance.getX() >> 4, instance.getZ() >> 4)) {
+                    if (world == null || (processOnlyLoadedChunks && !world.isChunkLoaded(instance.getX() >> 4, instance.getZ() >> 4))) {
                         continue;
                     }
                 }
@@ -1448,7 +1452,7 @@ public class SpawnerManager {
 
         int chunkX = instance.getX() >> 4;
         int chunkZ = instance.getZ() >> 4;
-        if (!world.isChunkLoaded(chunkX, chunkZ)) {
+        if (processOnlyLoadedChunks && !world.isChunkLoaded(chunkX, chunkZ)) {
             return;
         }
         if (requirePlayerNearby && !hasNearbyPlayer(world, instance, playerNearbyRadius)) {
