@@ -344,12 +344,21 @@ public final class OrdersBedrockManager {
         send(player, form.build());
     }
 
+    private String publicOwnerName(Order order) {
+        if (order == null) {
+            return "";
+        }
+        return plugin.getHideManager() != null
+                ? plugin.getHideManager().publicName(order.ownerUuid(), order.ownerName())
+                : (order.ownerName() != null ? order.ownerName() : "");
+    }
+
     private boolean matches(Order order, String query) {
         if (query == null || query.isBlank()) {
             return true;
         }
         String search = query.toLowerCase(Locale.ROOT);
-        return order.ownerName().toLowerCase(Locale.ROOT).contains(search)
+        return publicOwnerName(order).toLowerCase(Locale.ROOT).contains(search)
                 || order.categoryKey().toLowerCase(Locale.ROOT).contains(search)
                 || plugin.getOrdersManager().describeItem(order.requestedItem())
                 .toLowerCase(Locale.ROOT).contains(search);
@@ -362,7 +371,7 @@ public final class OrdersBedrockManager {
                 "{item}", plugin.getOrdersManager().describeItem(order.requestedItem()),
                 "{remaining}", String.valueOf(order.remainingQuantity()),
                 "{price}", plugin.getCurrencyManager().formatMoney(order.priceEach()),
-                "{owner}", order.ownerName());
+                "{owner}", publicOwnerName(order));
     }
 
     private boolean send(Player player, Form form) {
