@@ -266,9 +266,16 @@ public class TeleportCommand implements CommandExecutor {
         return null;
     }
 
-    private Double parseCoordinate(String input) {
+    static Double parseCoordinate(String input) {
+        if (input == null || input.isBlank()) {
+            return null;
+        }
         try {
-            return Double.parseDouble(input);
+            double parsed = Double.parseDouble(input);
+            if (!Double.isFinite(parsed)) {
+                return null;
+            }
+            return parsed;
         } catch (NumberFormatException exception) {
             return null;
         }
