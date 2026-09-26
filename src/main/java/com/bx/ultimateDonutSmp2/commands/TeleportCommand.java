@@ -1,5 +1,6 @@
 package com.bx.ultimateDonutSmp2.commands;
 
+import com.bx.ultimateDonutSmp2.utils.CommandLabelUtils;
 import com.bx.ultimateDonutSmp2.utils.PermissionUtils;
 
 import com.bx.ultimateDonutSmp2.UltimateDonutSmp2;
@@ -36,7 +37,7 @@ public class TeleportCommand implements CommandExecutor {
             return true;
         }
 
-        String normalizedLabel = label.toLowerCase(Locale.ROOT);
+        String normalizedLabel = CommandLabelUtils.normalizeLabel(label, command);
         if ("tphere".equals(normalizedLabel)) {
             return handleTeleportHereAlias(player, args);
         }
