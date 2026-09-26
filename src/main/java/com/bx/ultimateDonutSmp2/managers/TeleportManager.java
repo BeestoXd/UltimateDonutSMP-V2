@@ -64,8 +64,7 @@ public class TeleportManager {
                 && PlayerSettingUtils.quietSpawnEnabled(plugin, player);
         cancel(player.getUniqueId());
 
-        // RTP and HOME are instant. TPA / TPAHERE keep their 5s stand-still warmup.
-        if (cooldownSecs <= 0 || "RTP".equals(normalizedType) || "HOME".equals(normalizedType)) {
+        if (cooldownSecs <= 0) {
             teleportNow(player, destination, normalizedType, onSuccess);
             return;
         }
@@ -75,7 +74,7 @@ public class TeleportManager {
         if (!quietSpawn) {
             sendCountdownFeedback(player, cooldownSecs);
         }
-        if (!"RTP".equals(normalizedType) && !"HOME".equals(normalizedType) && !quietSpawn) {
+        if (!quietSpawn) {
             sendMovementWarning(player, cooldownSecs);
         }
 
@@ -221,21 +220,19 @@ public class TeleportManager {
     }
 
     /**
-     * Seconds to wait before landing. RTP and HOME are always instant. TPA and TPAHERE read
-     * {@code TELEPORT-COOLDOWN.TPA} / {@code TPAHERE}, defaulting to 5, and moving cancels them.
+     * Seconds to wait before landing. Read from {@code TELEPORT-COOLDOWN.<TYPE>}.
+     * Defaults to 0 for HOME and RTP, 5 for others. Moving cancels the teleport.
      */
     static int warmupSeconds(org.bukkit.configuration.ConfigurationSection config, String type) {
         String normalized = normalizeType(type);
-        if ("RTP".equals(normalized) || "HOME".equals(normalized)) {
-            return 0;
-        }
         if (config == null) {
-            return 5;
+            return ("RTP".equals(normalized) || "HOME".equals(normalized)) ? 0 : 5;
         }
         if ("TPAHERE".equals(normalized) && !config.contains("TELEPORT-COOLDOWN.TPAHERE")) {
             return Math.max(0, config.getInt("TELEPORT-COOLDOWN.TPA", 5));
         }
-        return Math.max(0, config.getInt("TELEPORT-COOLDOWN." + normalized, 5));
+        int defaultCooldown = ("RTP".equals(normalized) || "HOME".equals(normalized)) ? 0 : 5;
+        return Math.max(0, config.getInt("TELEPORT-COOLDOWN." + normalized, defaultCooldown));
     }
 
     static boolean movedEnoughToCancel(double fromX, double fromZ, double toX, double toZ) {
