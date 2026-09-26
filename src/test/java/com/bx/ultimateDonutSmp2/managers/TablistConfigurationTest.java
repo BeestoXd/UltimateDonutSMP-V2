@@ -22,7 +22,9 @@ class TablistConfigurationTest {
         YamlConfiguration config = YamlConfiguration.loadConfiguration(new File("src/main/resources/config.yml"));
 
         assertTrue(config.getBoolean("TABLIST.ENABLED"));
+        assertTrue(config.getBoolean("TABLIST.LUCKPERMS-PRIORITY"));
         assertFalse(config.getBoolean("TABLIST.SHOW-TEAM-NAME"));
+        assertEquals("<head:%player_name%>", config.getString("TABLIST.ICON-HEAD-SKIN"));
         assertEquals("📹", config.getString("TABLIST.ICON-MEDIA"));
         assertEquals("<#FF00A6><icon_media>", config.getString("TABLIST.MEDIA-BADGE-FORMAT"));
         assertEquals("media", config.getString("TABLIST.MEDIA-BADGE-PERMISSION"));
