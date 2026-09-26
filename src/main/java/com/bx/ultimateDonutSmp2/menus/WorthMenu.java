@@ -7,6 +7,7 @@ import com.bx.ultimateDonutSmp2.utils.ItemUtils;
 import com.bx.ultimateDonutSmp2.utils.NumberUtils;
 import com.bx.ultimateDonutSmp2.utils.SoundUtils;
 import org.bukkit.Material;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
@@ -114,11 +115,28 @@ public class WorthMenu extends BaseMenu {
         this(plugin, page, sortMode, null, null);
     }
 
+    public static String getMenuTitle(UltimateDonutSmp2 plugin) {
+        if (plugin != null && plugin.getConfigManager() != null && plugin.getConfigManager().getMenus() != null) {
+            String menuTitle = plugin.getConfigManager().getMenus().getString("WORTH-MENU.TITLE");
+            if (menuTitle != null && !menuTitle.isBlank()) {
+                return menuTitle;
+            }
+        }
+        if (plugin != null && plugin.getWorthManager() != null) {
+            return plugin.getWorthManager().getBrowserTitle();
+        }
+        return "&8Item Prices";
+    }
+
+    private FileConfiguration getMenus() {
+        return plugin != null && plugin.getConfigManager() != null ? plugin.getConfigManager().getMenus() : null;
+    }
+
     public WorthMenu(UltimateDonutSmp2 plugin, int page, SortMode sortMode, SellCategory categoryFilter, BaseMenu parentMenu) {
         super(plugin,
                 categoryFilter != null
                         ? ColorUtils.toComponent("&8" + categoryFilter.name().replace('_', ' ') + " ITEMS")
-                        : plugin.getWorthManager().getBrowserTitle(),
+                        : getMenuTitle(plugin),
                 plugin.getWorthManager().getBrowserSize());
         this.page = Math.max(1, page);
         this.itemsPerPage = plugin.getWorthManager().getBrowserItemsPerPage();
@@ -171,13 +189,28 @@ public class WorthMenu extends BaseMenu {
                         "&7Entries: &f" + entries.size()
                 )
         ));
+        FileConfiguration menus = getMenus();
+        String sortTitle = menus != null
+                ? menus.getString("WORTH-MENU.SORT-BUTTON.TITLE", "&aSort")
+                : "&aSort";
+        String sortMatStr = menus != null
+                ? menus.getString("WORTH-MENU.SORT-BUTTON.MATERIAL", "CAULDRON")
+                : "CAULDRON";
+        Material sortMaterial = ItemUtils.parseMaterial(sortMatStr);
+        if (sortMaterial == null) {
+            sortMaterial = Material.CAULDRON;
+        }
+        String displaySortTitle = sortTitle.contains("{mode}") || sortTitle.contains("{sort}")
+                ? sortTitle.replace("{mode}", sortMode.displayName()).replace("{sort}", sortMode.displayName())
+                : (sortTitle.contains(":") ? sortTitle : sortTitle + ": &f" + sortMode.displayName());
+        List<String> sortLore = ItemUtils.readLore(menus, "WORTH-MENU.SORT-BUTTON.LORE", List.of(
+                "&7Left click: &fnext sort",
+                "&7Right click: &fprevious sort"
+        ));
         set(lastRowStart + 4, ItemUtils.createItem(
-                sortMode.icon(),
-                "&eSort: &f" + sortMode.displayName(),
-                List.of(
-                        "&7Left click: &fnext sort",
-                        "&7Right click: &fprevious sort"
-                )
+                sortMaterial,
+                displaySortTitle,
+                sortLore
         ));
         set(lastRowStart + 7, hasNextPage(entries.size())
                 ? ItemUtils.createItem(Material.ARROW, "&aNext page", List.of("&7Go to page &f" + (page + 1)))
@@ -232,11 +265,18 @@ public class WorthMenu extends BaseMenu {
 
         SoundUtils.play(player, plugin.getConfigManager().getSound("MENUS.BUTTON-CLICK"));
         WorthManager.WorthBrowserEntry entry = entries.get(entryIndex);
-        player.sendMessage(ColorUtils.toComponent(
-                "&7" + plugin.getWorthManager().prettifyMaterial(entry.material())
-                        + " &7is worth " + plugin.getCurrencyManager().formatMoneyCompact(entry.unitWorth())
-                        + " &8(" + formatCategory(entry.categoryKey()) + "&8)"
-        ));
+        FileConfiguration menus = getMenus();
+        String format = menus != null ? menus.getString("WORTH-MENU.FORMAT", "&7Worth: &a${price}") : "&7Worth: &a${price}";
+        String formattedPrice = NumberUtils.format(entry.unitWorth());
+        String formattedMessage = format
+                .replace("${price}", "$" + formattedPrice)
+                .replace("{price}", formattedPrice)
+                .replace("{item}", plugin.getWorthManager().prettifyMaterial(entry.material()))
+                .replace("{category}", formatCategory(entry.categoryKey()))
+                .replace("{unit_price}", formattedPrice)
+                .replace("{unit_price_compact}", plugin.getCurrencyManager().formatMoneyCompact(entry.unitWorth()))
+                .replace("{unit_price_formatted}", plugin.getCurrencyManager().formatMoney(entry.unitWorth()));
+        player.sendMessage(ColorUtils.toComponent(formattedMessage, player));
     }
 
     private List<WorthManager.WorthBrowserEntry> getSortedEntries() {
