@@ -31,20 +31,21 @@ class TeleportManagerWarmupTest {
     }
 
     @Test
-    void rtpStaysInstantEvenWhenAWarmupIsConfigured() {
+    void rtpHonoursConfiguredWarmup() {
         YamlConfiguration config = new YamlConfiguration();
         config.set("TELEPORT-COOLDOWN.RTP", 5);
 
-        assertEquals(0, TeleportManager.warmupSeconds(config, "RTP"));
+        assertEquals(5, TeleportManager.warmupSeconds(config, "RTP"));
+        assertEquals(0, TeleportManager.warmupSeconds(null, "RTP"));
     }
 
     @Test
-    void homeStaysInstantEvenWhenAWarmupIsConfigured() {
+    void homeHonoursConfiguredWarmup() {
         YamlConfiguration config = new YamlConfiguration();
         config.set("TELEPORT-COOLDOWN.HOME", 5);
 
-        assertEquals(0, TeleportManager.warmupSeconds(config, "HOME"));
-        assertEquals(0, TeleportManager.warmupSeconds(config, "home"));
+        assertEquals(5, TeleportManager.warmupSeconds(config, "HOME"));
+        assertEquals(5, TeleportManager.warmupSeconds(config, "home"));
         assertEquals(0, TeleportManager.warmupSeconds(null, "HOME"));
     }
 
