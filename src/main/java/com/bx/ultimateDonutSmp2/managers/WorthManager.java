@@ -333,6 +333,12 @@ public class WorthManager {
     }
 
     public String getBrowserTitle() {
+        if (plugin != null && plugin.getConfigManager() != null && plugin.getConfigManager().getMenus() != null) {
+            String menuTitle = plugin.getConfigManager().getMenus().getString("WORTH-MENU.TITLE");
+            if (menuTitle != null && !menuTitle.isBlank()) {
+                return menuTitle;
+            }
+        }
         return plugin.getConfigManager().getWorth().getString("BROWSER.TITLE", "&8item prices");
     }
 
