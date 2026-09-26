@@ -80,7 +80,7 @@ Tab completion is suppressed for any command whose feature group is disabled, re
 | `/shardshop` | — | `/shardshop [reload\|legacy]` | `ultimatedonutsmp2.command.shardshop`; `reload` requires `ultimatedonutsmp2.admin.shop` | Open the shard-currency shop. Shares the executor with `/shop`. |
 | `/sell` | — | `/sell` | `ultimatedonutsmp2.command.sell` | Open the sell menu. |
 | `/sellall` | — | `/sellall` | `ultimatedonutsmp2.command.sellall` | Open the confirmation menu to sell every sellable item in your inventory. |
-| `/sellhand` | — | `/sellhand [amount]` | `ultimatedonutsmp2.command.sellhand` | Sell the item held in your main hand, optionally a specific quantity. |
+| `/sellhand` | — | `/sellhand [amount]` | `ultimatedonutsmp2.command.sellhand` | Sell the item held in your main hand. Any `[amount]` argument is ignored at runtime and the command sells the entire held stack; see [Known inconsistencies](#known-inconsistencies). |
 | `/sellhistory` | — | `/sellhistory` | `ultimatedonutsmp2.command.sellhistory` | View your recent sell transactions. |
 | `/sellmulti` | — | `/sellmulti [category]` | `ultimatedonutsmp2.command.sellmulti` | Open the sell multiplier menu. |
 | `/sellmultiplier` | — | `/sellmultiplier [category]` | `ultimatedonutsmp2.command.sellmulti` | Identical to `/sellmulti`; note that it reuses the `sellmulti` node rather than declaring its own. |
@@ -794,3 +794,6 @@ These are real, verified mismatches between `plugin.yml` and the Java source. Th
 **`/safety` uses a bare namespace.** Its runtime checks are `safety.use`, `safety.add` and `safety.reload`, outside the plugin's own namespace and undeclared in `plugin.yml`.
 
 **Twenty-three declared nodes never appear in Java.** Besides the `ultimatedonutsmp2.command.*` family, which Bukkit enforces from `plugin.yml` and which therefore does not need string literals, several feature nodes are declared but not referenced in the source: `ultimatedonutsmp2.admin.ecsee`, `ultimatedonutsmp2.staff.freeze`, `ultimatedonutsmp2.staff.freeze.alert`, `ultimatedonutsmp2.staff.freeze.exempt`, `ultimatedonutsmp2.staff.invsee.modify`, `ultimatedonutsmp2.staff.mode` and its six `mode.*` children, `ultimatedonutsmp2.enderchest`, and the `auctionhouse`/`donutauction` `cancel`, `claims`, `limit`, `my` and `sell` nodes, which are constructed dynamically as `"ultimatedonutsmp2.auctionhouse." + action` rather than written out. In the Auction House case the nodes do work; in the freeze and staff-mode cases they are consumed by their respective managers through parent relationships and hotbar wiring rather than direct literal checks, so treat them as advisory until you have tested your own group setup.
+
+**`/sellhand [amount]` ignores the quantity argument.** `plugin.yml` advertises `/sellhand [amount]` and tab completion suggests quantity values, but the command executor always sells the complete item stack held in your main hand.
+
