@@ -80,6 +80,14 @@ public class TablistManager {
                 && config().getBoolean("TABLIST.ENABLED", true);
     }
 
+    public boolean isLuckpermsPriority() {
+        return config().getBoolean("TABLIST.LUCKPERMS-PRIORITY", true);
+    }
+
+    public String getIconHeadSkin() {
+        return config().getString("TABLIST.ICON-HEAD-SKIN", "<head:%player_name%>");
+    }
+
     public void update(Player player) {
         if (!isEnabled() || player == null) {
             return;
@@ -561,17 +569,32 @@ public class TablistManager {
         String teamName = showTeam ? rawTeamName : null;
         String prefix = resolvePrefix(player);
         String teamSuffix = "";
+        String nickname = resolveNickname(player);
+        String publicName = plugin.getHideManager() == null
+                ? player.getName()
+                : plugin.getHideManager().publicName(player);
         String iconMedia = config().getString("TABLIST.ICON-MEDIA", "");
         String normalizedIconMedia = iconMedia == null ? "" : iconMedia;
+        String iconHeadSkin = getIconHeadSkin();
+        String normalizedIconHeadSkin = iconHeadSkin == null ? "" : iconHeadSkin;
+        if (!normalizedIconHeadSkin.isEmpty()) {
+            normalizedIconHeadSkin = normalizedIconHeadSkin
+                    .replace("%player_name%", publicName)
+                    .replace("%player%", publicName)
+                    .replace("<player_name>", publicName)
+                    .replace("<player>", publicName);
+            if (ColorUtils.hasPAPI()) {
+                try {
+                    normalizedIconHeadSkin = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, normalizedIconHeadSkin);
+                } catch (Exception ignored) {
+                }
+            }
+        }
         boolean includeMediaBadge = hasMediaBadgeIncludePermission(player);
         String mediaIconBadge = resolveMediaIconBadge(player, normalizedIconMedia, includeMediaBadge);
         String mediaPlusBadge = resolveMediaPlusBadge(player, includeMediaBadge);
         String mediaBadge = resolveMediaBadge(mediaIconBadge, mediaPlusBadge, normalizedIconMedia);
         String donutBadge = resolveDonutPlusBadge(player);
-        String nickname = resolveNickname(player);
-        String publicName = plugin.getHideManager() == null
-                ? player.getName()
-                : plugin.getHideManager().publicName(player);
 
         if (showTeam && teamName != null && !teamName.isBlank()) {
             teamSuffix = " &7[&b" + teamName.toUpperCase() + "&7]";
@@ -593,6 +616,10 @@ public class TablistManager {
                 .replace("<player>", publicName)
                 .replace("<nick>", nickname)
                 .replace("<icon_media>", normalizedIconMedia)
+                .replace("<icon_head_skin>", normalizedIconHeadSkin)
+                .replace("%icon_head_skin%", normalizedIconHeadSkin)
+                .replace("<head_skin>", normalizedIconHeadSkin)
+                .replace("%head_skin%", normalizedIconHeadSkin)
                 .replace("%media_icon_badge%", mediaIconBadge)
                 .replace("<media_icon_badge>", mediaIconBadge)
                 .replace("%media_plus_badge%", mediaPlusBadge)
@@ -642,25 +669,66 @@ public class TablistManager {
     }
 
     private String resolvePrefix(Player player) {
-        String luckPermsPrefix = resolveLuckPermsPrefix(player);
-        if (luckPermsPrefix != null && !luckPermsPrefix.isBlank()) {
-            return luckPermsPrefix;
-        }
-
-        if (!ColorUtils.hasPAPI()) {
-            return "";
-        }
-
-        try {
-            String prefix = me.clip.placeholderapi.PlaceholderAPI
-                    .setPlaceholders(player, "%luckperms_prefix%");
-            if (prefix == null || prefix.isBlank() || prefix.startsWith("%")) {
-                return "";
+        boolean luckPermsPriority = isLuckpermsPriority();
+        if (luckPermsPriority) {
+            String luckPermsPrefix = resolveLuckPermsPrefix(player);
+            if (luckPermsPrefix != null && !luckPermsPrefix.isBlank()) {
+                return luckPermsPrefix;
             }
-            return prefix;
-        } catch (Exception ignored) {
-            return "";
         }
+
+        if (ColorUtils.hasPAPI()) {
+            try {
+                if (luckPermsPriority) {
+                    String prefix = me.clip.placeholderapi.PlaceholderAPI
+                            .setPlaceholders(player, "%luckperms_prefix%");
+                    if (prefix != null && !prefix.isBlank() && !prefix.startsWith("%")) {
+                        return prefix;
+                    }
+                }
+                String prefix = me.clip.placeholderapi.PlaceholderAPI
+                        .setPlaceholders(player, "%vault_prefix%");
+                if (prefix != null && !prefix.isBlank() && !prefix.startsWith("%")) {
+                    return prefix;
+                }
+                prefix = me.clip.placeholderapi.PlaceholderAPI
+                        .setPlaceholders(player, "%prefix%");
+                if (prefix != null && !prefix.isBlank() && !prefix.startsWith("%")) {
+                    return prefix;
+                }
+                if (!luckPermsPriority) {
+                    prefix = me.clip.placeholderapi.PlaceholderAPI
+                            .setPlaceholders(player, "%luckperms_prefix%");
+                    if (prefix != null && !prefix.isBlank() && !prefix.startsWith("%")) {
+                        return prefix;
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
+        if (!luckPermsPriority) {
+            String luckPermsPrefix = resolveLuckPermsPrefix(player);
+            if (luckPermsPrefix != null && !luckPermsPrefix.isBlank()) {
+                return luckPermsPrefix;
+            }
+        }
+
+        if (Bukkit.getServer() != null && Bukkit.getPluginManager() != null && Bukkit.getPluginManager().isPluginEnabled("Vault")) {
+            try {
+                org.bukkit.plugin.RegisteredServiceProvider<net.milkbowl.vault.chat.Chat> rsp =
+                        Bukkit.getServicesManager().getRegistration(net.milkbowl.vault.chat.Chat.class);
+                if (rsp != null && rsp.getProvider() != null) {
+                    String prefix = rsp.getProvider().getPlayerPrefix(player);
+                    if (prefix != null && !prefix.isBlank()) {
+                        return prefix;
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
+        return "";
     }
 
     private String getMultilineText(String path) {
@@ -2440,7 +2508,14 @@ public class TablistManager {
         }
 
         String nameFormat = config().getString("TABLIST.NAME-FORMAT", "");
-        return nameFormat != null && HEAD_TAG_PATTERN.matcher(nameFormat).find();
+        if (nameFormat != null && (HEAD_TAG_PATTERN.matcher(nameFormat).find()
+                || nameFormat.contains("<icon_head_skin>") || nameFormat.contains("%icon_head_skin%")
+                || nameFormat.contains("<head_skin>") || nameFormat.contains("%head_skin%"))) {
+            return true;
+        }
+
+        String iconHeadSkin = getIconHeadSkin();
+        return iconHeadSkin != null && HEAD_TAG_PATTERN.matcher(iconHeadSkin).find();
     }
 
     private String stripUnsupportedHeadTags(String text) {
