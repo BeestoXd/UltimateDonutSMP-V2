@@ -7,6 +7,12 @@ Because the text is localized, translating these is usually better done under
 Whether a player actually sees another player's death message is a per-player choice —
 the `deathmessages` player setting can limit them to friends only, or turn them off.
 
+Direct player-versus-player kills always format as `&c☠ <victim> was slain by <killer>`
+in chat. The message keys defined here and in `languages/<locale>.yml` `DEATH_MESSAGES`
+apply to environmental and mob deaths, with the `.PVP` sub-keys used when a non-player
+damager or hostile projectile knocked or pushed the player into a hazard.
+
+
 | | |
 | :--- | :--- |
 | **On disk** | `plugins/UltimateDonutSmp2/death-messages.yml` |
