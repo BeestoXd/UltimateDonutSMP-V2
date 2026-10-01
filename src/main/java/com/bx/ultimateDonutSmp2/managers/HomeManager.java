@@ -133,12 +133,28 @@ public class HomeManager {
                 "ultimatedonutsmp2.homes.donutplusplusplus",
                 "donutplusplusplus.homes",
                 "homes.donutplusplusplus",
-                "ultimatedonutsmp2.homes.vip++")) {
+                "ultimatedonutsmp2.homes.vip++",
+                "ultimatedonutsmp2.donut+++",
+                "donut+++",
+                "ultimatedonutsmp2.homes.donut+++",
+                "donut+++.homes",
+                "homes.donut+++",
+                "group.donutplusplusplus",
+                "group.donut+++",
+                "group.vip++")) {
             return resolveDonutConfiguredHomes(section, 90,
                     "ultimatedonutsmp2.donutplusplusplus",
                     "donutplusplusplus",
                     "ultimatedonutsmp2.homes.donutplusplusplus",
-                    "ultimatedonutsmp2.homes.vip++");
+                    "ultimatedonutsmp2.homes.vip++",
+                    "ultimatedonutsmp2.donut+++",
+                    "donut+++",
+                    "ultimatedonutsmp2.homes.donut+++",
+                    "donut+++.homes",
+                    "homes.donut+++",
+                    "group.donutplusplusplus",
+                    "group.donut+++",
+                    "group.vip++");
         }
 
         if (hasExactAny(player,
@@ -147,12 +163,28 @@ public class HomeManager {
                 "ultimatedonutsmp2.homes.donutplusplus",
                 "donutplusplus.homes",
                 "homes.donutplusplus",
-                "ultimatedonutsmp2.homes.vip+")) {
+                "ultimatedonutsmp2.homes.vip+",
+                "ultimatedonutsmp2.donut++",
+                "donut++",
+                "ultimatedonutsmp2.homes.donut++",
+                "donut++.homes",
+                "homes.donut++",
+                "group.donutplusplus",
+                "group.donut++",
+                "group.vip+")) {
             return resolveDonutConfiguredHomes(section, 27,
                     "ultimatedonutsmp2.donutplusplus",
                     "donutplusplus",
                     "ultimatedonutsmp2.homes.donutplusplus",
-                    "ultimatedonutsmp2.homes.vip+");
+                    "ultimatedonutsmp2.homes.vip+",
+                    "ultimatedonutsmp2.donut++",
+                    "donut++",
+                    "ultimatedonutsmp2.homes.donut++",
+                    "donut++.homes",
+                    "homes.donut++",
+                    "group.donutplusplus",
+                    "group.donut++",
+                    "group.vip+");
         }
 
         if (hasExactAny(player,
@@ -161,12 +193,28 @@ public class HomeManager {
                 "ultimatedonutsmp2.homes.donutplus",
                 "donutplus.homes",
                 "homes.donutplus",
-                "ultimatedonutsmp2.homes.vip")) {
+                "ultimatedonutsmp2.homes.vip",
+                "ultimatedonutsmp2.donut+",
+                "donut+",
+                "ultimatedonutsmp2.homes.donut+",
+                "donut+.homes",
+                "homes.donut+",
+                "group.donutplus",
+                "group.donut+",
+                "group.vip")) {
             return resolveDonutConfiguredHomes(section, 9,
                     "ultimatedonutsmp2.donutplus",
                     "donutplus",
                     "ultimatedonutsmp2.homes.donutplus",
-                    "ultimatedonutsmp2.homes.vip");
+                    "ultimatedonutsmp2.homes.vip",
+                    "ultimatedonutsmp2.donut+",
+                    "donut+",
+                    "ultimatedonutsmp2.homes.donut+",
+                    "donut+.homes",
+                    "homes.donut+",
+                    "group.donutplus",
+                    "group.donut+",
+                    "group.vip");
         }
 
         return 0;

@@ -1,11 +1,17 @@
 package com.bx.ultimateDonutSmp2.utils;
 
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.permissions.Permissible;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 
 public final class PermissionUtils {
 
@@ -75,7 +81,31 @@ public final class PermissionUtils {
                 }
                 matchedTrue = true;
             }
-            return matchedTrue;
+            if (matchedTrue) {
+                return true;
+            }
+
+            if (permissible instanceof Player player) {
+                if (isPluginEnabled("LuckPerms")) {
+                    Boolean luckPerms = LuckPermsResolver.resolveExact(player, normalized);
+                    if (luckPerms != null) {
+                        return luckPerms;
+                    }
+                }
+
+                if (isPluginEnabled("Vault")) {
+                    Boolean vault = VaultResolver.resolveExact(player, normalized);
+                    if (vault != null) {
+                        return vault;
+                    }
+                }
+
+                if (isSafeBukkitExact(player, permission, normalized)) {
+                    return true;
+                }
+            }
+
+            return false;
         } catch (UnsupportedOperationException ignored) {
             return false;
         }
@@ -204,5 +234,246 @@ public final class PermissionUtils {
             case '\u00A0', '\u2007', '\u202F' -> ' ';
             default -> codePoint;
         };
+    }
+
+    private static boolean isPluginEnabled(String pluginName) {
+        try {
+            return Bukkit.getServer() != null
+                    && Bukkit.getPluginManager() != null
+                    && Bukkit.getPluginManager().isPluginEnabled(pluginName);
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
+    private static boolean isSafeBukkitExact(Player player, String permission, String normalized) {
+        try {
+            boolean isOp = false;
+            try {
+                isOp = player.isOp();
+            } catch (Throwable ignored) {
+            }
+            if (isOp) {
+                return false;
+            }
+
+            String probe = UUID.randomUUID().toString().replace("-", "");
+            if (player.hasPermission("ultimatedonutsmp2.probe." + probe)
+                    || player.hasPermission("ultimatedonutsmp2.homes.probe." + probe)
+                    || player.hasPermission("probe." + probe)) {
+                return false;
+            }
+
+            return player.hasPermission(permission) || (!normalized.equals(permission) && player.hasPermission(normalized));
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
+    private static final class LuckPermsResolver {
+        static Boolean resolveExact(Player player, String normalizedPermission) {
+            try {
+                net.luckperms.api.LuckPerms lp = net.luckperms.api.LuckPermsProvider.get();
+                if (lp == null) {
+                    return null;
+                }
+
+                List<net.luckperms.api.model.user.User> users = new ArrayList<>();
+                try {
+                    net.luckperms.api.model.user.User primary = lp.getPlayerAdapter(Player.class).getUser(player);
+                    if (primary != null) {
+                        users.add(primary);
+                    }
+                } catch (Throwable ignored) {
+                }
+
+                try {
+                    net.luckperms.api.model.user.User byUuid = lp.getUserManager().getUser(player.getUniqueId());
+                    if (byUuid != null && !users.contains(byUuid)) {
+                        users.add(byUuid);
+                    }
+                } catch (Throwable ignored) {
+                }
+
+                try {
+                    if (Bukkit.getPluginManager().isPluginEnabled("floodgate")
+                            && org.geysermc.floodgate.api.FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId())) {
+                        org.geysermc.floodgate.api.player.FloodgatePlayer fp =
+                                org.geysermc.floodgate.api.FloodgateApi.getInstance().getPlayer(player.getUniqueId());
+                        if (fp != null) {
+                            UUID javaUuid = fp.getJavaUniqueId();
+                            if (javaUuid != null) {
+                                net.luckperms.api.model.user.User u = lp.getUserManager().getUser(javaUuid);
+                                if (u != null && !users.contains(u)) {
+                                    users.add(u);
+                                }
+                            }
+                            UUID correctUuid = fp.getCorrectUniqueId();
+                            if (correctUuid != null && !correctUuid.equals(javaUuid)) {
+                                net.luckperms.api.model.user.User u = lp.getUserManager().getUser(correctUuid);
+                                if (u != null && !users.contains(u)) {
+                                    users.add(u);
+                                }
+                            }
+                            String username = fp.getUsername();
+                            if (username != null && !username.isBlank()) {
+                                net.luckperms.api.model.user.User u = lp.getUserManager().getUser(username);
+                                if (u != null && !users.contains(u)) {
+                                    users.add(u);
+                                }
+                            }
+                            String correctUsername = fp.getCorrectUsername();
+                            if (correctUsername != null && !correctUsername.isBlank() && !correctUsername.equalsIgnoreCase(username)) {
+                                net.luckperms.api.model.user.User u = lp.getUserManager().getUser(correctUsername);
+                                if (u != null && !users.contains(u)) {
+                                    users.add(u);
+                                }
+                            }
+                        }
+                    }
+                } catch (Throwable ignored) {
+                }
+
+                String name = player.getName();
+                if (name != null && (name.startsWith(".") || name.startsWith("*")) && name.length() > 1) {
+                    try {
+                        net.luckperms.api.model.user.User u = lp.getUserManager().getUser(name.substring(1));
+                        if (u != null && !users.contains(u)) {
+                            users.add(u);
+                        }
+                    } catch (Throwable ignored) {
+                    }
+                }
+
+                if (name != null && !name.isBlank()) {
+                    try {
+                        net.luckperms.api.model.user.User u = lp.getUserManager().getUser(name);
+                        if (u != null && !users.contains(u)) {
+                            users.add(u);
+                        }
+                    } catch (Throwable ignored) {
+                    }
+                }
+
+                for (net.luckperms.api.model.user.User user : users) {
+                    if (user == null) {
+                        continue;
+                    }
+
+                    for (net.luckperms.api.node.Node node : user.getNodes()) {
+                        if (node.hasExpired()) {
+                            continue;
+                        }
+                        String nodeKey = PermissionUtils.normalizePermissionNode(node.getKey());
+                        if (nodeKey.equals(normalizedPermission)) {
+                            return node.getValue();
+                        }
+                        if (node instanceof net.luckperms.api.node.types.InheritanceNode in) {
+                            String grp = PermissionUtils.normalizePermissionNode(in.getGroupName());
+                            if (normalizedPermission.equals("group." + grp) || normalizedPermission.equals(grp)) {
+                                return node.getValue();
+                            }
+                        }
+                        if (nodeKey.startsWith("group.")) {
+                            String grp = nodeKey.substring(6);
+                            if (normalizedPermission.equals("group." + grp) || normalizedPermission.equals(grp)) {
+                                return node.getValue();
+                            }
+                        }
+                    }
+
+                    String primary = user.getPrimaryGroup();
+                    if (primary != null) {
+                        String grp = PermissionUtils.normalizePermissionNode(primary);
+                        if (normalizedPermission.equals("group." + grp) || normalizedPermission.equals(grp)) {
+                            return true;
+                        }
+                    }
+
+                    try {
+                        Map<String, Boolean> permMap = user.getCachedData().getPermissionData().getPermissionMap();
+                        if (permMap != null) {
+                            for (Map.Entry<String, Boolean> entry : permMap.entrySet()) {
+                                String key = PermissionUtils.normalizePermissionNode(entry.getKey());
+                                if (key.equals(normalizedPermission)) {
+                                    return entry.getValue();
+                                }
+                                if (key.startsWith("group.")) {
+                                    String grp = key.substring(6);
+                                    if (normalizedPermission.equals("group." + grp) || normalizedPermission.equals(grp)) {
+                                        return entry.getValue();
+                                    }
+                                }
+                            }
+                        }
+                    } catch (Throwable ignored) {
+                    }
+                }
+
+                return null;
+            } catch (Throwable ignored) {
+                return null;
+            }
+        }
+    }
+
+    private static final class VaultResolver {
+        static Boolean resolveExact(Player player, String normalizedPermission) {
+            try {
+                org.bukkit.plugin.RegisteredServiceProvider<net.milkbowl.vault.permission.Permission> rsp =
+                        Bukkit.getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
+                if (rsp == null || rsp.getProvider() == null) {
+                    return null;
+                }
+
+                net.milkbowl.vault.permission.Permission vault = rsp.getProvider();
+                String groupName = normalizedPermission.startsWith("group.")
+                        ? normalizedPermission.substring(6)
+                        : (isCommonGroupName(normalizedPermission) ? normalizedPermission : null);
+
+                if (groupName != null && !groupName.isBlank()) {
+                    if (vault.playerInGroup(player, groupName)) {
+                        return true;
+                    }
+
+                    String name = player.getName();
+                    if (name != null && (name.startsWith(".") || name.startsWith("*")) && name.length() > 1) {
+                        if (vault.playerInGroup((String) null, name.substring(1), groupName)) {
+                            return true;
+                        }
+                    }
+
+                    try {
+                        if (Bukkit.getPluginManager().isPluginEnabled("floodgate")
+                                && org.geysermc.floodgate.api.FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId())) {
+                            org.geysermc.floodgate.api.player.FloodgatePlayer fp =
+                                    org.geysermc.floodgate.api.FloodgateApi.getInstance().getPlayer(player.getUniqueId());
+                            if (fp != null && fp.getUsername() != null && !fp.getUsername().isBlank()) {
+                                if (vault.playerInGroup((String) null, fp.getUsername(), groupName)) {
+                                    return true;
+                                }
+                            }
+                        }
+                    } catch (Throwable ignored) {
+                    }
+                }
+
+                return null;
+            } catch (Throwable ignored) {
+                return null;
+            }
+        }
+
+        private static boolean isCommonGroupName(String name) {
+            return name.equals("donutplus")
+                    || name.equals("donut+")
+                    || name.equals("donutplusplus")
+                    || name.equals("donut++")
+                    || name.equals("donutplusplusplus")
+                    || name.equals("donut+++")
+                    || name.equals("vip")
+                    || name.equals("vip+")
+                    || name.equals("vip++");
+        }
     }
 }
