@@ -66,6 +66,12 @@ class HomePermissionTest {
                     if (method.getName().equals("isOnline")) {
                         return true;
                     }
+                    if (method.getName().equals("isOp")) {
+                        return false;
+                    }
+                    if (method.getName().equals("getName")) {
+                        return "TestPlayer";
+                    }
                     return null;
                 }
         );
@@ -220,5 +226,71 @@ class HomePermissionTest {
         assertEquals(90, manager.getMaxHomes(createMockPlayer(Set.of("ultimatedonutsmp2.donutplusplusplus"))));
         assertEquals(90, manager.getMaxHomes(createMockPlayer(Set.of("donutplusplusplus"))));
         assertEquals(90, manager.getMaxHomes(createMockPlayer(Set.of("ultimatedonutsmp2.homes.donutplusplusplus"))));
+    }
+
+    @Test
+    void donutPlusSymbolAndGroupPermissionsGrantHomes() throws Exception {
+        HomeManager manager = createManager(baseConfig());
+
+        assertEquals(9, manager.getMaxHomes(createMockPlayer(Set.of("donut+"))));
+        assertEquals(9, manager.getMaxHomes(createMockPlayer(Set.of("ultimatedonutsmp2.donut+"))));
+        assertEquals(9, manager.getMaxHomes(createMockPlayer(Set.of("ultimatedonutsmp2.homes.donut+"))));
+        assertEquals(9, manager.getMaxHomes(createMockPlayer(Set.of("group.donutplus"))));
+        assertEquals(9, manager.getMaxHomes(createMockPlayer(Set.of("group.donut+"))));
+
+        assertEquals(27, manager.getMaxHomes(createMockPlayer(Set.of("donut++"))));
+        assertEquals(27, manager.getMaxHomes(createMockPlayer(Set.of("ultimatedonutsmp2.donut++"))));
+        assertEquals(27, manager.getMaxHomes(createMockPlayer(Set.of("ultimatedonutsmp2.homes.donut++"))));
+        assertEquals(27, manager.getMaxHomes(createMockPlayer(Set.of("group.donutplusplus"))));
+        assertEquals(27, manager.getMaxHomes(createMockPlayer(Set.of("group.donut++"))));
+
+        assertEquals(90, manager.getMaxHomes(createMockPlayer(Set.of("donut+++"))));
+        assertEquals(90, manager.getMaxHomes(createMockPlayer(Set.of("ultimatedonutsmp2.donut+++"))));
+        assertEquals(90, manager.getMaxHomes(createMockPlayer(Set.of("ultimatedonutsmp2.homes.donut+++"))));
+        assertEquals(90, manager.getMaxHomes(createMockPlayer(Set.of("group.donutplusplusplus"))));
+        assertEquals(90, manager.getMaxHomes(createMockPlayer(Set.of("group.donut+++"))));
+    }
+
+    @Test
+    void permissionsWithoutEffectiveAttachmentsGrantHomesWhenSafe() throws Exception {
+        HomeManager manager = createManager(baseConfig());
+
+        Player unattachedDonutPlus = (Player) Proxy.newProxyInstance(
+                Player.class.getClassLoader(),
+                new Class<?>[]{Player.class},
+                (proxy, method, args) -> {
+                    if (method.getName().equals("getUniqueId")) return UUID.randomUUID();
+                    if (method.getName().equals("isOnline")) return true;
+                    if (method.getName().equals("isOp")) return false;
+                    if (method.getName().equals("getName")) return ".bmAnhotshot";
+                    if (method.getName().equals("getEffectivePermissions")) return Set.of();
+                    if (method.getName().equals("hasPermission")) {
+                        String perm = (String) args[0];
+                        return perm.equalsIgnoreCase("ultimatedonutsmp2.donutplus")
+                                || perm.equalsIgnoreCase("donutplus");
+                    }
+                    return null;
+                }
+        );
+
+        assertEquals(9, manager.getMaxHomes(unattachedDonutPlus));
+
+        Player unattachedNumbered = (Player) Proxy.newProxyInstance(
+                Player.class.getClassLoader(),
+                new Class<?>[]{Player.class},
+                (proxy, method, args) -> {
+                    if (method.getName().equals("getUniqueId")) return UUID.randomUUID();
+                    if (method.getName().equals("isOnline")) return true;
+                    if (method.getName().equals("isOp")) return false;
+                    if (method.getName().equals("getName")) return ".bmAnhotshot";
+                    if (method.getName().equals("getEffectivePermissions")) return Set.of();
+                    if (method.getName().equals("hasPermission")) {
+                        return "ultimatedonutsmp2.homes.12".equalsIgnoreCase((String) args[0]);
+                    }
+                    return null;
+                }
+        );
+
+        assertEquals(12, manager.getMaxHomes(unattachedNumbered));
     }
 }
