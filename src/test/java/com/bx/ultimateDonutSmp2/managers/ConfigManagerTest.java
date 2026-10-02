@@ -757,6 +757,45 @@ class ConfigManagerTest {
         assertFalse(hasLegacyButtons(yaml(lines("OTHER-MENU:", "  SIZE: 27"))));
     }
 
+    @Test
+    void shopMergeAddsUnlistedWorthAndLeavesFixedPricesAlone() throws Exception {
+        List<String> currentLines = lines(
+                "QUICK-BUY:",
+                "  PRICING:",
+                "    WORTH-MULTIPLIER: 2.0",
+                "    FIXED-ITEMS:",
+                "      STICK: 9.0"
+        );
+        List<String> bundledLines = lines(
+                "QUICK-BUY:",
+                "  PRICING:",
+                "    WORTH-MULTIPLIER: 1.0",
+                "    # WORTH keeps the old fallback.",
+                "    UNLISTED: WORTH",
+                "    FIXED-ITEMS:",
+                "      STICK: 1.0",
+                "      DIAMOND: 50.0"
+        );
+
+        int changes = mergeBundledDefaults("shop.yml", currentLines, bundledLines);
+
+        assertEquals(1, changes);
+        assertTrue(currentLines.contains("    UNLISTED: WORTH"));
+        assertTrue(currentLines.contains("      STICK: 9.0"));
+        assertTrue(currentLines.contains("    WORTH-MULTIPLIER: 2.0"));
+        assertFalse(currentLines.stream().anyMatch(line -> line.contains("DIAMOND")));
+        assertFalse(ConfigManager.isUserManagedBundledPath("shop.yml", "QUICK-BUY.PRICING.UNLISTED"));
+        assertTrue(ConfigManager.isUserManagedBundledPath("shop.yml", "QUICK-BUY.PRICING.FIXED-ITEMS.STICK"));
+    }
+
+    @Test
+    void bundledShopShipsUnlistedWorthWithFixedItemsCommentedOut() throws Exception {
+        String shop = Files.readString(Path.of("src/main/resources/shop.yml"), StandardCharsets.UTF_8);
+        assertTrue(shop.contains("UNLISTED: WORTH"));
+        assertTrue(shop.contains("# FIXED-ITEMS:"));
+        assertFalse(shop.contains("\n    FIXED-ITEMS:"));
+    }
+
     private static boolean hasLegacyButtons(YamlConfiguration configuration) throws Exception {
         Method method = ConfigManager.class.getDeclaredMethod("hasLegacyButtons", YamlConfiguration.class);
         method.setAccessible(true);

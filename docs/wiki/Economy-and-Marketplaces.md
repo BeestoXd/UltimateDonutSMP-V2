@@ -101,18 +101,32 @@ into a single form. Floodgate players get a paged list with a search box instead
 under `QUICK-BUY.BEDROCK` in `shop.yml`. If Floodgate is not installed the same slot opens the chest
 catalogue (45 items a page) and does not continue into the enchant dialog.
 
-Prices are not written in `shop.yml`. `QUICK-BUY.PRICING` decides where each one comes from, in this
-order:
+Most quick buy prices are still not typed into `shop.yml`. `QUICK-BUY.PRICING` decides where each
+one comes from.
+
+A material under `QUICK-BUY.PRICING.FIXED-ITEMS` sells at that price per item, even when the auction
+house has none. Enchantment worth from `worth.yml` is added on top, so a plain stick stays at the
+price you wrote and a sharpness sword costs more than the plain sword. With `USE-AUCTION-HOUSE` on,
+a matching listing cheaper than that total sets the unit price instead. A more expensive listing is
+ignored. Quick Buy still does not purchase the listing. The seller keeps it.
+
+Everything left off that list follows this order, unless `QUICK-BUY.PRICING.UNLISTED` is
+`AUCTION-ONLY`. The default is `WORTH`.
 
 1. With `USE-AUCTION-HOUSE: true`, the lowest active Auction House listing that matches the pinned
-   item sets the price of one item. Quick Buy does not purchase that listing. The seller keeps it.
-2. If no listing matches, the `worth.yml` price is used, multiplied by `WORTH-MULTIPLIER`.
+   item and is priced at or above `worth.yml` sets the price of one item. Quick Buy does not
+   purchase that listing. The seller keeps it.
+2. If no listing matches, the `worth.yml` price is used, multiplied by `WORTH-MULTIPLIER`, and never
+   sold below worth.
 3. If the item has no `worth.yml` entry either and `AUTO-BALANCE-MISSING` is on, a price is derived
    automatically and multiplied by `AUTO-BALANCE-MULTIPLIER`.
 
+`AUCTION-ONLY` skips steps 2 and 3. An item missing from `FIXED-ITEMS` stays out of stock until a
+matching listing exists, and a listing below worth is still ignored.
+
 Each of those is a price for one item. The slot multiplies it by the amount the player pinned, and
 that total is what the lore shows and what the click withdraws. A pin of 64 costs 64 times a pin of
-1 of the same item. If a slot has no price from any of the three, it shows as out of stock instead
+1 of the same item. If a slot has no price from any of those, it shows as out of stock instead
 of selling at zero.
 
 `SHOP-GUI` holds the shared item lore (`SHOP-GUI.ITEM.LORE`, with `{shop_price}` and `{auction_line}`

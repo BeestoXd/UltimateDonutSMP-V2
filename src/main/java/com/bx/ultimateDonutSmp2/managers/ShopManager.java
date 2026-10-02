@@ -509,26 +509,36 @@ public class ShopManager {
         int qty = Math.max(1, amount);
         ItemStack sampleItem = createSampleItem(material, requiredEnchants);
         double serverWorth = sampleItem != null ? getWorth(sampleItem) : getWorth(material);
-
         boolean useAh = plugin.getConfigManager().getShop().getBoolean("QUICK-BUY.PRICING.USE-AUCTION-HOUSE", true);
-        if (useAh && plugin.getAuctionHouseManager() != null && plugin.getAuctionHouseManager().isEnabled()) {
-            List<AuctionListing> listings = plugin.getAuctionHouseManager().getActiveListings(AuctionHouseManager.AuctionSort.PRICE_LOWEST);
-            long now = System.currentTimeMillis();
-            AuctionListing best = listings.stream()
-                    .filter(Objects::nonNull)
-                    .filter(AuctionListing::active)
-                    .filter(l -> l.expiresAt() > now)
-                    .filter(l -> buyer == null || !buyer.getUniqueId().equals(l.sellerUuid()))
-                    .filter(l -> l.item() != null && l.item().getType() == material && l.item().getAmount() > 0)
-                    .filter(l -> matchesRequiredEnchants(l.item(), requiredEnchants))
-                    .filter(l -> serverWorth <= 0 || (l.price() / Math.max(1, l.item().getAmount())) >= serverWorth)
-                    .min(Comparator.comparingDouble(l -> l.price() / Math.max(1, l.item().getAmount())))
-                    .orElse(null);
 
-            if (best != null) {
-                double unitPrice = best.price() / Math.max(1, best.item().getAmount());
-                return new QuickBuyQuote(unitPrice, unitPrice * qty, best, true, false);
+        double fixedUnit = fixedItemUnitPrice(material);
+        if (fixedUnit > 0) {
+            double extraEnchants = 0;
+            if (sampleItem != null && plugin.getWorthManager() != null) {
+                extraEnchants = plugin.getWorthManager().getExtraEnchantmentWorth(sampleItem);
+                if (!Double.isFinite(extraEnchants) || extraEnchants < 0) {
+                    extraEnchants = 0;
+                }
             }
+            double ceiling = fixedUnit + extraEnchants;
+            if (useAh) {
+                AuctionListing cheaper = cheapestQuickBuyListing(buyer, material, requiredEnchants, true, ceiling);
+                if (cheaper != null) {
+                    return quoteFromListing(cheaper, qty);
+                }
+            }
+            return new QuickBuyQuote(ceiling, ceiling * qty, null, false, false);
+        }
+
+        if (useAh) {
+            AuctionListing best = cheapestQuickBuyListing(buyer, material, requiredEnchants, false, serverWorth);
+            if (best != null) {
+                return quoteFromListing(best, qty);
+            }
+        }
+
+        if (unlistedQuickBuyIsAuctionOnly()) {
+            return new QuickBuyQuote(0, 0, null, false, true);
         }
 
         double shopPrice = findServerShopPrice(sampleItem != null ? sampleItem : new ItemStack(material));
@@ -540,6 +550,129 @@ public class ShopManager {
         }
 
         return new QuickBuyQuote(0, 0, null, false, true);
+    }
+
+    /**
+     * Unit price from {@code QUICK-BUY.PRICING.FIXED-ITEMS}, or {@code -1} when this material
+     * has no positive finite price there. Keys may be {@code STICK} or {@code minecraft:stick}.
+     */
+    double fixedItemUnitPrice(Material material) {
+        if (material == null || material.isAir() || plugin.getConfigManager() == null) {
+            return -1;
+        }
+        ConfigurationSection shop = plugin.getConfigManager().getShop();
+        if (shop == null) {
+            return -1;
+        }
+        ConfigurationSection fixed = shop.getConfigurationSection("QUICK-BUY.PRICING.FIXED-ITEMS");
+        if (fixed == null) {
+            return -1;
+        }
+        for (String key : fixed.getKeys(false)) {
+            if (fixedItemMaterial(key) != material) {
+                continue;
+            }
+            double price = positivePrice(fixed.get(key));
+            if (price > 0) {
+                return price;
+            }
+        }
+        return -1;
+    }
+
+    static Material fixedItemMaterial(String key) {
+        if (key == null) {
+            return null;
+        }
+        String trimmed = key.trim();
+        if (trimmed.isEmpty()) {
+            return null;
+        }
+        int colon = trimmed.lastIndexOf(':');
+        String simple = (colon >= 0 ? trimmed.substring(colon + 1) : trimmed)
+                .trim()
+                .toUpperCase(Locale.ROOT)
+                .replace('-', '_')
+                .replace(' ', '_');
+        if (!simple.isEmpty()) {
+            try {
+                Material parsed = Material.valueOf(simple);
+                if (!parsed.isAir()) {
+                    return parsed;
+                }
+            } catch (IllegalArgumentException ignored) {
+                // Namespaced or legacy keys fall through to Bukkit's matcher.
+            }
+        }
+        try {
+            Material matched = Material.matchMaterial(trimmed);
+            return matched == null || matched.isAir() ? null : matched;
+        } catch (RuntimeException ignored) {
+            return null;
+        }
+    }
+
+    private static double positivePrice(Object raw) {
+        double price;
+        if (raw instanceof Number number) {
+            price = number.doubleValue();
+        } else if (raw instanceof String text) {
+            try {
+                price = Double.parseDouble(text.trim());
+            } catch (NumberFormatException ignored) {
+                return -1;
+            }
+        } else {
+            return -1;
+        }
+        return Double.isFinite(price) && price > 0 ? price : -1;
+    }
+
+    private boolean unlistedQuickBuyIsAuctionOnly() {
+        if (plugin.getConfigManager() == null || plugin.getConfigManager().getShop() == null) {
+            return false;
+        }
+        String mode = plugin.getConfigManager().getShop().getString("QUICK-BUY.PRICING.UNLISTED", "WORTH");
+        return mode != null && mode.trim().equalsIgnoreCase("AUCTION-ONLY");
+    }
+
+    private QuickBuyQuote quoteFromListing(AuctionListing listing, int qty) {
+        double unitPrice = listing.price() / Math.max(1, listing.item().getAmount());
+        return new QuickBuyQuote(unitPrice, unitPrice * qty, listing, true, false);
+    }
+
+    /**
+     * @param ceiling when true, keep listings whose unit price is strictly below {@code bound};
+     *                when false, keep listings at or above {@code bound} (a non-positive bound allows any price)
+     */
+    private AuctionListing cheapestQuickBuyListing(
+            Player buyer,
+            Material material,
+            Map<org.bukkit.enchantments.Enchantment, Integer> requiredEnchants,
+            boolean ceiling,
+            double bound
+    ) {
+        if (plugin.getAuctionHouseManager() == null || !plugin.getAuctionHouseManager().isEnabled()) {
+            return null;
+        }
+        List<AuctionListing> listings = plugin.getAuctionHouseManager().getActiveListings(AuctionHouseManager.AuctionSort.PRICE_LOWEST);
+        long now = System.currentTimeMillis();
+        return listings.stream()
+                .filter(Objects::nonNull)
+                .filter(AuctionListing::active)
+                .filter(l -> l.expiresAt() > now)
+                .filter(l -> buyer == null || !buyer.getUniqueId().equals(l.sellerUuid()))
+                .filter(l -> l.item() != null && l.item().getType() == material && l.item().getAmount() > 0)
+                .filter(l -> matchesRequiredEnchants(l.item(), requiredEnchants))
+                .filter(l -> {
+                    double unit = l.price() / Math.max(1, l.item().getAmount());
+                    if (!Double.isFinite(unit) || unit < 0) {
+                        return false;
+                    }
+                    return ceiling ? unit < bound : (bound <= 0 || unit >= bound);
+                })
+                .min(Comparator.comparingDouble(l -> l.price() / Math.max(1, l.item().getAmount())))
+                .orElse(null);
     }
 
     static boolean matchesRequiredEnchants(ItemStack item, Map<org.bukkit.enchantments.Enchantment, Integer> requiredEnchants) {

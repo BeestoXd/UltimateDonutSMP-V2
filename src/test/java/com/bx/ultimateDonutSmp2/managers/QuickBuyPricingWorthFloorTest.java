@@ -33,6 +33,7 @@ class QuickBuyPricingWorthFloorTest {
     private WorthManager worthManager;
     private ShopManager shopManager;
     private Enchantment sharpness;
+    private YamlConfiguration shopConfig;
 
     @BeforeEach
     void setup() throws Exception {
@@ -43,7 +44,7 @@ class QuickBuyPricingWorthFloorTest {
         worthConfig.set("TYPE.MINERALS.DIAMOND", 100.0);
         worthConfig.set("TYPE.BOOK.ENCHANTED_BOOK:SHARPNESS:5", 1500.0);
 
-        YamlConfiguration shopConfig = new YamlConfiguration();
+        shopConfig = new YamlConfiguration();
         shopConfig.set("QUICK-BUY.PRICING.USE-AUCTION-HOUSE", true);
         shopConfig.set("QUICK-BUY.PRICING.WORTH-MULTIPLIER", 0.5); // intentionally below 1.0
         shopConfig.set("QUICK-BUY.PRICING.AUTO-BALANCE-MISSING", false);
@@ -268,6 +269,154 @@ class QuickBuyPricingWorthFloorTest {
         Field ahmField = UltimateDonutSmp2.class.getDeclaredField("auctionHouseManager");
         ahmField.setAccessible(true);
         ahmField.set(plugin, ahm);
+    }
+
+    @Test
+    void fixedItemSellsAtTheConfiguredPriceWithNoAuctionListing() {
+        shopConfig.set("QUICK-BUY.PRICING.FIXED-ITEMS.STICK", 5.0);
+
+        ShopManager.QuickBuyQuote quote = shopManager.resolveQuickBuyQuote(null, Material.STICK, 1);
+
+        assertTrue(quote.available());
+        assertFalse(quote.fromAuction());
+        assertEquals(5.0, quote.unitPrice(), 0.001);
+        assertEquals(5.0, ShopManager.pricePaidFor(quote), 0.001);
+    }
+
+    @Test
+    void fixedPriceIsNotRaisedToServerWorth() {
+        shopConfig.set("QUICK-BUY.PRICING.FIXED-ITEMS.DIAMOND", 40.0);
+
+        ShopManager.QuickBuyQuote quote = shopManager.resolveQuickBuyQuote(null, Material.DIAMOND, 1);
+
+        assertTrue(quote.available());
+        assertFalse(quote.fromAuction());
+        assertEquals(40.0, quote.unitPrice(), 0.001);
+    }
+
+    @Test
+    void cheaperAuctionListingBeatsTheFixedPrice() throws Exception {
+        shopConfig.set("QUICK-BUY.PRICING.FIXED-ITEMS.DIAMOND", 40.0);
+        installListings(List.of(listing(Material.DIAMOND, 1, 10.0)));
+
+        ShopManager.QuickBuyQuote quote = shopManager.resolveQuickBuyQuote(null, Material.DIAMOND, 1);
+
+        assertTrue(quote.fromAuction());
+        assertEquals(10.0, quote.unitPrice(), 0.001);
+    }
+
+    @Test
+    void moreExpensiveAuctionListingKeepsTheFixedPrice() throws Exception {
+        shopConfig.set("QUICK-BUY.PRICING.FIXED-ITEMS.DIAMOND", 40.0);
+        installListings(List.of(listing(Material.DIAMOND, 1, 200.0)));
+
+        ShopManager.QuickBuyQuote quote = shopManager.resolveQuickBuyQuote(null, Material.DIAMOND, 1);
+
+        assertFalse(quote.fromAuction());
+        assertEquals(40.0, quote.unitPrice(), 0.001);
+    }
+
+    @Test
+    void fixedPriceScalesWithThePinnedAmount() {
+        shopConfig.set("QUICK-BUY.PRICING.FIXED-ITEMS.STICK", 5.0);
+
+        ShopManager.QuickBuyQuote stack = shopManager.resolveQuickBuyQuote(null, Material.STICK, 64);
+
+        assertEquals(320.0, ShopManager.pricePaidFor(stack), 0.001);
+    }
+
+    @Test
+    void fixedPriceAddsEnchantmentWorth() {
+        shopConfig.set("QUICK-BUY.PRICING.FIXED-ITEMS.DIAMOND_SWORD", 100.0);
+        ItemStack sword = new ItemStack(Material.DIAMOND_SWORD, 1);
+        sword.addUnsafeEnchantment(sharpness, 5);
+
+        ShopManager.QuickBuyQuote quote = shopManager.resolveQuickBuyQuote(null, sword, 1);
+
+        assertFalse(quote.fromAuction());
+        assertEquals(1600.0, quote.unitPrice(), 0.001);
+    }
+
+    @Test
+    void namespacedFixedItemKeyMatchesTheMaterial() {
+        shopConfig.set("QUICK-BUY.PRICING.FIXED-ITEMS.minecraft:stick", 3.5);
+
+        ShopManager.QuickBuyQuote quote = shopManager.resolveQuickBuyQuote(null, Material.STICK, 1);
+
+        assertEquals(3.5, quote.unitPrice(), 0.001);
+    }
+
+    @Test
+    void nonPositiveFixedPriceIsIgnored() {
+        shopConfig.set("QUICK-BUY.PRICING.FIXED-ITEMS.DIAMOND", 0);
+
+        ShopManager.QuickBuyQuote quote = shopManager.resolveQuickBuyQuote(null, Material.DIAMOND, 1);
+
+        assertEquals(100.0, quote.unitPrice(), 0.001);
+        assertFalse(quote.fromAuction());
+    }
+
+    @Test
+    void auctionOnlyUnlistedItemIsOutOfStockWithoutAListing() {
+        shopConfig.set("QUICK-BUY.PRICING.UNLISTED", "AUCTION-ONLY");
+
+        ShopManager.QuickBuyQuote quote = shopManager.resolveQuickBuyQuote(null, Material.DIAMOND, 1);
+
+        assertTrue(quote.outOfStock());
+        assertEquals(0.0, ShopManager.pricePaidFor(quote), 0.001);
+    }
+
+    @Test
+    void auctionOnlyUnlistedItemStillBuysAListingAtOrAboveWorth() throws Exception {
+        shopConfig.set("QUICK-BUY.PRICING.UNLISTED", "AUCTION-ONLY");
+        installListings(List.of(listing(Material.DIAMOND, 1, 150.0)));
+
+        ShopManager.QuickBuyQuote quote = shopManager.resolveQuickBuyQuote(null, Material.DIAMOND, 1);
+
+        assertTrue(quote.fromAuction());
+        assertEquals(150.0, quote.unitPrice(), 0.001);
+    }
+
+    @Test
+    void auctionOnlyStillIgnoresAListingBelowWorth() throws Exception {
+        shopConfig.set("QUICK-BUY.PRICING.UNLISTED", "auction-only");
+        installListings(List.of(listing(Material.DIAMOND, 1, 20.0)));
+
+        ShopManager.QuickBuyQuote quote = shopManager.resolveQuickBuyQuote(null, Material.DIAMOND, 1);
+
+        assertTrue(quote.outOfStock());
+        assertFalse(quote.fromAuction());
+    }
+
+    @Test
+    void fixedItemStillSellsWhenUnlistedItemsAreAuctionOnly() {
+        shopConfig.set("QUICK-BUY.PRICING.UNLISTED", "AUCTION-ONLY");
+        shopConfig.set("QUICK-BUY.PRICING.FIXED-ITEMS.STICK", 2.0);
+
+        ShopManager.QuickBuyQuote quote = shopManager.resolveQuickBuyQuote(null, Material.STICK, 1);
+
+        assertTrue(quote.available());
+        assertEquals(2.0, quote.unitPrice(), 0.001);
+    }
+
+    private AuctionListing listing(Material material, int amount, double price) {
+        long now = System.currentTimeMillis();
+        return new AuctionListing(
+                11,
+                UUID.randomUUID(),
+                "Seller",
+                null,
+                AuctionListing.Status.ACTIVE,
+                price,
+                0.0,
+                new ItemStack(material, amount),
+                now,
+                now + 100_000L,
+                0L,
+                0L,
+                0L,
+                "ALL"
+        );
     }
 
     @Test
