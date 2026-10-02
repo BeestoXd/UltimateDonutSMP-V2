@@ -838,6 +838,13 @@ public class ConfigManager {
             return true;
         }
 
+        // UNLISTED is one new pricing mode. Shop files that predate it still need the WORTH
+        // default inserted once. Prices under FIXED-ITEMS stay with the rest of shop.yml, so an
+        // admin's own list is never replaced and the commented examples are not written back as live prices.
+        if ("shop.yml".equals(resourceName) && "QUICK-BUY.PRICING.UNLISTED".equals(path)) {
+            return false;
+        }
+
         // Shop categories and shop menus are customized by server admins.
         return "shop.yml".equals(resourceName)
                 && !path.equals("SHOP-GUI") && !path.startsWith("SHOP-GUI.")

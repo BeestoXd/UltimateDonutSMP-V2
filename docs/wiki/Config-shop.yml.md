@@ -320,6 +320,8 @@ Dynamic pricing settings for Quick Buy and market price estimation
 | `QUICK-BUY.PRICING.WORTH-MULTIPLIER` | `decimal` | Any decimal number | `1.0` | Multiplier applied when using baseline price from worth.yml (default: 1.0) |
 | `QUICK-BUY.PRICING.AUTO-BALANCE-MISSING` | `boolean` | `true`, `false` | `true` | Automatically calculate a fair balanced price for items missing from worth.yml |
 | `QUICK-BUY.PRICING.AUTO-BALANCE-MULTIPLIER` | `decimal` | Any decimal number | `1.0` | Multiplier applied to automatically balanced prices (default: 1.0) |
+| `QUICK-BUY.PRICING.UNLISTED` | `string` | `WORTH`, `AUCTION-ONLY` | `WORTH` | WORTH (default) still prices items that are not listed under FIXED-ITEMS from worth.yml. AUCTION-ONLY leaves those items out of stock until a matching auction listing exists. |
+| `QUICK-BUY.PRICING.FIXED-ITEMS` | `map` | Bukkit material to a price per item | _commented out_ | A material under FIXED-ITEMS sells at that price per item even when the auction house is empty. A cheaper auction listing still wins. A more expensive listing is ignored. Enchantment worth from worth.yml is added on top. |
 
 ### `QUICK-BUY.CHOOSE-ITEM`
 
@@ -463,6 +465,16 @@ QUICK-BUY:
     AUTO-BALANCE-MISSING: true
     # Multiplier applied to automatically balanced prices (default: 1.0)
     AUTO-BALANCE-MULTIPLIER: 1.0
+    # WORTH (default) still prices items that are not listed under FIXED-ITEMS from worth.yml.
+    # AUCTION-ONLY leaves those items out of stock until a matching auction listing exists.
+    # A material under FIXED-ITEMS sells at that price per item even when the auction house is empty.
+    # A cheaper auction listing still wins. A more expensive listing is ignored.
+    # Enchantment worth from worth.yml is added on top, so a sharpness sword costs more than the plain sword.
+    # Names are Bukkit materials. Quote a namespaced id, for example "minecraft:stick".
+    UNLISTED: WORTH
+    # FIXED-ITEMS:
+    #   STICK: 1.0
+    #   DIAMOND: 50.0
 
   # Main GUI title and inventory size
   TITLE: '&8Quick Buy'
