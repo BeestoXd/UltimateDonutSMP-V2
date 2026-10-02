@@ -382,10 +382,16 @@ public final class UltimateDonutSmp2 extends JavaPlugin {
         movementChunkWarmup = new MovementChunkWarmup(this);
 
         getLogger().info("UltimateDonutSmp2 enabled successfully.");
+        if (tpaManager != null) {
+            tpaManager.startTpautoReminder();
+        }
     }
 
     @Override
     public void onDisable() {
+        if (tpaManager != null) {
+            tpaManager.stopTpautoReminder();
+        }
         com.bx.ultimateDonutSmp2.managers.SellStatsExporter.stopEmbeddedHttpServer();
         boolean suppressWipeSaves = serverWipeManager != null
                 && serverWipeManager.shouldSuppressShutdownSaves();

@@ -167,7 +167,7 @@ Buying from the browse menu is checked against `ultimatedonutsmp2.auctionhouse.b
 | `/tpaccept` | — | `/tpaccept [player]` | `ultimatedonutsmp2.command.tpaccept` | Accept a pending teleport request. |
 | `/tpadeny` | — | `/tpadeny [player]` | `ultimatedonutsmp2.command.tpadeny` | Deny a pending teleport request. |
 | `/tpacancel` | — | `/tpacancel` | `ultimatedonutsmp2.command.tpacancel` | Cancel your outgoing teleport requests. |
-| `/tpauto` | — | `/tpauto` | `ultimatedonutsmp2.command.tpauto` | Toggle automatic acceptance of `/tpa` requests. |
+| `/tpauto` | — | `/tpauto` | `ultimatedonutsmp2.command.tpauto` | Toggle automatic acceptance of `/tpa` requests. While it is on, the action bar says you have tpauto on. Dying turns it off. |
 | `/tpahereauto` | — | `/tpahereauto` | `ultimatedonutsmp2.command.tpahereauto` | Toggle automatic acceptance of `/tpahere` requests. |
 
 `/tpa`, `/tpahere`, `/tpaccept`, `/tpadeny` and `/tpacancel` are all served by a single executor that dispatches on the command label.

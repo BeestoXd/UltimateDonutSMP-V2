@@ -7,6 +7,7 @@ import com.bx.ultimateDonutSmp2.utils.SoundUtils;
 import com.bx.ultimateDonutSmp2.utils.PlayerSettingUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -44,6 +45,8 @@ public class TPAManager {
     private final Map<UUID, Deque<QueuedTpaRequest>> manualTpaHereQueues = new ConcurrentHashMap<>();
     private final Set<UUID> autoTpaWorkers = ConcurrentHashMap.newKeySet();
     private final Set<UUID> autoTpaHereWorkers = ConcurrentHashMap.newKeySet();
+    private final Set<UUID> tpautoReminderVisible = ConcurrentHashMap.newKeySet();
+    private BukkitTask tpautoReminderTask;
 
     public TPAManager(UltimateDonutSmp2 plugin) {
         this.plugin = plugin;
@@ -729,6 +732,92 @@ public class TPAManager {
         if (queue.isEmpty()) {
             manualQueueMap(tpaHere).remove(targetUuid);
         }
+    }
+
+    public void startTpautoReminder() {
+        if (tpautoReminderTask != null) {
+            return;
+        }
+        tpautoReminderTask = plugin.getSpigotScheduler().runGlobalTimer(this::refreshTpautoReminders, 20L, 20L);
+    }
+
+    public void stopTpautoReminder() {
+        if (tpautoReminderTask != null) {
+            tpautoReminderTask.cancel();
+            tpautoReminderTask = null;
+        }
+        tpautoReminderVisible.clear();
+    }
+
+    /**
+     * Death turns auto-accept off. The chat line is the same one {@code /tpauto} sends when
+     * you toggle it off, so a death does not look like a different command.
+     */
+    public void disableTpautoOnDeath(Player player) {
+        if (player == null || plugin.getPlayerDataManager() == null) {
+            return;
+        }
+        PlayerData data = plugin.getPlayerDataManager().get(player);
+        if (!disableTpauto(data)) {
+            return;
+        }
+        tpautoReminderVisible.remove(player.getUniqueId());
+        PlayerSettingUtils.clearActionBar(player);
+        String message = plugin.getConfigManager().getMessage("TPAUTO.DISABLED");
+        if (message != null && !message.isBlank() && !message.startsWith("&cMissing message:")) {
+            player.sendMessage(ColorUtils.toComponent(message));
+        }
+    }
+
+    static boolean disableTpauto(PlayerData data) {
+        if (data == null || !data.isTpauto()) {
+            return false;
+        }
+        data.setTpauto(false);
+        return true;
+    }
+
+    static boolean showTpautoReminder(boolean enabled, boolean actionBarBusy) {
+        return enabled && !actionBarBusy;
+    }
+
+    private void refreshTpautoReminders() {
+        if (plugin.getFeatureManager() != null
+                && !plugin.getFeatureManager().isEnabled(FeatureManager.Feature.TPA_AUTO)) {
+            return;
+        }
+        plugin.getSpigotScheduler().forEachOnlinePlayer(this::refreshTpautoReminder);
+    }
+
+    private void refreshTpautoReminder(Player player) {
+        UUID playerId = player.getUniqueId();
+        PlayerData data = plugin.getPlayerDataManager() == null
+                ? null
+                : plugin.getPlayerDataManager().get(player);
+        boolean enabled = data != null && data.isTpauto();
+        if (!showTpautoReminder(enabled, actionBarBusy(player))) {
+            if (!enabled && tpautoReminderVisible.remove(playerId)) {
+                PlayerSettingUtils.clearActionBar(player);
+            }
+            return;
+        }
+        String text = plugin.getConfigManager().getMessage("TPAUTO.ACTION-BAR");
+        if (text == null || text.isBlank() || text.startsWith("&cMissing message:")) {
+            text = "&fYou have tpauto on.";
+        }
+        PlayerSettingUtils.sendActionBar(plugin, player, text);
+        tpautoReminderVisible.add(playerId);
+    }
+
+    private boolean actionBarBusy(Player player) {
+        UUID playerId = player.getUniqueId();
+        if (plugin.getCombatManager() != null && plugin.getCombatManager().isInCombat(playerId)) {
+            return true;
+        }
+        if (plugin.getTeleportManager() != null && plugin.getTeleportManager().hasPendingWarmup(playerId)) {
+            return true;
+        }
+        return plugin.getRtpQueueManager() != null && plugin.getRtpQueueManager().isInQueue(playerId);
     }
 
     private boolean isExpired(QueuedTpaRequest request) {
