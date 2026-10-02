@@ -139,13 +139,14 @@ public class AmethystToolsListener implements Listener {
         Block origin = event.getBlock();
         ConfigurationSection cfg = manager.getToolSection(AmethystToolType.DRILL);
         int radius = cfg != null ? cfg.getInt("RADIUS", 1) : 1;
+        boolean digColumn = cfg != null && columnDown(cfg.getString("DOWN"));
 
         Set<Material> disabled = manager.getDisabledBlocks();
         if (disabled.contains(origin.getType())) {
             return;
         }
 
-        List<Block> toBreak = getAoeBlocks(origin, player, radius);
+        List<Block> toBreak = getDrillBlocks(origin, player, radius, digColumn);
         toBreak.remove(origin);
 
         int particlesSpawned = 0;
@@ -695,27 +696,55 @@ public class AmethystToolsListener implements Listener {
     }
 
     private List<Block> getAoeBlocks(Block origin, Player player, int radius) {
-        List<Block> blocks = new ArrayList<>();
-        BlockFace face = getPlayerFace(player);
+        return blocksAt(origin, aoeOffsets(getPlayerFace(player), radius, false));
+    }
+
+    private List<Block> getDrillBlocks(Block origin, Player player, int radius, boolean columnWhenDown) {
+        return blocksAt(origin, aoeOffsets(getPlayerFace(player), radius, columnWhenDown));
+    }
+
+    private static List<Block> blocksAt(Block origin, List<int[]> offsets) {
+        List<Block> blocks = new ArrayList<>(offsets.size());
         int ox = origin.getX();
         int oy = origin.getY();
         int oz = origin.getZ();
+        for (int[] offset : offsets) {
+            blocks.add(origin.getWorld().getBlockAt(ox + offset[0], oy + offset[1], oz + offset[2]));
+        }
+        return blocks;
+    }
+
+    /**
+     * Offsets from the broken block. {@code columnWhenDown} is the drill's {@code DOWN: COLUMN}
+     * mode: looking down breaks a vertical line of {@code radius * 2 + 1} blocks, including the
+     * block that was struck. Every other facing stays a square of the same width.
+     */
+    static List<int[]> aoeOffsets(BlockFace face, int radius, boolean columnWhenDown) {
+        List<int[]> offsets = new ArrayList<>();
+        if (columnWhenDown && face == BlockFace.DOWN) {
+            int depth = Math.max(0, radius) * 2;
+            for (int dy = 0; dy >= -depth; dy--) {
+                offsets.add(new int[]{0, dy, 0});
+            }
+            return offsets;
+        }
 
         for (int a = -radius; a <= radius; a++) {
             for (int b = -radius; b <= radius; b++) {
-                Block block;
                 if (face == BlockFace.UP || face == BlockFace.DOWN) {
-                    block = origin.getWorld().getBlockAt(ox + a, oy, oz + b);
+                    offsets.add(new int[]{a, 0, b});
                 } else if (face == BlockFace.NORTH || face == BlockFace.SOUTH) {
-                    block = origin.getWorld().getBlockAt(ox + a, oy + b, oz);
+                    offsets.add(new int[]{a, b, 0});
                 } else {
-                    block = origin.getWorld().getBlockAt(ox, oy + b, oz + a);
+                    offsets.add(new int[]{0, b, a});
                 }
-                blocks.add(block);
             }
         }
+        return offsets;
+    }
 
-        return blocks;
+    static boolean columnDown(String mode) {
+        return mode != null && mode.trim().equalsIgnoreCase("COLUMN");
     }
 
     private BlockFace getPlayerFace(Player player) {

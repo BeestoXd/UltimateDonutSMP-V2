@@ -51,6 +51,9 @@ AMETHYST-TOOLS:
     - fortune:3
     # The numerical value for Radius. Available options: Any valid integer
     RADIUS: 1
+    # FACE keeps the flat square when you look down. COLUMN breaks straight down instead:
+    # RADIUS 1 is 3 blocks, RADIUS 2 is 5. Sideways mining stays a square either way.
+    DOWN: FACE
     # Configuration section for Disabled Blocks.
     DISABLED-BLOCKS:
     - DIRT

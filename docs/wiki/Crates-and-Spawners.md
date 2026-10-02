@@ -103,7 +103,7 @@ Timed premium tools sold from the Shard Shop or given with `/amethysttool give <
 
 | Type | What it does |
 | :--- | :--- |
-| `DRILL` | Breaks a 3×3 face per strike |
+| `DRILL` | Breaks a 3×3 face per strike. `DOWN: COLUMN` under `DRILL` in amethyst-tools.yml makes a downward strike a vertical line of `RADIUS * 2 + 1` blocks instead |
 | `CHOPPER` | Fells a whole tree, up to `MAX-LOGS` |
 | `SELL_AXE` | Sells a chest's contents at worth prices |
 | `SHOVEL` | Area dig |
