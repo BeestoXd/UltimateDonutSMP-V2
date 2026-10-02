@@ -16,6 +16,7 @@ ORDERS:
     abgeholt werden.'
   BATCH_COLLECTED: "&a{claims} Ansprüche abgeholt ({items} gegenstände, {refund} rückzahlung).
     &c{failed} fehlgeschlagen."
+  BATCH_DROPPED: "&a{claims} Ansprüche abgelegt ({items} gegenstände). &c{failed} fehlgeschlagen."
   GUI:
     BACK:
       NAME: "&cZurück"
@@ -158,6 +159,7 @@ ORDERS:
       COLLECT_ALL: Alles abholen
       DROP_ITEMS: "Gegenstände ablegen"
       COLLECT_ORDER: Diese bestellung abholen
+      DROP_ORDER: Diese bestellung ablegen
       CANCEL_ORDER: Bestellung stornieren
       CONFIRM: "Bestätigen"
 COMMON:

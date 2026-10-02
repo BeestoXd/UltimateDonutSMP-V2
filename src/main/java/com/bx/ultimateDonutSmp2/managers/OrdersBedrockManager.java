@@ -300,6 +300,7 @@ public final class OrdersBedrockManager {
                 .content(orderButton(order))
                 .button(text("ORDERS.BEDROCK.BUTTON.BACK", "Back"))
                 .button(text("ORDERS.BEDROCK.BUTTON.COLLECT_ORDER", "Collect This Order"))
+                .button(text("ORDERS.BEDROCK.BUTTON.DROP_ORDER", "Drop This Order"))
                 .button(text("ORDERS.BEDROCK.BUTTON.CANCEL_ORDER", "Cancel Order"));
         form.validResultHandler(response -> schedule(player, () -> {
             if (response.clickedButtonId() == 0) {
@@ -308,6 +309,9 @@ public final class OrdersBedrockManager {
                 playCollectResult(player, plugin.getOrdersManager().claimBatch(player, order.id(), false), false);
                 openAfterCollect(player, order.id());
             } else if (response.clickedButtonId() == 2) {
+                playCollectResult(player, plugin.getOrdersManager().claimBatch(player, order.id(), true), true);
+                openAfterCollect(player, order.id());
+            } else if (response.clickedButtonId() == 3) {
                 openCancelConfirmation(player, order);
             }
         }));

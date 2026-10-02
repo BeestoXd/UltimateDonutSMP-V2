@@ -51,6 +51,7 @@ public class OrdersEditMenu extends BaseMenu {
         int itemSlot = OrdersMenuSupport.slot(plugin, "GUI.EDIT_ORDER.BUTTONS.ITEM.SLOT", 10);
         int cancelSlot = OrdersMenuSupport.slot(plugin, "GUI.EDIT_ORDER.BUTTONS.CANCEL.SLOT", 13);
         int collectSlot = OrdersMenuSupport.slot(plugin, "GUI.EDIT_ORDER.BUTTONS.COLLECT.SLOT", 15);
+        int dropSlot = OrdersMenuSupport.slot(plugin, "GUI.EDIT_ORDER.BUTTONS.DROP.SLOT", 16);
 
         set(itemSlot, OrdersMenuSupport.createOrderDisplay(plugin, manager, order, true));
         set(cancelSlot, OrdersMenuSupport.button(
@@ -60,6 +61,10 @@ public class OrdersEditMenu extends BaseMenu {
         set(collectSlot, OrdersMenuSupport.button(
                 plugin, "GUI.EDIT_ORDER.BUTTONS.COLLECT", "ORDERS.GUI.EDIT_ORDER.COLLECT",
                 Material.CHEST, "&fCollect", List.of("&7&oClick to collect items")
+        ));
+        set(dropSlot, OrdersMenuSupport.button(
+                plugin, "GUI.EDIT_ORDER.BUTTONS.DROP", "ORDERS.GUI.EDIT_ORDER.DROP",
+                Material.DROPPER, "&eDrop", List.of("&7&oDrop items at your feet")
         ));
     }
 
@@ -76,10 +81,16 @@ public class OrdersEditMenu extends BaseMenu {
 
         int cancelSlot = OrdersMenuSupport.slot(plugin, "GUI.EDIT_ORDER.BUTTONS.CANCEL.SLOT", 13);
         int collectSlot = OrdersMenuSupport.slot(plugin, "GUI.EDIT_ORDER.BUTTONS.COLLECT.SLOT", 15);
+        int dropSlot = OrdersMenuSupport.slot(plugin, "GUI.EDIT_ORDER.BUTTONS.DROP.SLOT", 16);
 
         if (slot == collectSlot) {
             OrdersMenuSupport.click(player, plugin);
-            collect(player);
+            claimItems(player, false);
+            return;
+        }
+        if (slot == dropSlot) {
+            OrdersMenuSupport.click(player, plugin);
+            claimItems(player, true);
             return;
         }
         if (slot == cancelSlot && order.active() && order.ownerUuid().equals(player.getUniqueId())) {
@@ -90,7 +101,7 @@ public class OrdersEditMenu extends BaseMenu {
         }
     }
 
-    private void collect(Player player) {
+    private void claimItems(Player player, boolean dropItems) {
         OrdersManager manager = plugin.getOrdersManager();
         String empty = plugin.getConfigManager().getMessageOrDefault(
                 "ORDERS.NO_ITEMS_TO_COLLECT",
@@ -114,21 +125,32 @@ public class OrdersEditMenu extends BaseMenu {
             return;
         }
         try {
-            OrderBatchClaimResult result = manager.claimBatch(player, itemClaimIds, false);
+            OrderBatchClaimResult result = manager.claimBatch(player, itemClaimIds, dropItems);
             if (result.itemClaims() <= 0) {
                 PlayerSettingUtils.sendActionBar(plugin, player, empty);
                 OrdersMenuSupport.play(player, plugin, "ORDERS.FAIL");
                 return;
             }
-            player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessageOrDefault(
-                    "ORDERS.BATCH_COLLECTED",
-                    "&aCollected {claims} claims ({items} items, {refund} refund). &c{failed} failed.",
-                    "{claims}", String.valueOf(result.itemClaims()),
-                    "{items}", String.valueOf(result.itemAmount()),
-                    "{refund}", plugin.getCurrencyManager().formatMoney(0D),
-                    "{failed}", String.valueOf(result.failedClaims())
-            )));
-            OrdersMenuSupport.play(player, plugin, "ORDERS.COLLECT");
+            if (dropItems) {
+                player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessageOrDefault(
+                        "ORDERS.BATCH_DROPPED",
+                        "&aDropped {claims} claims ({items} items). &c{failed} failed.",
+                        "{claims}", String.valueOf(result.itemClaims()),
+                        "{items}", String.valueOf(result.itemAmount()),
+                        "{failed}", String.valueOf(result.failedClaims())
+                )));
+                OrdersMenuSupport.play(player, plugin, "ORDERS.DROP");
+            } else {
+                player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessageOrDefault(
+                        "ORDERS.BATCH_COLLECTED",
+                        "&aCollected {claims} claims ({items} items, {refund} refund). &c{failed} failed.",
+                        "{claims}", String.valueOf(result.itemClaims()),
+                        "{items}", String.valueOf(result.itemAmount()),
+                        "{refund}", plugin.getCurrencyManager().formatMoney(0D),
+                        "{failed}", String.valueOf(result.failedClaims())
+                )));
+                OrdersMenuSupport.play(player, plugin, "ORDERS.COLLECT");
+            }
             openAfterCollect(player);
         } finally {
             manager.endAction(player.getUniqueId());

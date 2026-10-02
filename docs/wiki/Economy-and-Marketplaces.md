@@ -244,7 +244,9 @@ It is configured in [orders.yml](Config-orders.yml).
 | `/orders collect` | Collect items delivered to your orders |
 | `/orders reload` | Reload order settings (`ultimatedonutsmp2.admin.orders`) |
 
-`/orders collect` opens a chest. Drop page throws the item claims on the page you are looking at onto the ground at your feet. Drop all does that for every pending claim in the menu, including claims on later pages. Money refunds in that batch still go to your balance. On Bedrock, Drop Item Claims already drops the whole queue.
+`/orders collect` opens a chest. Drop page puts the item claims on the page you are looking at on the block you are standing on. Drop all does that for every pending claim in the menu, including claims on later pages. The items stay on that block; they are not thrown out in the direction you are looking. Money refunds in that batch still go to your balance. On Bedrock, Drop Item Claims drops the whole queue the same way.
+
+Your Orders, then Edit Order, has a Drop button beside Collect. It drops every item still waiting on that one order onto the same block. Collect still puts them in your inventory. On Bedrock the order form has Drop This Order next to Collect This Order.
 
 `SETTINGS` covers `ORDER_DURATION_HOURS`, `MAX_ACTIVE_ORDERS_DEFAULT`,
 `MAX_ACTIVE_ORDERS_BY_PERMISSION` and `MAX_QUANTITY_PER_ORDER`. `PRICING` bounds what a buyer may

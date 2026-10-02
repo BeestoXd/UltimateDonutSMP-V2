@@ -15,6 +15,7 @@ ORDERS:
   CANCELLED: '&eOrder #{order_id} was cancelled. Remaining money has been refunded.'
   BATCH_COLLECTED: '&aCollected {claims} claims ({items} items, {refund} refund).
     &c{failed} failed.'
+  BATCH_DROPPED: '&aDropped {claims} claims ({items} items). &c{failed} failed.'
   CREATED: '&7You ordered &a{quantity} {item}'
   NO_ITEMS_TO_COLLECT: '&cYou have no items to collect'
   GUI:
@@ -86,6 +87,10 @@ ORDERS:
         NAME: '&fCollect'
         LORE:
         - '&7&oClick to collect items'
+      DROP:
+        NAME: '&eDrop'
+        LORE:
+        - '&7&oDrop items at your feet'
     DEPOSIT:
       TITLE: Orders -> Deliver Items
     CONFIRM:
@@ -240,6 +245,7 @@ ORDERS:
       COLLECT_ALL: Collect all
       DROP_ITEMS: Drop item claims
       COLLECT_ORDER: Collect this order
+      DROP_ORDER: Drop this order
       CANCEL_ORDER: Cancel order
       CONFIRM: Confirm
 COMMON:

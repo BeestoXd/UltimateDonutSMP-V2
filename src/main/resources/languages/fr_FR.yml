@@ -12,6 +12,7 @@ ORDERS:
   CANCELLED: "&eCommande #{order_id} annulée. le séquestre restant peut être récupéré."
   BATCH_COLLECTED: "&a{claims} Réclamations récupérées ({items} objets, remboursement
     {refund}). &c{failed} échecs."
+  BATCH_DROPPED: "&a{claims} Réclamations déposées ({items} objets). &c{failed} échecs."
   GUI:
     MAIN:
       TITLE: "Orders (Page {page})"
@@ -75,6 +76,7 @@ ORDERS:
       COLLECT_ALL: "Tout récupérer"
       DROP_ITEMS: "Déposer les objets"
       COLLECT_ORDER: "Récupérer cette commande"
+      DROP_ORDER: "Déposer cette commande"
       CANCEL_ORDER: Annuler la commande
       CONFIRM: Confirmer
 COMMON:

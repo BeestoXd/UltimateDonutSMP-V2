@@ -163,6 +163,9 @@ GUI:
       COLLECT:
         SLOT: 15
         MATERIAL: CHEST
+      DROP:
+        SLOT: 16
+        MATERIAL: DROPPER
   CANCEL_ORDER:
     TITLE: 'Orders -> Cancel Order'
     SIZE: 27

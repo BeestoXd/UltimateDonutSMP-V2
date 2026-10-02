@@ -15,6 +15,7 @@ ORDERS:
   CANCELLED: '&eOrder #{order_id} dibatalkan. sisa escrow siap dikoleksi.'
   BATCH_COLLECTED: '&aMengoleksi {claims} klaim ({items} item, refund {refund}). &c{failed}
     gagal.'
+  BATCH_DROPPED: '&aMenjatuhkan {claims} klaim ({items} item). &c{failed} gagal.'
   GUI:
     BACK:
       NAME: "&cKembali"
@@ -155,6 +156,7 @@ ORDERS:
       COLLECT_ALL: Koleksi semua
       DROP_ITEMS: Jatuhkan item
       COLLECT_ORDER: Koleksi order ini
+      DROP_ORDER: Jatuhkan order ini
       CANCEL_ORDER: Batalkan order
       CONFIRM: Konfirmasi
 COMMON:
