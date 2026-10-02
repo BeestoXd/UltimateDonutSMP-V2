@@ -33,11 +33,13 @@ import com.bx.ultimateDonutSmp2.utils.ColorUtils;
 import com.bx.ultimateDonutSmp2.utils.ItemSerializationUtils;
 import com.bx.ultimateDonutSmp2.utils.NumberUtils;
 import com.bx.ultimateDonutSmp2.utils.SoundUtils;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -47,6 +49,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionType;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.util.Vector;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
@@ -2729,7 +2732,7 @@ public class OrdersManager {
             return false;
         }
         try {
-            player.getWorld().dropItemNaturally(player.getLocation(), claim.item().clone());
+            dropClaimItemAtPlayer(player, claim.item());
             incrementCollectedQuantity(claim.orderId(), claim.item().getAmount());
             publishOrderEvent("CLAIM", claim.orderId());
             return true;
@@ -2738,6 +2741,27 @@ public class OrdersManager {
             plugin.getLogger().log(Level.WARNING, "Failed to drop order claim " + claim.id(), exception);
             return false;
         }
+    }
+
+    static void dropClaimItemAtPlayer(Player player, ItemStack item) {
+        if (player == null || item == null || item.getType().isAir()) {
+            return;
+        }
+        Location dropSpot = claimDropLocation(player.getLocation());
+        if (dropSpot.getWorld() == null) {
+            throw new IllegalStateException("Player has no world");
+        }
+        Item dropped = dropSpot.getWorld().dropItem(dropSpot, item.clone());
+        dropped.setVelocity(new Vector(0, 0, 0));
+    }
+
+    static Location claimDropLocation(Location feet) {
+        return new Location(
+                feet.getWorld(),
+                feet.getBlockX() + 0.5D,
+                feet.getBlockY() + 0.5D,
+                feet.getBlockZ() + 0.5D
+        );
     }
 
     public synchronized int expireOrders() {

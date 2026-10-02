@@ -12,6 +12,7 @@ ORDERS:
   CANCELLED: "&eЗаказ #{order_id} отменён. остаток депозита доступен для получения."
   BATCH_COLLECTED: "&aПолучено заявок: {claims} ({items} предметов, возврат {refund}).
     &cошибок: {failed}."
+  BATCH_DROPPED: "&aВыброшено заявок: {claims} ({items} предметов). &cошибок: {failed}."
   GUI:
     MAIN:
       TITLE: "Orders (Page {page})"
@@ -75,6 +76,7 @@ ORDERS:
       COLLECT_ALL: "Получить всё"
       DROP_ITEMS: "Выбросить предметы"
       COLLECT_ORDER: "Получить этот заказ"
+      DROP_ORDER: "Выбросить этот заказ"
       CANCEL_ORDER: "Отменить заказ"
       CONFIRM: "Подтвердить"
 COMMON:

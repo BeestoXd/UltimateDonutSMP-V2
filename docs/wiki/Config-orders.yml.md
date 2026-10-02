@@ -428,14 +428,14 @@ Each entry under `GUI` is keyed by a name you choose, and every entry accepts th
 
 #### `GUI.<entry>.BUTTONS` — one block per key
 
-Keys under `GUI.<entry>.BUTTONS` are identifiers rather than fixed options; every one of them takes the same block described below. The shipped file defines 14:
+Keys under `GUI.<entry>.BUTTONS` are identifiers rather than fixed options; every one of them takes the same block described below. The shipped file defines 15:
 
-`BACK`, `CANCEL`, `COLLECT`, `CONFIRM`, `FILTER`, `INFO`, `ITEM`, `LOCKED`, `MY_ORDERS`, `NEW`, `NEXT`, `PREV`, `SEARCH`, `SHARD_SHOP`
+`BACK`, `CANCEL`, `COLLECT`, `CONFIRM`, `DROP`, `FILTER`, `INFO`, `ITEM`, `LOCKED`, `MY_ORDERS`, `NEW`, `NEXT`, `PREV`, `SEARCH`, `SHARD_SHOP`
 
 | Key | Type | Accepted values | Required? | What it does |
 | :--- | :--- | :--- | :--- | :--- |
-| `SLOT` | `integer` | Any integer | Optional (14/15) | Inventory slot, `0` is the top-left cell. |
-| `MATERIAL` | `string` | Any text | Optional (13/15) | Bukkit `Material` name for the icon. |
+| `SLOT` | `integer` | Any integer | Optional (15/16) | Inventory slot, `0` is the top-left cell. |
+| `MATERIAL` | `string` | Any text | Optional (14/16) | Bukkit `Material` name for the icon. |
 
 <details>
 <summary>Default <code>GUI</code> block as shipped</summary>

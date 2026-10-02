@@ -11,6 +11,7 @@ ORDERS:
   DELIVERY_SUCCESS: "&a已交付 &e{quantity} 个 {item}&a，并收到 &a{payout}&a。"
   CANCELLED: "&e订单 #{order_id} 已取消，剩余托管金额可领取。"
   BATCH_COLLECTED: "&a已领取 {claims} 项（{items} 个物品，退款 {refund}）。&c失败 {failed} 项。"
+  BATCH_DROPPED: "&a已丢出 {claims} 项（{items} 个物品）。&c失败 {failed} 项。"
   GUI:
     MAIN:
       TITLE: "Orders (Page {page})"
@@ -74,6 +75,7 @@ ORDERS:
       COLLECT_ALL: "全部领取"
       DROP_ITEMS: "丢出物品"
       COLLECT_ORDER: "领取此订单"
+      DROP_ORDER: "丢出此订单"
       CANCEL_ORDER: "取消订单"
       CONFIRM: "确认"
 COMMON:

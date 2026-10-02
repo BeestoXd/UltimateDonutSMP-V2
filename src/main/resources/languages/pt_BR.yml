@@ -13,6 +13,7 @@ ORDERS:
     coleta."
   BATCH_COLLECTED: "&a{claims} Reivindicações coletadas ({items} itens, reembolso
     {refund}). &c{failed} falharam."
+  BATCH_DROPPED: "&a{claims} Reivindicações soltas ({items} itens). &c{failed} falharam."
   GUI:
     MAIN:
       TITLE: "Orders (Page {page})"
@@ -76,6 +77,7 @@ ORDERS:
       COLLECT_ALL: Coletar tudo
       DROP_ITEMS: Soltar itens
       COLLECT_ORDER: Coletar este pedido
+      DROP_ORDER: Soltar este pedido
       CANCEL_ORDER: Cancelar pedido
       CONFIRM: Confirmar
 COMMON:
