@@ -1932,6 +1932,7 @@ MESSAGES:
   TPAUTO:
     ENABLED: "&7You turned on tpauto."
     DISABLED: "&7You turned off tpauto."
+    ACTION-BAR: "&fYou have tpauto on."
   TPAHEREAUTO:
     ENABLED: "&7You turned on tpahere auto-accept."
     DISABLED: "&7You turned off tpahere auto-accept."

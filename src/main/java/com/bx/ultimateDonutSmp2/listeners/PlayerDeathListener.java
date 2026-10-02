@@ -32,6 +32,9 @@ public class PlayerDeathListener implements Listener {
         if (plugin.getHideManager() != null) {
             plugin.getHideManager().clearNametag(victim.getUniqueId());
         }
+        if (plugin.getTPAManager() != null) {
+            plugin.getTPAManager().disableTpautoOnDeath(victim);
+        }
 
         PlayerData victimData = plugin.getPlayerDataManager().get(victim);
         if (victimData != null) {

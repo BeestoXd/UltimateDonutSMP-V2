@@ -39,6 +39,10 @@ public class TeleportManager {
         this.plugin = plugin;
     }
 
+    public boolean hasPendingWarmup(UUID uuid) {
+        return uuid != null && pendingTasks.containsKey(uuid);
+    }
+
     public void queue(Player player, Location destination, String type,
                       Consumer<Player> onSuccess) {
         if (player == null) {
