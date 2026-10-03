@@ -34,6 +34,15 @@ AMETHYST-TOOLS:
     CLICK-COOLDOWN-MS: 250
     # Determines whether Block Hopper Pickup is enabled or disabled. Available options: true, false
     BLOCK-HOPPER-PICKUP: true
+  # Configuration section for Countdown.
+  COUNTDOWN:
+    # Determines whether Live Lore Countdown is enabled or disabled. Available options: true, false
+    ENABLED: true
+    # When enabled, prevents held tools from constantly re-equipping and moving in hand
+    # by not ticking lore on the currently held main-hand and off-hand items.
+    # Held tools update lore when switching slots, opening or clicking inventories.
+    # Available options: true, false
+    PREVENT-HELD-TOOL-ANIMATION: true
   # Configuration section for Drill.
   DRILL:
     MATERIAL: NETHERITE_PICKAXE

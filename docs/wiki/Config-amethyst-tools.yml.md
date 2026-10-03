@@ -25,7 +25,7 @@ are replaced in the received-chat line; `{time}` is `1h` / `5d`, never `3600`.
 
 | Section | Type | Contents |
 | :--- | :--- | :--- |
-| [`AMETHYST-TOOLS`](#section-amethyst-tools) | section | 11 keys |
+| [`AMETHYST-TOOLS`](#section-amethyst-tools) | section | 12 keys |
 | [`AMETHYST-MESSAGES`](#section-amethyst-messages) | section | 27 keys |
 
 ---
@@ -81,6 +81,15 @@ EXCLUDED-WORLDS:
 | `AMETHYST-TOOLS.SECURITY.BIND-TO-OWNER` | `boolean` | `true`, `false` | `false` | On/off for bind to owner. |
 | `AMETHYST-TOOLS.SECURITY.CLICK-COOLDOWN-MS` | `integer` | Any integer | `250` | Click cooldown ms. Milliseconds. |
 | `AMETHYST-TOOLS.SECURITY.BLOCK-HOPPER-PICKUP` | `boolean` | `true`, `false` | `true` | On/off for block hopper pickup. |
+
+### `AMETHYST-TOOLS.COUNTDOWN`
+
+#### Options
+
+| Option path | Type | Accepted values | Default | What it does |
+| :--- | :--- | :--- | :--- | :--- |
+| `AMETHYST-TOOLS.COUNTDOWN.ENABLED` | `boolean` | `true`, `false` | `true` | Turns live lore countdown updates on or off. |
+| `AMETHYST-TOOLS.COUNTDOWN.PREVENT-HELD-TOOL-ANIMATION` | `boolean` | `true`, `false` | `true` | Prevents held tools from constantly re-equipping and moving in hand by suppressing lore countdown ticks while held. Lore updates when switching items, clicking inventories, or opening containers. |
 
 ### Entry schema (7 entries)
 

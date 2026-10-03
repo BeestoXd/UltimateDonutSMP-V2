@@ -27,8 +27,26 @@ public class AmethystToolsTask implements Runnable {
         plugin.getSpigotScheduler().forEachOnlinePlayer(this::checkInventory);
     }
 
+    static boolean isHeldSlot(int slot, int heldSlot) {
+        return slot == heldSlot || slot == 40;
+    }
+
+    static boolean shouldUpdateSlotCountdown(int slot, int heldSlot, boolean countdownEnabled, boolean preventHeldAnimation) {
+        if (!countdownEnabled) {
+            return false;
+        }
+        if (preventHeldAnimation && isHeldSlot(slot, heldSlot)) {
+            return false;
+        }
+        return true;
+    }
+
     private void checkInventory(Player player) {
         ItemStack[] contents = player.getInventory().getContents();
+        int heldSlot = player.getInventory().getHeldItemSlot();
+        boolean countdownEnabled = manager.isCountdownEnabled();
+        boolean preventHeldAnimation = manager.isPreventHeldToolAnimationEnabled();
+
         for (int slot = 0; slot < contents.length; slot++) {
             ItemStack item = contents[slot];
             if (item == null || item.getType().isAir() || !item.hasItemMeta()) {
@@ -42,14 +60,26 @@ public class AmethystToolsTask implements Runnable {
             if (manager.sanitizeInventorySlot(player, slot, true)) {
                 continue;
             }
+
+            if (countdownEnabled && !isHeldSlot(slot, heldSlot)) {
+                if (manager.updateLoreCountdown(item)) {
+                    player.getInventory().setItem(slot, item);
+                }
+            }
+        }
+
+        if (!countdownEnabled) {
+            return;
         }
 
         if (manager.isVisualSyncSuppressed(player.getUniqueId())) {
             return;
         }
 
-        syncHeldCountdown(player);
-        syncOffHandCountdown(player);
+        if (!preventHeldAnimation) {
+            syncHeldCountdown(player);
+            syncOffHandCountdown(player);
+        }
         syncCursorCountdown(player);
     }
 

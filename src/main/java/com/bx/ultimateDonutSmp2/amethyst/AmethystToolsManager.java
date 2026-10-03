@@ -1246,6 +1246,14 @@ public class AmethystToolsManager {
         return Math.max(0L, getSecuritySection().getLong("CLICK-COOLDOWN-MS", DEFAULT_USE_COOLDOWN_MS));
     }
 
+    public boolean isCountdownEnabled() {
+        return getCountdownSection().getBoolean("ENABLED", true);
+    }
+
+    public boolean isPreventHeldToolAnimationEnabled() {
+        return getCountdownSection().getBoolean("PREVENT-HELD-TOOL-ANIMATION", true);
+    }
+
     public void suppressVisualSync(UUID uuid) {
         suppressVisualSync(uuid, DEFAULT_VISUAL_SYNC_SUPPRESSION_MS);
     }
@@ -1361,5 +1369,14 @@ public class AmethystToolsManager {
             return root;
         }
         return plugin.getConfigManager().getAmethystTools().createSection("AMETHYST-TOOLS.SECURITY");
+    }
+
+    private ConfigurationSection getCountdownSection() {
+        ConfigurationSection root = plugin.getConfigManager().getAmethystTools()
+                .getConfigurationSection("AMETHYST-TOOLS.COUNTDOWN");
+        if (root != null) {
+            return root;
+        }
+        return plugin.getConfigManager().getAmethystTools().createSection("AMETHYST-TOOLS.COUNTDOWN");
     }
 }
