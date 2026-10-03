@@ -64,7 +64,7 @@ public class OrdersEditMenu extends BaseMenu {
         ));
         set(dropSlot, OrdersMenuSupport.button(
                 plugin, "GUI.EDIT_ORDER.BUTTONS.DROP", "ORDERS.GUI.EDIT_ORDER.DROP",
-                Material.DROPPER, "&eDrop", List.of("&7&oDrop items at your feet")
+                Material.DROPPER, "&eDrop", List.of("&7&oDrop items where you're looking")
         ));
     }
 

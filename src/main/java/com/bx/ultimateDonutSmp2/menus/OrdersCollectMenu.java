@@ -67,14 +67,14 @@ public class OrdersCollectMenu extends BaseMenu {
         ));
         set(lastRow + 6, OrdersMenuSupport.button(
                 plugin, "GUI.COLLECT.BUTTONS.DROP_ALL", "ORDERS.GUI.COLLECT.DROP_ALL",
-                Material.DROPPER, "&eDrop all", List.of("&fDrop every pending item claim at your feet")
+                Material.DROPPER, "&eDrop all", List.of("&fDrop every pending item claim where you're looking")
         ));
         set(lastRow + 7, hasNextPage(claims.size(), itemsPerPage)
                 ? ItemUtils.createItem(Material.ARROW, "&aNext page", List.of("&7Go to page &f" + (page + 1)))
                 : ItemUtils.createPlaceholder(Material.BLACK_STAINED_GLASS_PANE));
         set(lastRow + 8, OrdersMenuSupport.button(
                 plugin, "GUI.COLLECT.BUTTONS.DROP_PAGE", "ORDERS.GUI.COLLECT.DROP_PAGE",
-                Material.DROPPER, "&eDrop page", List.of("&fDrop item claims safely at your feet")
+                Material.DROPPER, "&eDrop page", List.of("&fDrop item claims where you're looking")
         ));
 
         if (claims.isEmpty()) {
