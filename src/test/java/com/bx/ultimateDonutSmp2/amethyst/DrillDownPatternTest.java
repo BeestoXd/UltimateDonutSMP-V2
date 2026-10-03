@@ -23,13 +23,14 @@ class DrillDownPatternTest {
     }
 
     @Test
-    void columnDownBreaksThreeBlocksAtTheDefaultRadius() {
+    void columnDownBreaksThreeLayersOfTheDefaultSquare() {
         List<int[]> offsets = AmethystToolsListener.aoeOffsets(BlockFace.DOWN, 1, true);
 
-        assertEquals(3, offsets.size());
-        assertArrayEquals(new int[]{0, 0, 0}, offsets.get(0));
-        assertArrayEquals(new int[]{0, -1, 0}, offsets.get(1));
-        assertArrayEquals(new int[]{0, -2, 0}, offsets.get(2));
+        assertEquals(27, offsets.size());
+        assertEquals(9, offsets.stream().filter(offset -> offset[1] == 0).count());
+        assertEquals(9, offsets.stream().filter(offset -> offset[1] == -2).count());
+        assertTrue(offsets.stream().anyMatch(offset -> offset[0] == 1 && offset[1] == 0 && offset[2] == 0));
+        assertTrue(offsets.stream().anyMatch(offset -> offset[0] == 0 && offset[1] == -2 && offset[2] == -1));
     }
 
     @Test
@@ -41,11 +42,12 @@ class DrillDownPatternTest {
     }
 
     @Test
-    void aWiderRadiusDigsADeeperColumn() {
+    void aWiderRadiusDigsADeeperSquareStack() {
         List<int[]> offsets = AmethystToolsListener.aoeOffsets(BlockFace.DOWN, 2, true);
 
-        assertEquals(5, offsets.size());
-        assertArrayEquals(new int[]{0, -4, 0}, offsets.get(4));
+        assertEquals(125, offsets.size());
+        assertEquals(25, offsets.stream().filter(offset -> offset[1] == -4).count());
+        assertTrue(offsets.stream().anyMatch(offset -> offset[0] == 2 && offset[1] == -4 && offset[2] == -2));
     }
 
     @Test
