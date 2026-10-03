@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -16,38 +15,47 @@ class DrillDownPatternTest {
 
     @Test
     void lookingDownStaysAFlatSquareByDefault() {
-        List<int[]> offsets = AmethystToolsListener.aoeOffsets(BlockFace.DOWN, 1, false);
+        List<int[]> offsets = AmethystToolsListener.aoeOffsets(BlockFace.DOWN, 1, false, 0f);
 
         assertEquals(9, offsets.size());
         assertTrue(offsets.stream().allMatch(offset -> offset[1] == 0));
     }
 
     @Test
-    void columnDownBreaksThreeLayersOfTheDefaultSquare() {
-        List<int[]> offsets = AmethystToolsListener.aoeOffsets(BlockFace.DOWN, 1, true);
+    void columnDownBreaksThreeLayersOfASingleRow() {
+        List<int[]> offsets = AmethystToolsListener.aoeOffsets(BlockFace.DOWN, 1, true, 0f);
 
-        assertEquals(27, offsets.size());
-        assertEquals(9, offsets.stream().filter(offset -> offset[1] == 0).count());
-        assertEquals(9, offsets.stream().filter(offset -> offset[1] == -2).count());
-        assertTrue(offsets.stream().anyMatch(offset -> offset[0] == 1 && offset[1] == 0 && offset[2] == 0));
-        assertTrue(offsets.stream().anyMatch(offset -> offset[0] == 0 && offset[1] == -2 && offset[2] == -1));
+        assertEquals(9, offsets.size());
+        assertEquals(3, offsets.stream().filter(offset -> offset[1] == 0).count());
+        assertEquals(3, offsets.stream().filter(offset -> offset[1] == -2).count());
+        assertTrue(offsets.stream().allMatch(offset -> offset[2] == 0));
+        assertTrue(offsets.stream().anyMatch(offset -> offset[0] == 1 && offset[1] == -1 && offset[2] == 0));
+    }
+
+    @Test
+    void columnRowFollowsYawWhenLookingDown() {
+        List<int[]> alongX = AmethystToolsListener.aoeOffsets(BlockFace.DOWN, 1, true, 0f);
+        List<int[]> alongZ = AmethystToolsListener.aoeOffsets(BlockFace.DOWN, 1, true, 90f);
+
+        assertTrue(alongX.stream().allMatch(offset -> offset[2] == 0));
+        assertTrue(alongZ.stream().allMatch(offset -> offset[0] == 0));
     }
 
     @Test
     void columnModeLeavesSidewaysAndUpwardStrikesAsASquare() {
-        assertEquals(9, AmethystToolsListener.aoeOffsets(BlockFace.NORTH, 1, true).size());
-        List<int[]> up = AmethystToolsListener.aoeOffsets(BlockFace.UP, 1, true);
+        assertEquals(9, AmethystToolsListener.aoeOffsets(BlockFace.NORTH, 1, true, 0f).size());
+        List<int[]> up = AmethystToolsListener.aoeOffsets(BlockFace.UP, 1, true, 0f);
         assertEquals(9, up.size());
         assertTrue(up.stream().allMatch(offset -> offset[1] == 0));
     }
 
     @Test
-    void aWiderRadiusDigsADeeperSquareStack() {
-        List<int[]> offsets = AmethystToolsListener.aoeOffsets(BlockFace.DOWN, 2, true);
+    void aWiderRadiusDigsADeeperRowStack() {
+        List<int[]> offsets = AmethystToolsListener.aoeOffsets(BlockFace.DOWN, 2, true, 0f);
 
-        assertEquals(125, offsets.size());
-        assertEquals(25, offsets.stream().filter(offset -> offset[1] == -4).count());
-        assertTrue(offsets.stream().anyMatch(offset -> offset[0] == 2 && offset[1] == -4 && offset[2] == -2));
+        assertEquals(25, offsets.size());
+        assertEquals(5, offsets.stream().filter(offset -> offset[1] == -4).count());
+        assertTrue(offsets.stream().anyMatch(offset -> offset[0] == 2 && offset[1] == -4 && offset[2] == 0));
     }
 
     @Test

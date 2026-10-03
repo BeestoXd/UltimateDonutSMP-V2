@@ -60,8 +60,8 @@ AMETHYST-TOOLS:
     - fortune:3
     # The numerical value for Radius. Available options: Any valid integer
     RADIUS: 1
-    # FACE keeps one flat square when you look down. COLUMN repeats that square straight down:
-    # RADIUS 1 is 3×3 for 3 layers, RADIUS 2 is 5×5 for 5 layers. Sideways stays one square.
+    # FACE keeps one flat square when you look down. COLUMN is one row (3×1 at RADIUS 1) straight
+    # down for 3 layers; the row follows which way you face. Sideways stays one square.
     DOWN: FACE
     # Configuration section for Disabled Blocks.
     DISABLED-BLOCKS:
