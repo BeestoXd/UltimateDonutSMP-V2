@@ -13,7 +13,27 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Method;
+
 public class PlayerAdvancementDoneListener implements Listener {
+
+    private static final MethodHandle ADVANCEMENT_SET;
+
+    static {
+        MethodHandle advSet = null;
+        try {
+            Method m = PlayerAdvancementDoneEvent.class.getMethod("message");
+            Class<?> componentClass = m.getReturnType();
+            if (componentClass != null && !"java.lang.String".equals(componentClass.getName())) {
+                advSet = MethodHandles.lookup().unreflect(
+                        PlayerAdvancementDoneEvent.class.getMethod("message", componentClass));
+            }
+        } catch (Throwable ignored) {
+        }
+        ADVANCEMENT_SET = advSet;
+    }
 
     private final UltimateDonutSmp2 plugin;
 
@@ -47,8 +67,19 @@ public class PlayerAdvancementDoneListener implements Listener {
         }
     }
 
+    public static void clearAdvancementMessage(PlayerAdvancementDoneEvent event) {
+        if (ADVANCEMENT_SET != null && event != null) {
+            try {
+                ADVANCEMENT_SET.invokeWithArguments(event, (Object) null);
+            } catch (Throwable ignored) {
+            }
+        }
+    }
+
     @EventHandler
     public void onAdvancementDone(PlayerAdvancementDoneEvent event) {
+        clearAdvancementMessage(event);
+
         Advancement adv = event.getAdvancement();
         if (adv.getDisplay() == null) {
             return;
