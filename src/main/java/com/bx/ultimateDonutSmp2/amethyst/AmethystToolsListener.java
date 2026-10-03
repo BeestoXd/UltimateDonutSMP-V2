@@ -27,11 +27,15 @@ import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -498,6 +502,9 @@ public class AmethystToolsListener implements Listener {
                 event.setCancelled(true);
                 return;
             }
+            if (manager.isCountdownEnabled()) {
+                manager.updateLoreCountdown(current);
+            }
         }
 
         if (cursorIsAmethystTool) {
@@ -511,6 +518,9 @@ public class AmethystToolsListener implements Listener {
                 player.setItemOnCursor(null);
                 event.setCancelled(true);
                 return;
+            }
+            if (manager.isCountdownEnabled()) {
+                manager.updateLoreCountdown(cursor);
             }
         }
 
@@ -603,6 +613,9 @@ public class AmethystToolsListener implements Listener {
             return;
         }
 
+        if (manager.isCountdownEnabled()) {
+            manager.updateLoreCountdown(item);
+        }
         droppedEntity.setItemStack(item);
     }
 
@@ -640,7 +653,87 @@ public class AmethystToolsListener implements Listener {
             return;
         }
 
+        if (manager.isCountdownEnabled()) {
+            manager.updateLoreCountdown(stack);
+        }
+
         itemEntity.setItemStack(stack);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onItemHeldChange(PlayerItemHeldEvent event) {
+        Player player = event.getPlayer();
+        if (player.getGameMode() == GameMode.CREATIVE || !manager.isCountdownEnabled()) {
+            return;
+        }
+
+        ItemStack prevItem = player.getInventory().getItem(event.getPreviousSlot());
+        if (manager.isAmethystTool(prevItem) && manager.updateLoreCountdown(prevItem)) {
+            player.getInventory().setItem(event.getPreviousSlot(), prevItem);
+        }
+
+        ItemStack newItem = player.getInventory().getItem(event.getNewSlot());
+        if (manager.isAmethystTool(newItem) && manager.updateLoreCountdown(newItem)) {
+            player.getInventory().setItem(event.getNewSlot(), newItem);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onSwapHandItems(PlayerSwapHandItemsEvent event) {
+        Player player = event.getPlayer();
+        if (player.getGameMode() == GameMode.CREATIVE || !manager.isCountdownEnabled()) {
+            return;
+        }
+
+        ItemStack main = event.getMainHandItem();
+        if (manager.isAmethystTool(main) && manager.updateLoreCountdown(main)) {
+            event.setMainHandItem(main);
+        }
+
+        ItemStack off = event.getOffHandItem();
+        if (manager.isAmethystTool(off) && manager.updateLoreCountdown(off)) {
+            event.setOffHandItem(off);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onInventoryOpen(InventoryOpenEvent event) {
+        if (!manager.isCountdownEnabled() || !(event.getPlayer() instanceof Player player)) {
+            return;
+        }
+        if (player.getGameMode() == GameMode.CREATIVE) {
+            return;
+        }
+
+        int heldSlot = player.getInventory().getHeldItemSlot();
+        ItemStack held = player.getInventory().getItem(heldSlot);
+        if (manager.isAmethystTool(held) && manager.updateLoreCountdown(held)) {
+            player.getInventory().setItem(heldSlot, held);
+        }
+
+        ItemStack offHand = player.getInventory().getItemInOffHand();
+        if (manager.isAmethystTool(offHand) && manager.updateLoreCountdown(offHand)) {
+            player.getInventory().setItemInOffHand(offHand);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        if (!manager.isCountdownEnabled() || player.getGameMode() == GameMode.CREATIVE) {
+            return;
+        }
+
+        int heldSlot = player.getInventory().getHeldItemSlot();
+        ItemStack held = player.getInventory().getItem(heldSlot);
+        if (manager.isAmethystTool(held) && manager.updateLoreCountdown(held)) {
+            player.getInventory().setItem(heldSlot, held);
+        }
+
+        ItemStack offHand = player.getInventory().getItemInOffHand();
+        if (manager.isAmethystTool(offHand) && manager.updateLoreCountdown(offHand)) {
+            player.getInventory().setItemInOffHand(offHand);
+        }
     }
 
     private boolean canUseTool(Player player, ItemStack item, AmethystToolType type, boolean checkCooldown, boolean sendFeedback, EquipmentSlot hand) {
