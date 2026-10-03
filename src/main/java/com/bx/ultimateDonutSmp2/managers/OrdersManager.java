@@ -2747,7 +2747,7 @@ public class OrdersManager {
         if (player == null || item == null || item.getType().isAir()) {
             return;
         }
-        Location dropSpot = claimDropLocation(player.getLocation());
+        Location dropSpot = claimDropLocation(player);
         if (dropSpot.getWorld() == null) {
             throw new IllegalStateException("Player has no world");
         }
@@ -2755,13 +2755,22 @@ public class OrdersManager {
         dropped.setVelocity(new Vector(0, 0, 0));
     }
 
-    static Location claimDropLocation(Location feet) {
-        return new Location(
-                feet.getWorld(),
-                feet.getBlockX() + 0.5D,
-                feet.getBlockY() + 0.5D,
-                feet.getBlockZ() + 0.5D
-        );
+    static Location claimDropLocation(Player player) {
+        Location eye = player.getEyeLocation();
+        Vector direction = eye.getDirection();
+        if (direction.lengthSquared() < 1.0E-6D) {
+            direction = player.getLocation().getDirection();
+        }
+        return claimDropLocation(eye, direction);
+    }
+
+    static Location claimDropLocation(Location eye, Vector direction) {
+        Vector normalized = direction.clone();
+        if (normalized.lengthSquared() < 1.0E-6D) {
+            normalized = new Vector(0, 0, 1);
+        }
+        normalized.normalize();
+        return eye.clone().add(normalized.multiply(1.5D));
     }
 
     public synchronized int expireOrders() {
