@@ -789,11 +789,12 @@ public class AmethystToolsListener implements Listener {
     }
 
     private List<Block> getAoeBlocks(Block origin, Player player, int radius) {
-        return blocksAt(origin, aoeOffsets(getPlayerFace(player), radius, false));
+        return blocksAt(origin, aoeOffsets(getPlayerFace(player), radius, false, 0f));
     }
 
     private List<Block> getDrillBlocks(Block origin, Player player, int radius, boolean columnWhenDown) {
-        return blocksAt(origin, aoeOffsets(getPlayerFace(player), radius, columnWhenDown));
+        float yaw = player.getLocation().getYaw();
+        return blocksAt(origin, aoeOffsets(getPlayerFace(player), radius, columnWhenDown, yaw));
     }
 
     private static List<Block> blocksAt(Block origin, List<int[]> offsets) {
@@ -809,18 +810,21 @@ public class AmethystToolsListener implements Listener {
 
     /**
      * Offsets from the broken block. {@code columnWhenDown} is the drill's {@code DOWN: COLUMN}
-     * mode: looking down breaks a square of the same width as sideways mining, repeated
-     * {@code radius * 2 + 1} layers straight down (RADIUS 1 is 3×3 for 3 layers). Every other
-     * facing stays a single square.
+     * mode: looking down breaks a single row of {@code radius * 2 + 1} blocks (RADIUS 1 is 3×1),
+     * repeated for that many layers straight down, with the row aligned to the player's yaw. Every
+     * other facing stays a single square.
      */
-    static List<int[]> aoeOffsets(BlockFace face, int radius, boolean columnWhenDown) {
+    static List<int[]> aoeOffsets(BlockFace face, int radius, boolean columnWhenDown, float yaw) {
         List<int[]> offsets = new ArrayList<>();
         if (columnWhenDown && face == BlockFace.DOWN) {
             int depth = Math.max(0, radius) * 2;
+            boolean rowAlongX = columnRowAlongX(yaw);
             for (int dy = 0; dy >= -depth; dy--) {
-                for (int a = -radius; a <= radius; a++) {
-                    for (int b = -radius; b <= radius; b++) {
-                        offsets.add(new int[]{a, dy, b});
+                for (int i = -radius; i <= radius; i++) {
+                    if (rowAlongX) {
+                        offsets.add(new int[]{i, dy, 0});
+                    } else {
+                        offsets.add(new int[]{0, dy, i});
                     }
                 }
             }
@@ -843,6 +847,12 @@ public class AmethystToolsListener implements Listener {
 
     static boolean columnDown(String mode) {
         return mode != null && mode.trim().equalsIgnoreCase("COLUMN");
+    }
+
+    /** Row runs east–west when the player faces south/north, north–south when they face east/west. */
+    static boolean columnRowAlongX(float yaw) {
+        float normalized = ((yaw % 360f) + 360f) % 360f;
+        return normalized < 45f || normalized >= 315f || (normalized >= 135f && normalized < 225f);
     }
 
     private BlockFace getPlayerFace(Player player) {

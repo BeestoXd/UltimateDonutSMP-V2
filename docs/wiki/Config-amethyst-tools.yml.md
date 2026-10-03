@@ -3,8 +3,9 @@
 Amethyst Tools are the timed premium tools sold in the Shard Shop: a drill that breaks a
 3x3 face at once, a chopper that fells a whole tree, and the other variants defined here.
 Looking down stays one flat square unless `AMETHYST-TOOLS.DRILL.DOWN` is `COLUMN`, which
-repeats that same square for `RADIUS * 2 + 1` layers straight down (a 3×3 for three layers
-at the default radius). Sideways strikes stay one square, and the shovel ignores `DOWN`.
+breaks a single row of `RADIUS * 2 + 1` blocks (3×1 at the default radius) for that many
+layers straight down, aligned to the player's facing. Sideways strikes stay one square, and
+the shovel ignores `DOWN`.
 Each tool is handed out with a lifetime attached, and `AmethystToolsTask` removes it from
 the player's inventory when that timer runs out — which is why every tool has a `DURATION`
 as well as the usual enchantment and behaviour settings.
@@ -116,7 +117,7 @@ Each entry under `AMETHYST-TOOLS` is keyed by a name you choose, and every entry
 | `SHARD-SHOP` | `section` | — | Required | Options for shard shop, listed below. |
 | `ENCHANTMENTS` | `list` | A list of values | Optional (4/7) | The enchantments list. |
 | `RADIUS` | `integer` | Any integer | Optional (2/7) | Radius. Blocks. |
-| `DOWN` | `string` | `FACE`, `COLUMN` | Optional (1/7) | Drill only. FACE keeps one flat square when you look down. COLUMN stacks that square for RADIUS * 2 + 1 layers down. |
+| `DOWN` | `string` | `FACE`, `COLUMN` | Optional (1/7) | Drill only. FACE keeps one flat square when you look down. COLUMN is one row for RADIUS * 2 + 1 layers down. |
 | `ALLOWED-BLOCKS` | `list` | A list of values | Optional (1/7) | The allowed blocks list. |
 | `BOOSTER-DURATION` | `integer` | Any integer | Optional (1/7) | Booster duration. |
 | `DISABLED-BLOCKS` | `list` | A list of values | Optional (1/7) | The disabled blocks list. |
