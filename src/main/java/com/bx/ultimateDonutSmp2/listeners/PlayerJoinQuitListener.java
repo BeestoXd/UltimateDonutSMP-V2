@@ -272,30 +272,54 @@ public class PlayerJoinQuitListener implements Listener {
             }
         }
 
-        if (PaperJoinQuitMessages.hasText(joinMsg)) {
-            String announcement = plugin.getServerNotificationManager() == null
-                    ? null
-                    : plugin.getServerNotificationManager().joinAnnouncement(player, firstJoin);
-            if (announcement != null) {
-                broadcastJoinLeave(player, announcement);
-            } else {
-                broadcastJoinLeave(player, joinMsg);
-            }
+        String announcement = plugin.getServerNotificationManager() == null
+                ? null
+                : plugin.getServerNotificationManager().joinAnnouncement(player, firstJoin);
+        if (announcement != null) {
+            broadcastJoin(player, announcement);
+        } else if (PaperJoinQuitMessages.hasText(joinMsg)) {
+            broadcastJoin(player, joinMsg);
         }
     }
 
     /**
-     * Sends a join or leave line to everyone allowed to see it. A configured announcement takes
-     * the place of the server's own message and travels the same route, so a player who turned
-     * join and leave messages off in /settings stays quiet either way. Nothing is sent when the
-     * server had no message to begin with, which is how other plugins suppress a join.
+     * Sends a join line to everyone allowed to see it. A configured announcement takes the place of
+     * the server's own message and travels the same route, so a player who turned join and leave
+     * messages off in /settings stays quiet either way. While no announcement is configured, the
+     * server's own message is relayed instead; nothing is sent when the server had no message to
+     * begin with, which is how other plugins suppress a join.
+     *
+     * <p>Existing online players receive the line immediately. The joining player receives it one
+     * tick later, once client-side terrain loading is complete and the in-game chat HUD is ready to
+     * render system messages.</p>
      */
-    private void broadcastJoinLeave(Player subject, Object message) {
+    private void broadcastJoin(Player subject, Object message) {
         if (!PaperJoinQuitMessages.hasText(message)) {
             return;
         }
         plugin.getSpigotScheduler().forEachOnlinePlayer(p -> {
-            if (shouldReceiveJoinLeaveMessage(p, subject)) {
+            if (!p.equals(subject) && shouldReceiveJoinLeaveMessage(p, subject)) {
+                PaperJoinQuitMessages.send(p, message);
+            }
+        });
+        if (subject != null && shouldReceiveJoinLeaveMessage(subject, subject)) {
+            plugin.getSpigotScheduler().runEntityLater(subject, () -> {
+                if (subject.isOnline()) {
+                    PaperJoinQuitMessages.send(subject, message);
+                }
+            }, 1L);
+        }
+    }
+
+    /**
+     * Sends a leave line to everyone allowed to see it, omitting the quitting player.
+     */
+    private void broadcastQuit(Player subject, Object message) {
+        if (!PaperJoinQuitMessages.hasText(message)) {
+            return;
+        }
+        plugin.getSpigotScheduler().forEachOnlinePlayer(p -> {
+            if (!p.equals(subject) && shouldReceiveJoinLeaveMessage(p, subject)) {
                 PaperJoinQuitMessages.send(p, message);
             }
         });
@@ -533,15 +557,13 @@ public class PlayerJoinQuitListener implements Listener {
         plugin.getTeamManager().setTeamChat(player.getUniqueId(), false);
         plugin.getTeamManager().clearSearchState(player.getUniqueId());
 
-        if (PaperJoinQuitMessages.hasText(quitMsg)) {
-            String announcement = plugin.getServerNotificationManager() == null
-                    ? null
-                    : plugin.getServerNotificationManager().leaveAnnouncement(player);
-            if (announcement != null) {
-                broadcastJoinLeave(player, announcement);
-            } else {
-                broadcastJoinLeave(player, quitMsg);
-            }
+        String announcement = plugin.getServerNotificationManager() == null
+                ? null
+                : plugin.getServerNotificationManager().leaveAnnouncement(player);
+        if (announcement != null) {
+            broadcastQuit(player, announcement);
+        } else if (PaperJoinQuitMessages.hasText(quitMsg)) {
+            broadcastQuit(player, quitMsg);
         }
         if (plugin.getStartupJoinWarmup() != null) {
             plugin.getStartupJoinWarmup().releaseTicketsIfServerEmpty();
