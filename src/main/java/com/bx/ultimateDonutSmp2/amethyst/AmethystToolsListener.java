@@ -809,15 +809,20 @@ public class AmethystToolsListener implements Listener {
 
     /**
      * Offsets from the broken block. {@code columnWhenDown} is the drill's {@code DOWN: COLUMN}
-     * mode: looking down breaks a vertical line of {@code radius * 2 + 1} blocks, including the
-     * block that was struck. Every other facing stays a square of the same width.
+     * mode: looking down breaks a square of the same width as sideways mining, repeated
+     * {@code radius * 2 + 1} layers straight down (RADIUS 1 is 3×3 for 3 layers). Every other
+     * facing stays a single square.
      */
     static List<int[]> aoeOffsets(BlockFace face, int radius, boolean columnWhenDown) {
         List<int[]> offsets = new ArrayList<>();
         if (columnWhenDown && face == BlockFace.DOWN) {
             int depth = Math.max(0, radius) * 2;
             for (int dy = 0; dy >= -depth; dy--) {
-                offsets.add(new int[]{0, dy, 0});
+                for (int a = -radius; a <= radius; a++) {
+                    for (int b = -radius; b <= radius; b++) {
+                        offsets.add(new int[]{a, dy, b});
+                    }
+                }
             }
             return offsets;
         }
