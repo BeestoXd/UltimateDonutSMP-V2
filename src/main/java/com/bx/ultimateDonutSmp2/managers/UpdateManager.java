@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.Locale;
 import java.util.logging.Level;
 
 public class UpdateManager {
@@ -28,9 +29,10 @@ public class UpdateManager {
      */
     public void checkForUpdates() {
         plugin.getSpigotScheduler().runAsync(() -> {
+            HttpURLConnection connection = null;
             try {
                 URL url = URI.create(VERSION_URL).toURL();
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("GET");
                 connection.setConnectTimeout(5000);
                 connection.setReadTimeout(5000);
@@ -56,6 +58,10 @@ public class UpdateManager {
                 }
             } catch (Exception e) {
                 plugin.getLogger().log(Level.WARNING, "Failed to check for updates: " + e.getMessage());
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
             }
         });
     }
@@ -65,7 +71,7 @@ public class UpdateManager {
             return "";
         }
         version = version.trim();
-        if (version.toLowerCase().startsWith("v")) {
+        if (version.toLowerCase(Locale.ROOT).startsWith("v")) {
             version = version.substring(1).trim();
         }
         return version;
