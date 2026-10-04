@@ -342,6 +342,7 @@ public class PlayerJoinQuitListener implements Listener {
             }
             plugin.getTablistManager().updateTablistName(player);
             plugin.getTablistManager().update(player);
+            plugin.getTablistManager().scheduleDeferredTablistNameRefresh(player);
             if (plugin.getPlayerSkinManager() != null) {
                 plugin.getPlayerSkinManager().captureSkin(player);
             }
