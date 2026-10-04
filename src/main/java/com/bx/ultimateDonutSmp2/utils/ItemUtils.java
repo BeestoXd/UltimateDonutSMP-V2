@@ -613,7 +613,7 @@ public class ItemUtils {
                 if (entry == null) continue;
                 String[] parts = entry.split(":");
                 if (parts.length < 2) continue;
-                String name = parts[0].trim().toLowerCase();
+                String name = parts[0].trim().toLowerCase(Locale.ROOT);
                 int level;
                 try {
                     level = Integer.parseInt(parts[1].trim());
@@ -633,7 +633,7 @@ public class ItemUtils {
             if (entry == null) continue;
             String[] parts = entry.split(":");
             if (parts.length < 2) continue;
-            String name = parts[0].trim().toLowerCase();
+            String name = parts[0].trim().toLowerCase(Locale.ROOT);
             int level;
             try {
                 level = Integer.parseInt(parts[1].trim());
