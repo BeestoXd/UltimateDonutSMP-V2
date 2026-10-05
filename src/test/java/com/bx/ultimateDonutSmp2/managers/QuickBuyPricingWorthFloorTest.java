@@ -75,6 +75,12 @@ class QuickBuyPricingWorthFloorTest {
         ahField.setAccessible(true);
         ahField.set(configManager, ahConfig);
 
+        YamlConfiguration menusConfig = new YamlConfiguration();
+        menusConfig.set("PROGRESS-MENU.ENABLED", true);
+        Field menusField = ConfigManager.class.getDeclaredField("menus");
+        menusField.setAccessible(true);
+        menusField.set(configManager, menusConfig);
+
         Field cmField = UltimateDonutSmp2.class.getDeclaredField("configManager");
         cmField.setAccessible(true);
         cmField.set(plugin, configManager);
