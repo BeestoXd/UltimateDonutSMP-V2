@@ -117,7 +117,9 @@ Everything left off that list follows this order, unless `QUICK-BUY.PRICING.UNLI
    item and is priced at or above `worth.yml` sets the price of one item. Quick Buy does not
    purchase that listing. The seller keeps it.
 2. If no listing matches, the `worth.yml` price is used, multiplied by `WORTH-MULTIPLIER`, and never
-   sold below worth.
+   sold below worth. The quote is also raised to at least what that player would earn selling one of
+   the item right now (base worth times their sell-category multiplier), so buying and reselling
+   cannot print money.
 3. If the item has no `worth.yml` entry either and `AUTO-BALANCE-MISSING` is on, a price is derived
    automatically and multiplied by `AUTO-BALANCE-MULTIPLIER`.
 

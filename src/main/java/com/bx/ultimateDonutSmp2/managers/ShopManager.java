@@ -11,6 +11,7 @@ import com.bx.ultimateDonutSmp2.models.PlayerData;
 import com.bx.ultimateDonutSmp2.models.QuickBuyEntry;
 import com.bx.ultimateDonutSmp2.models.SellCategory;
 import com.bx.ultimateDonutSmp2.models.ShopPreference;
+import com.bx.ultimateDonutSmp2.models.WorthResult;
 import com.bx.ultimateDonutSmp2.storage.ShopPreferenceRepository;
 import com.bx.ultimateDonutSmp2.utils.ColorUtils;
 import com.bx.ultimateDonutSmp2.utils.ItemSerializationUtils;
@@ -509,6 +510,8 @@ public class ShopManager {
         int qty = Math.max(1, amount);
         ItemStack sampleItem = createSampleItem(material, requiredEnchants);
         double serverWorth = sampleItem != null ? getWorth(sampleItem) : getWorth(material);
+        double minUnitPrice = minimumQuickBuyUnitPrice(buyer, sampleItem);
+        double worthFloor = Math.max(serverWorth, minUnitPrice);
         boolean useAh = plugin.getConfigManager().getShop().getBoolean("QUICK-BUY.PRICING.USE-AUCTION-HOUSE", true);
 
         double fixedUnit = fixedItemUnitPrice(material);
@@ -520,20 +523,20 @@ public class ShopManager {
                     extraEnchants = 0;
                 }
             }
-            double ceiling = fixedUnit + extraEnchants;
+            double ceiling = floorQuickBuyUnitPrice(buyer, sampleItem, fixedUnit + extraEnchants);
             if (useAh) {
                 AuctionListing cheaper = cheapestQuickBuyListing(buyer, material, requiredEnchants, true, ceiling);
                 if (cheaper != null) {
-                    return quoteFromListing(cheaper, qty);
+                    return quoteFromListing(buyer, sampleItem, cheaper, qty);
                 }
             }
             return new QuickBuyQuote(ceiling, ceiling * qty, null, false, false);
         }
 
         if (useAh) {
-            AuctionListing best = cheapestQuickBuyListing(buyer, material, requiredEnchants, false, serverWorth);
+            AuctionListing best = cheapestQuickBuyListing(buyer, material, requiredEnchants, false, worthFloor);
             if (best != null) {
-                return quoteFromListing(best, qty);
+                return quoteFromListing(buyer, sampleItem, best, qty);
             }
         }
 
@@ -543,13 +546,46 @@ public class ShopManager {
 
         double shopPrice = findServerShopPrice(sampleItem != null ? sampleItem : new ItemStack(material));
         if (shopPrice > 0) {
-            if (serverWorth > 0 && shopPrice < serverWorth) {
-                shopPrice = serverWorth;
+            if (worthFloor > 0 && shopPrice < worthFloor) {
+                shopPrice = worthFloor;
             }
+            shopPrice = floorQuickBuyUnitPrice(buyer, sampleItem, shopPrice);
             return new QuickBuyQuote(shopPrice, shopPrice * qty, null, false, false);
         }
 
         return new QuickBuyQuote(0, 0, null, false, true);
+    }
+
+    /**
+     * Lowest unit price Quick Buy may charge so a purchase cannot be sold back for more than it cost.
+     * Uses the buyer's current sell-category multiplier on top of {@code worth.yml}.
+     */
+    double minimumQuickBuyUnitPrice(Player buyer, ItemStack sample) {
+        if (sample == null || plugin.getWorthManager() == null) {
+            return 0D;
+        }
+        WorthResult worth = plugin.getWorthManager().resolveWorth(sample);
+        if (!worth.sellable() || worth.unitWorth() <= 0D || !Double.isFinite(worth.unitWorth())) {
+            return 0D;
+        }
+        SellCategory category = plugin.getWorthManager().getSellCategory(sample);
+        if (category == null) {
+            return 0D;
+        }
+        Map<SellCategory, Double> progress = buyer == null
+                ? Map.of()
+                : getSellProgress(buyer.getUniqueId());
+        double multiplier = getCurrentSellMultiplier(progress, category);
+        double floor = worth.unitWorth() * multiplier;
+        return Double.isFinite(floor) && floor > 0D ? floor : 0D;
+    }
+
+    private double floorQuickBuyUnitPrice(Player buyer, ItemStack sample, double unitPrice) {
+        if (!Double.isFinite(unitPrice) || unitPrice <= 0D) {
+            return unitPrice;
+        }
+        double min = minimumQuickBuyUnitPrice(buyer, sample);
+        return min > 0D && unitPrice < min ? min : unitPrice;
     }
 
     /**
@@ -636,8 +672,9 @@ public class ShopManager {
         return mode != null && mode.trim().equalsIgnoreCase("AUCTION-ONLY");
     }
 
-    private QuickBuyQuote quoteFromListing(AuctionListing listing, int qty) {
+    private QuickBuyQuote quoteFromListing(Player buyer, ItemStack sample, AuctionListing listing, int qty) {
         double unitPrice = listing.price() / Math.max(1, listing.item().getAmount());
+        unitPrice = floorQuickBuyUnitPrice(buyer, sample, unitPrice);
         return new QuickBuyQuote(unitPrice, unitPrice * qty, listing, true, false);
     }
 
@@ -1785,6 +1822,9 @@ public class ShopManager {
     }
 
     public boolean isSellMultiplierEnabled() {
+        if (plugin == null || plugin.getConfigManager() == null || plugin.getConfigManager().getMenus() == null) {
+            return true;
+        }
         return plugin.getConfigManager().getMenus().getBoolean("PROGRESS-MENU.ENABLED", true);
     }
 
