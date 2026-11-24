@@ -54,6 +54,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -126,7 +127,7 @@ public class DuelManager {
     private final Set<String> reservedArenaIds = new HashSet<>();
     private final Map<UUID, PendingRespawnState> pendingRespawns = new HashMap<>();
     private final Map<UUID, DuelStats> statsCache = new HashMap<>();
-    private final Map<Long, ArenaSnapshot> arenaSnapshots = new HashMap<>();
+    private final Map<Long, ArenaSnapshot> arenaSnapshots = new java.util.concurrent.ConcurrentHashMap<>();
     private final Set<UUID> preparingDuelPlayers = new HashSet<>();
     private final Set<UUID> transitioningPlayers = new HashSet<>();
     private final Map<UUID, TransitionPlayerState> transitionStates = new HashMap<>();
@@ -2225,13 +2226,35 @@ public class DuelManager {
             }
         }
 
-        preparePlayerForMatch(first, arena.getSpawn1(), arena);
-        preparePlayerForMatch(second, arena.getSpawn2(), arena);
+        // Folia: the opponent usually stands in another region (or another world), so every
+        // player-specific action must run on that player's own entity scheduler.
+        final String firstName = publicName(first);
+        final String secondName = publicName(second);
+        runForPlayer(first, () -> {
+            preparePlayerForMatch(first, arena.getSpawn1(), arena);
+            sendMessage(first, "DUEL_FOUND", "&aduel found against &f{player}&a on arena &f{arena}&a.", "{player}", secondName, "{arena}", arena.getDisplayName());
+            play(first, "DUELS.MATCH-FOUND");
+        });
+        runForPlayer(second, () -> {
+            preparePlayerForMatch(second, arena.getSpawn2(), arena);
+            sendMessage(second, "DUEL_FOUND", "&aduel found against &f{player}&a on arena &f{arena}&a.", "{player}", firstName, "{arena}", arena.getDisplayName());
+            play(second, "DUELS.MATCH-FOUND");
+        });
+    }
 
-        sendMessage(first, "DUEL_FOUND", "&aduel found against &f{player}&a on arena &f{arena}&a.", "{player}", publicName(second), "{arena}", arena.getDisplayName());
-        sendMessage(second, "DUEL_FOUND", "&aduel found against &f{player}&a on arena &f{arena}&a.", "{player}", publicName(first), "{arena}", arena.getDisplayName());
-        play(first, "DUELS.MATCH-FOUND");
-        play(second, "DUELS.MATCH-FOUND");
+    private void runForPlayer(Player player, Runnable task) {
+        if (player == null) {
+            return;
+        }
+        if (plugin.getSpigotScheduler().isOwnedByCurrentRegion(player)) {
+            task.run();
+            return;
+        }
+        plugin.getSpigotScheduler().runEntity(player, () -> {
+            if (player.isOnline()) {
+                task.run();
+            }
+        });
     }
 
     private void preparePlayerForMatch(Player player, Location teleportLocation, DuelArena arena) {
@@ -3650,13 +3673,36 @@ public class DuelManager {
         int minZ = Math.min(pos1.getBlockZ(), pos2.getBlockZ()) - horizontalPadding;
         int maxZ = Math.max(pos1.getBlockZ(), pos2.getBlockZ()) + horizontalPadding;
 
-        List<BlockSnapshot> blocks = new ArrayList<>();
-        for (int x = minX; x <= maxX; x++) {
-            for (int y = minY; y <= maxY; y++) {
-                for (int z = minZ; z <= maxZ; z++) {
-                    Block block = world.getBlockAt(x, y, z);
-                    blocks.add(new BlockSnapshot(x, y, z, block.getBlockData().getAsString()));
-                }
+        // Folia: a block may only be read from the region thread that owns its chunk, and an arena
+        // can span several regions. The snapshot is therefore filled chunk by chunk on the owning
+        // region threads instead of in one pass on the calling thread.
+        List<BlockSnapshot> blocks = Collections.synchronizedList(new ArrayList<>());
+        final int fMinX = minX;
+        final int fMaxX = maxX;
+        final int fMinY = Math.max(minY, world.getMinHeight());
+        final int fMaxY = Math.min(maxY, world.getMaxHeight() - 1);
+        final int fMinZ = minZ;
+        final int fMaxZ = maxZ;
+        for (int cx = minX >> 4; cx <= (maxX >> 4); cx++) {
+            for (int cz = minZ >> 4; cz <= (maxZ >> 4); cz++) {
+                final int chunkX = cx;
+                final int chunkZ = cz;
+                plugin.getSpigotScheduler().runRegion(world, chunkX, chunkZ, () -> {
+                    int fromX = Math.max(fMinX, chunkX << 4);
+                    int toX = Math.min(fMaxX, (chunkX << 4) + 15);
+                    int fromZ = Math.max(fMinZ, chunkZ << 4);
+                    int toZ = Math.min(fMaxZ, (chunkZ << 4) + 15);
+                    List<BlockSnapshot> local = new ArrayList<>();
+                    for (int x = fromX; x <= toX; x++) {
+                        for (int y = fMinY; y <= fMaxY; y++) {
+                            for (int z = fromZ; z <= toZ; z++) {
+                                Block block = world.getBlockAt(x, y, z);
+                                local.add(new BlockSnapshot(x, y, z, block.getBlockData().getAsString()));
+                            }
+                        }
+                    }
+                    blocks.addAll(local);
+                });
             }
         }
 
@@ -3674,20 +3720,51 @@ public class DuelManager {
             return;
         }
 
-        for (BlockSnapshot blockSnapshot : snapshot.blocks()) {
-            Block block = world.getBlockAt(blockSnapshot.x(), blockSnapshot.y(), blockSnapshot.z());
-            try {
-                BlockData data = Bukkit.createBlockData(blockSnapshot.blockDataString());
-                block.setBlockData(data, false);
-            } catch (IllegalArgumentException exception) {
-                plugin.getLogger().log(Level.WARNING,
-                        "failed to restore duel arena block at "
-                                + blockSnapshot.x() + "," + blockSnapshot.y() + "," + blockSnapshot.z(),
-                        exception);
-            }
+        // Group the saved blocks by chunk so each chunk is restored on its own region thread.
+        Map<Long, List<BlockSnapshot>> byChunk = new HashMap<>();
+        List<BlockSnapshot> copy;
+        synchronized (snapshot.blocks()) {
+            copy = new ArrayList<>(snapshot.blocks());
+        }
+        for (BlockSnapshot b : copy) {
+            long key = (((long) (b.x() >> 4)) << 32) ^ ((b.z() >> 4) & 0xFFFFFFFFL);
+            byChunk.computeIfAbsent(key, k -> new ArrayList<>()).add(b);
         }
 
-        cleanupTransientEntities(snapshot, world);
+        for (int cx = snapshot.minX() >> 4; cx <= (snapshot.maxX() >> 4); cx++) {
+            for (int cz = snapshot.minZ() >> 4; cz <= (snapshot.maxZ() >> 4); cz++) {
+                final int chunkX = cx;
+                final int chunkZ = cz;
+                final List<BlockSnapshot> chunkBlocks =
+                        byChunk.getOrDefault((((long) chunkX) << 32) ^ (chunkZ & 0xFFFFFFFFL), List.of());
+                plugin.getSpigotScheduler().runRegion(world, chunkX, chunkZ, () -> {
+                    for (BlockSnapshot blockSnapshot : chunkBlocks) {
+                        Block block = world.getBlockAt(blockSnapshot.x(), blockSnapshot.y(), blockSnapshot.z());
+                        try {
+                            BlockData data = Bukkit.createBlockData(blockSnapshot.blockDataString());
+                            block.setBlockData(data, false);
+                        } catch (IllegalArgumentException exception) {
+                            plugin.getLogger().log(Level.WARNING,
+                                    "failed to restore duel arena block at "
+                                            + blockSnapshot.x() + "," + blockSnapshot.y() + "," + blockSnapshot.z(),
+                                    exception);
+                        }
+                    }
+                    cleanupTransientEntitiesInChunk(snapshot, world.getChunkAt(chunkX, chunkZ));
+                });
+            }
+        }
+    }
+
+    private void cleanupTransientEntitiesInChunk(ArenaSnapshot snapshot, org.bukkit.Chunk chunk) {
+        for (Entity entity : chunk.getEntities()) {
+            if (entity instanceof Player) {
+                continue;
+            }
+            if (snapshot.contains(entity.getLocation()) && isTransientDuelEntity(entity)) {
+                entity.remove();
+            }
+        }
     }
 
     private void rollbackGeneratedArena(DuelMatch match) {
@@ -3719,22 +3796,6 @@ public class DuelManager {
                         "failed to restore generated duel block at "
                                 + key.x() + "," + key.y() + "," + key.z(),
                         exception);
-            }
-        }
-    }
-
-    private void cleanupTransientEntities(ArenaSnapshot snapshot, World world) {
-        for (Entity entity : world.getEntities()) {
-            if (entity instanceof Player) {
-                continue;
-            }
-            Location location = entity.getLocation();
-            if (!snapshot.contains(location)) {
-                continue;
-            }
-
-            if (isTransientDuelEntity(entity)) {
-                entity.remove();
             }
         }
     }
